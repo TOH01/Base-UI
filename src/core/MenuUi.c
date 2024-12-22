@@ -1,9 +1,6 @@
 #include <windows.h>
 #include "MenuUi.h"
-#include "StateMachineUi.h"
 #include "UiUtils.h"
-#include "PersistanceUi.h"
-#include "AssetsUi.h"
 
 #define MENU_UI_SUBMENU_MAX 10
 #define MENU_UI_SUBMENU_START_ID 15100
@@ -76,9 +73,7 @@ void MenuUi_SubmenuResizeContent(int width, int height){
 }
 
 void MenuUi_SubmenuInitAll(void){
-    PersistanceUi_InitSubmenu();
-    StateMachineUi_InitSubmenu();
-    AssetUi_InitSubmenu();
+
 }
 
 void MenuUi_RenderMenuButtons(HWND hwnd){

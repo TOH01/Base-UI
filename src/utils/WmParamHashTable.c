@@ -31,7 +31,7 @@ int WmParamHashTable_Insert(HashTable_t * hashtable, int key, MessageHandler_t h
     while(hashtable->content[idx].key != 0){
         if(hashtable->content[idx].key == key){
             hashtable->content[idx].handler = handler;
-            return;
+            return 0;
         }
     
         idx = (idx + 1) % MAX_WM_PARAM_AMOUNT;

@@ -1,30 +1,36 @@
-# Define the compiler and flags
+# Compiler and flags
 CC = gcc
-CFLAGS = -Wall -g -I./include 
+CFLAGS = -g -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/demo
+LDFLAGS = -lgdi32 -lcomdlg32 -mwindows
 
-LDFLAGS = -lgdi32 -lcomdlg32
+# Directories
+SRCDIR = src
+BUILDDIR = build
 
-# Define the source and object files using wildcard to include all .c files in the src directory
-SRC = $(wildcard src/*.c)
-OBJ = $(SRC:src/%.c=build/%.o)  # Place object files in build/ directory
+# Output executable
+OUT = $(BUILDDIR)/my_program.exe
 
-# Define the output executable
-EXEC = build/my_program.exe
+# Find all source files in the src directory and subdirectories, including main.c
+SRCS = $(wildcard $(SRCDIR)/**/*.c) $(wildcard $(SRCDIR)/*.c)
 
-# Default target (this will be the first target in the Makefile)
-all: $(EXEC)
+# Object files will go into the build directory
+OBJS = $(SRCS:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 
-# Rule to link the object files and create the executable
-$(EXEC): $(OBJ)
-	$(CC) $(OBJ) -o $(EXEC) $(LDFLAGS)
+# Default target
+all: $(OUT)
 
-# Rule to compile each .c file into .o file and store them in build/ directory
-build/%.o: src/%.c
+# Link object files into the final executable
+$(OUT): $(OBJS)
+	@if not exist "$(BUILDDIR)" mkdir "$(BUILDDIR)"
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+# Compile source files into object files
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean up object files and the executable
+# Clean build directory
 clean:
-	rm -f build/*.o $(EXEC)
+	@if exist "$(BUILDDIR)" rmdir /s /q "$(BUILDDIR)"
 
-# Rebuild everything
-rebuild: clean all
+.PHONY: all clean
