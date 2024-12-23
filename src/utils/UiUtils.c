@@ -1,12 +1,10 @@
 #include <windows.h>
 #include "UiUtils.h"
+#include "common.h"
 
-PAINTSTRUCT ps;
-HDC hdc;
-HPEN hPen;
 
 void UiUtils_CreatePens(){
-    hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+    currentWindowState.hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 }
 
 HWND UiUtils_initButton(HWND hwnd, button_t button){
@@ -14,10 +12,10 @@ HWND UiUtils_initButton(HWND hwnd, button_t button){
                 "BUTTON", 
                 button.name, 
                 WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                UI_UTILS_CALCULATE_PERCENTAGE(UI_UTILS_INIT_WINDOW_WIDTH, button.pos.spacingLeft),
-                UI_UTILS_CALCULATE_PERCENTAGE(UI_UTILS_INIT_WINDOW_HEIGTH, button.pos.spacingTop), 
-                UI_UTILS_CALCULATE_PERCENTAGE(UI_UTILS_INIT_WINDOW_WIDTH, button.pos.width), 
-                UI_UTILS_CALCULATE_PERCENTAGE(UI_UTILS_INIT_WINDOW_HEIGTH, button.pos.height), 
+                UI_UTILS_CALCULATE_PERCENTAGE(CONFIG_INIT_WINDOW_WIDTH, button.pos.spacingLeft),
+                UI_UTILS_CALCULATE_PERCENTAGE(CONFIG_INIT_WINDOW_HEIGTH, button.pos.spacingTop), 
+                UI_UTILS_CALCULATE_PERCENTAGE(CONFIG_INIT_WINDOW_WIDTH, button.pos.width), 
+                UI_UTILS_CALCULATE_PERCENTAGE(CONFIG_INIT_WINDOW_HEIGTH, button.pos.height), 
                 hwnd, 
                 (HMENU)button.wParam,
                 NULL, NULL

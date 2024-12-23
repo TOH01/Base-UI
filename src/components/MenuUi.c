@@ -1,4 +1,5 @@
 #include <windows.h>
+#include "common.h"
 #include "MenuUi.h"
 #include "UiUtils.h"
 
@@ -72,10 +73,6 @@ void MenuUi_SubmenuResizeContent(int width, int height){
     }
 }
 
-void MenuUi_SubmenuInitAll(void){
-
-}
-
 void MenuUi_RenderMenuButtons(HWND hwnd){
             
         for (int i = 0; i < MENU_UI_SUBMENU_GET_IDX(MenuUi_SubmenuIdCounter); i++){
@@ -89,8 +86,8 @@ void MenuUi_RenderMenuButtons(HWND hwnd){
 }
 
 void MenuUi_DrawMenuUi(HWND hwnd, int width, int height){
-    SelectObject(hdc, hPen);
-    Rectangle(hdc, 0, 0, UI_UTILS_CALCULATE_PERCENTAGE(width, MENU_UI_MENU_WIDTH_PERCENTAGE), height);
+    SelectObject(currentWindowState.hdc, currentWindowState.hPen);
+    Rectangle(currentWindowState.hdc, 0, 0, UI_UTILS_CALCULATE_PERCENTAGE(width, MENU_UI_MENU_WIDTH_PERCENTAGE), height);
 }
 
 void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {

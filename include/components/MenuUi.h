@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "UiUtils.h"
+#include "windows.h"
 
 #define MENU_UI_ID_PERSISTANCE_MENU 100
 #define MENU_UI_ID_STATE_MACHINE_MENU 200
@@ -18,10 +19,6 @@
 
 #define MENU_UI_BUTTON_WIDTH (MENU_UI_BUTTON_SPACING_RIGHT - MENU_UI_BUTTON_SPACING_LEFT)
 #define MENU_UI_BUTTON_GET_START_Y(num) ((((num) + 1) * MENU_UI_BUTTON_SPACING_TOP) + ((num) * (MENU_UI_BUTTON_HEIGHT)))
-
-extern HPEN hPen;
-extern PAINTSTRUCT ps;
-extern HDC hdc;
 
 typedef struct {
 
@@ -55,6 +52,6 @@ void MenuUi_SubmenuSwap(HWND hwnd, int menuId);
 
 void MenuUi_SubmenuInit(char name[30], MenuUi_Submenu_Callback_t callbacks);
 void MenuUi_SubmenuWmParamCallback(HWND hwnd, WPARAM wParam);
-void MenuUi_SubmenuInitAll(void);
+
 
 #endif

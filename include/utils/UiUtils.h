@@ -1,11 +1,7 @@
 #ifndef UI_UTILS_H
 #define UI_UTILS_H
 
-#define UI_UTILS_INIT_WINDOW_WIDTH 800
-#define UI_UTILS_INIT_WINDOW_HEIGTH 600
-
-#define UI_UTILS_MIN_WINDOW_WIDTH 700
-#define UI_UTILS_MIN_WINDOW_Height 400
+#include <windows.h>
 
 #define UI_UTILS_CALCULATE_PERCENTAGE(value, percentage) ((value) * (percentage) / 100)
 
