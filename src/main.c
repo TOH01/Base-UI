@@ -19,7 +19,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     currentWindowState.wmParamHashTable = WmParamHashTable_Init();
 
-    InitializeHooks();
+    InitialzeHandlers();
 
     #ifndef DISABLE_MENU
 

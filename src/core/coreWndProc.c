@@ -2,13 +2,6 @@
 #include "coreWndProc.h"
 #include "WmParamHashTable.h"
 
-/*hooks for commonly used messages*/
-
-static MessageHook WmCreateHook = NULL;
-static MessageHook WmSizeHook = NULL;
-static MessageHook WmPaintHook = NULL;
-static MessageHook WmCommandHook = NULL;
-
 LRESULT DefaultHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
@@ -31,9 +24,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         if (handler){
             
+            // if the handler isnt registered, return default handler
+            
             if (handler == &DefaultHandler){
-                return handler(hwnd, msg, wParam, lParam);
+                return DefaultHandler(hwnd, msg, wParam, lParam);
             }
+            
+            // if the handler is registered, call it directly
+            
             else {
                 handler(hwnd, msg, wParam, lParam);
             }
@@ -45,7 +43,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             WmParamHashTable_Insert(currentWindowState.wmParamHashTable, msg, &DefaultHandler);
 
-            return WmParamHashTable_Get(currentWindowState.wmParamHashTable, msg)(hwnd, msg, wParam, lParam);
+            return DefaultHandler(hwnd, msg, wParam, lParam);
         }
         
     }

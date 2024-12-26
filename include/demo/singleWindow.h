@@ -2,7 +2,7 @@
 #define SINGLE_WINDOW_H
 
 #ifdef DISABLE_MENU
-void InitializeHooks();
+void InitializeHooks(void);
 #endif
 
 #endif

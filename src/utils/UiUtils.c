@@ -3,7 +3,7 @@
 #include "common.h"
 
 
-void UiUtils_CreatePens(){
+void UiUtils_CreatePens(void){
     currentWindowState.hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 }
 

@@ -5,10 +5,6 @@
 #include "UiUtils.h"
 #include "windows.h"
 
-#define MENU_UI_ID_PERSISTANCE_MENU 100
-#define MENU_UI_ID_STATE_MACHINE_MENU 200
-#define MENU_UI_ID_ASSET_MENU 300
-
 #define MENU_UI_STARTUP_MENU_ID MENU_UI_ID_PERSISTANCE_MENU
 
 #define MENU_UI_MENU_WIDTH_PERCENTAGE 20
@@ -39,19 +35,7 @@ typedef struct {
 
 } MenuUi_Submenu_t;
 
-
-bool MenuUi_IsSidebarCommand(WORD commandId);
-
-void MenuUi_RenderMenuButtons(HWND hwnd);
-void MenuUi_ResizeMenuUi(int width, int height);
-void MenuUi_DrawMenuUi(HWND hwnd, int width, int height);
-
-void MenuUi_DrawMenuContent(HWND hwnd, int currentWidth, int currentHeight);
-void MenuUi_ResizeMenuContent(int width, int height);
-void MenuUi_SubmenuSwap(HWND hwnd, int menuId);
-
 void MenuUi_SubmenuInit(char name[30], MenuUi_Submenu_Callback_t callbacks);
-void MenuUi_SubmenuWmParamCallback(HWND hwnd, WPARAM wParam);
-
+void MenuUi_InitBaseHandlers(void);
 
 #endif

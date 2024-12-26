@@ -4,7 +4,7 @@
 #include <windows.h>
 
 #ifndef DISABLE_MENU
-void InitializeHooks();
+void InitialzeHandlers(void);
 void MenuUi_SubmenuInitAll(void);
 #endif
 

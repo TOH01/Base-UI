@@ -85,11 +85,6 @@ void MenuUi_RenderMenuButtons(HWND hwnd){
 
 }
 
-void MenuUi_DrawMenuUi(HWND hwnd, int width, int height){
-    SelectObject(currentWindowState.hdc, currentWindowState.hPen);
-    Rectangle(currentWindowState.hdc, 0, 0, UI_UTILS_CALCULATE_PERCENTAGE(width, MENU_UI_MENU_WIDTH_PERCENTAGE), height);
-}
-
 void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
 
     if (menuId == MenuUi_currentSubmenuIdx){
@@ -105,6 +100,24 @@ void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
     InvalidateRect(hwnd, NULL, TRUE);
 }
 
+
+void MenuUi_ResizeMenuContent(int width, int height){
+    MenuUi_SubmenuResizeContent(width, height);
+}
+
+void MenuUi_DrawMenuContent(HWND hwnd, int currentWidth, int currentHeight){
+    MenuUi_SubmenuDrawContent(hwnd, currentWidth, currentHeight);
+}
+
+
+void MenuUi_ResizeSidebar(int width, int height){
+
+    for (int i = 0; i < MENU_UI_SUBMENU_GET_IDX(MenuUi_SubmenuIdCounter); i++){
+        UiUtils_moveButton(submenus[i].hSubmenuLoadButton, submenus[i].SubmenuLoadButton.pos, width, height);
+    }
+
+}
+
 bool MenuUi_IsSidebarCommand(WORD commandId){
     
     for (int i = 0; i < MENU_UI_SUBMENU_GET_IDX(MenuUi_SubmenuIdCounter); i++){
@@ -117,18 +130,66 @@ bool MenuUi_IsSidebarCommand(WORD commandId){
 
 }
 
-void MenuUi_ResizeMenuUi(int width, int height){
+void MenuUi_DrawSidebar(HWND hwnd, int width, int height){
+    SelectObject(currentWindowState.hdc, currentWindowState.hPen);
+    Rectangle(currentWindowState.hdc, 0, 0, UI_UTILS_CALCULATE_PERCENTAGE(width, MENU_UI_MENU_WIDTH_PERCENTAGE), height);
+}
 
-    for (int i = 0; i < MENU_UI_SUBMENU_GET_IDX(MenuUi_SubmenuIdCounter); i++){
-        UiUtils_moveButton(submenus[i].hSubmenuLoadButton, submenus[i].SubmenuLoadButton.pos, width, height);
+LRESULT MenuUi_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    MenuUi_RenderMenuButtons(hwnd);
+
+    MenuUi_SubmenuSwap(hwnd, 0);
+
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    if (LOWORD(lParam) > CONFIG_MIN_WINDOW_WIDTH)
+    {
+        currentWindowState.currentWidth = LOWORD(lParam);;
+    }
+    if (HIWORD(lParam) > CONFIG_MIN_WINDOW_Height)
+    {
+        currentWindowState.currentHeight = HIWORD(lParam);
     }
 
+    MenuUi_ResizeSidebar(currentWindowState.currentWidth,  currentWindowState.currentHeight);
+
+    MenuUi_ResizeMenuContent(currentWindowState.currentWidth,  currentWindowState.currentHeight);
+
+    InvalidateRect(hwnd, NULL, TRUE);
 }
 
-void MenuUi_ResizeMenuContent(int width, int height){
-    MenuUi_SubmenuResizeContent(width, height);
+LRESULT MenuUi_WmPaintHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
+    
+    MenuUi_DrawSidebar(hwnd, currentWindowState.currentWidth,  currentWindowState.currentHeight);
+
+    MenuUi_DrawMenuContent(hwnd, currentWindowState.currentWidth,  currentWindowState.currentHeight);
+
+    EndPaint(hwnd, &currentWindowState.ps);
 }
 
-void MenuUi_DrawMenuContent(HWND hwnd, int currentWidth, int currentHeight){
-    MenuUi_SubmenuDrawContent(hwnd, currentWidth, currentHeight);
+LRESULT MenuUi_WmCommandHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    if (MenuUi_IsSidebarCommand(LOWORD(wParam)))
+    {
+        MenuUi_SubmenuSwap(hwnd, LOWORD(wParam));
+        SendMessage(hwnd, WM_SIZE, 0, MAKELPARAM(currentWindowState.currentWidth,  currentWindowState.currentHeight));
+    }
+
+    else
+    {
+        MenuUi_SubmenuWmParamCallback(hwnd, wParam);
+    }
+}
+
+void MenuUi_InitBaseHandlers(void){
+    WmParamHashTable_Insert(currentWindowState.wmParamHashTable, WM_CREATE, &MenuUi_WmCreateHook);
+    WmParamHashTable_Insert(currentWindowState.wmParamHashTable, WM_SIZE, &MenuUi_WmSizeHook);
+    WmParamHashTable_Insert(currentWindowState.wmParamHashTable, WM_PAINT, &MenuUi_WmPaintHook);
+    WmParamHashTable_Insert(currentWindowState.wmParamHashTable, WM_COMMAND, &MenuUi_WmCommandHook);
 }
