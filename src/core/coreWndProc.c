@@ -1,6 +1,7 @@
 #include "Common.h"
 #include "coreWndProc.h"
 #include "WmParamHashTable.h"
+#include "MenuUi.h"
 
 LRESULT DefaultHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -20,6 +21,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
     default:
         
+        #ifndef DISABLE_MENU
+        MenuUi_SubmenuCommandHandler(hwnd, msg, wParam, lParam);
+        #endif
+
         MessageHandler_t handler = WmParamHashTable_Get(currentWindowState.wmParamHashTable, msg);
 
         if (handler){

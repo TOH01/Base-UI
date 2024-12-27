@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -g -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/demo -Iinclude/components
-LDFLAGS = -lgdi32 -lcomdlg32 -mwindows
+CFLAGS = -g -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components
+LDFLAGS = -lgdi32 -lcomdlg32 -mconsole
 
 # Directories
 SRCDIR = src

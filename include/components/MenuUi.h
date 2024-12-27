@@ -4,8 +4,11 @@
 #include <stdbool.h>
 #include "UiUtils.h"
 #include "windows.h"
+#include "WmParamHashTable.h"
 
-#define MENU_UI_STARTUP_MENU_ID MENU_UI_ID_PERSISTANCE_MENU
+#define MENU_UI_CUSTOM_MESSAGE_ID 0x10000
+#define MENU_UI_SUBMENU_LOAD_ID (MENU_UI_CUSTOM_MESSAGE_ID + 1)
+#define MENU_UI_SUBMENU_DESTROY_ID (MENU_UI_CUSTOM_MESSAGE_ID + 2)
 
 #define MENU_UI_MENU_WIDTH_PERCENTAGE 20
 #define MENU_UI_BUTTON_SPACING_LEFT 5
@@ -17,25 +20,19 @@
 #define MENU_UI_BUTTON_GET_START_Y(num) ((((num) + 1) * MENU_UI_BUTTON_SPACING_TOP) + ((num) * (MENU_UI_BUTTON_HEIGHT)))
 
 typedef struct {
-
-    void (*SubmenuRenderContent)(HWND);             // callback to render content which is initialized as handle
-    void (*SubmenuDestroyContent)(void);            // callback to deinitialize content which is initialized as handle
-    void (*SubmenuResizeContent)(int, int);         // callback to resize content which is initialized as handle
-    void (*SubmenuDrawContent)(HWND, int, int);     // callback to (re-) draw content, BeginPaint() and EndPaint() will be called automatically, do not call them in here
-    void (*SubmenuWMParamCallback)(HWND, WPARAM);   // will be called when a WM Command, for example a button click, is triggered on the specific submenu
-
-} MenuUi_Submenu_Callback_t;
-
-typedef struct {
     
     int SubmenuID;                                          // unique submenu id
     button_t SubmenuLoadButton;                             // button struct for button in the main menu to load submenu, will be initialized by MenuUi.c
     HWND hSubmenuLoadButton;                                // handle of described button
-    MenuUi_Submenu_Callback_t SubmenuCallbacks;             // various callbacks, see MenuUi_Submenu_Callback_t for details
+    HashTable_t * WmParamHashTable;                         // hashtable of callbacks
 
 } MenuUi_Submenu_t;
 
-void MenuUi_SubmenuInit(char name[30], MenuUi_Submenu_Callback_t callbacks);
+int MenuUi_SubmenuInit(char name[30]);
 void MenuUi_InitBaseHandlers(void);
+void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int key, int MenuId);
+void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id);
+void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, int id);
 
 #endif

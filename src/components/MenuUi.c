@@ -13,15 +13,13 @@ int MenuUi_currentSubmenuIdx = 0;
 int MenuUi_SubmenuIdCounter = MENU_UI_SUBMENU_START_ID;
 MenuUi_Submenu_t submenus[MENU_UI_SUBMENU_MAX];
 
-void MenuUi_SubmenuInit(char name[30], MenuUi_Submenu_Callback_t callbacks){
+int MenuUi_SubmenuInit(char name[30]){
     
     if ((MenuUi_SubmenuIdCounter - MENU_UI_SUBMENU_START_ID ) >= MENU_UI_SUBMENU_MAX){
-        return;
+        return -1;
     }
 
     MenuUi_Submenu_t submenu;
-    
-    submenu.SubmenuCallbacks = callbacks;
     
     submenu.SubmenuID = MenuUi_SubmenuIdCounter;
     MenuUi_SubmenuIdCounter++;
@@ -36,41 +34,36 @@ void MenuUi_SubmenuInit(char name[30], MenuUi_Submenu_Callback_t callbacks){
         },
     };
 
+    submenu.WmParamHashTable = WmParamHashTable_Init();
+
     memcpy(MenuUi_SubmenuLoadButton.name, name, 30);
 
     submenu.SubmenuLoadButton = MenuUi_SubmenuLoadButton;
 
     submenus[MENU_UI_SUBMENU_GET_IDX(submenu.SubmenuID)] = submenu;
+
+    return submenu.SubmenuID;
 }
 
-void MenuUi_SubmenuWmParamCallback(HWND hwnd, WPARAM wParam){
-    if (submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuWMParamCallback != NULL){
-        (*submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuWMParamCallback)(hwnd, wParam);
+void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+    if (submenus[MenuUi_currentSubmenuIdx].WmParamHashTable != NULL){
+        
+        MessageHandler_t handler =  WmParamHashTable_Get(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg);
+        
+        if (handler != NULL){
+            handler(hwnd, msg, wParam, lParam);
+        }
+        else {
+            
+            // insert the key with value 0, so dont loop through whole hashtable for unknown keys
+
+            WmParamHashTable_Insert(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg, NULL);
+        }
     }
 }
 
-void MenuUi_SubmenuLoadContent(HWND hwnd){
-    if (submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuRenderContent != NULL){
-        (*submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuRenderContent)(hwnd);
-    }
-}
-
-void MenuUi_SubmenuDestroyContent(void){
-    if (submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuDestroyContent != NULL){
-        (*submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuDestroyContent)();
-    }
-}
-
-void MenuUi_SubmenuDrawContent(HWND hwnd, int width, int height){
-    if (submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuDrawContent != NULL){
-        (*submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuDrawContent)(hwnd, width, height);
-    }
-}
-
-void MenuUi_SubmenuResizeContent(int width, int height){
-        if (submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuResizeContent != NULL){
-        (*submenus[MenuUi_currentSubmenuIdx].SubmenuCallbacks.SubmenuResizeContent)(width, height);
-    }
+void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int key, int MenuId){
+    WmParamHashTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)].WmParamHashTable, key, handler);
 }
 
 void MenuUi_RenderMenuButtons(HWND hwnd){
@@ -80,9 +73,6 @@ void MenuUi_RenderMenuButtons(HWND hwnd){
                 submenus[i].hSubmenuLoadButton = UiUtils_initButton(hwnd, submenus[i].SubmenuLoadButton);
             }
         }
-
-        MenuUi_SubmenuLoadContent(hwnd);
-
 }
 
 void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
@@ -91,24 +81,22 @@ void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
         return;
     }
 
-    MenuUi_SubmenuDestroyContent();
+    MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_DESTROY_ID, 0, 0);
 
     MenuUi_currentSubmenuIdx = MENU_UI_SUBMENU_GET_IDX(menuId);
 
-    MenuUi_SubmenuLoadContent(hwnd);
+    MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
 
     InvalidateRect(hwnd, NULL, TRUE);
 }
 
-
-void MenuUi_ResizeMenuContent(int width, int height){
-    MenuUi_SubmenuResizeContent(width, height);
+void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id){
+    WmParamHashTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_LOAD_ID, handler);
 }
 
-void MenuUi_DrawMenuContent(HWND hwnd, int currentWidth, int currentHeight){
-    MenuUi_SubmenuDrawContent(hwnd, currentWidth, currentHeight);
+void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, int id){
+    WmParamHashTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_DESTROY_ID, handler);
 }
-
 
 void MenuUi_ResizeSidebar(int width, int height){
 
@@ -157,8 +145,6 @@ LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     MenuUi_ResizeSidebar(currentWindowState.currentWidth,  currentWindowState.currentHeight);
 
-    MenuUi_ResizeMenuContent(currentWindowState.currentWidth,  currentWindowState.currentHeight);
-
     InvalidateRect(hwnd, NULL, TRUE);
 }
 
@@ -167,8 +153,6 @@ LRESULT MenuUi_WmPaintHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
     
     MenuUi_DrawSidebar(hwnd, currentWindowState.currentWidth,  currentWindowState.currentHeight);
-
-    MenuUi_DrawMenuContent(hwnd, currentWindowState.currentWidth,  currentWindowState.currentHeight);
 
     EndPaint(hwnd, &currentWindowState.ps);
 }
@@ -179,11 +163,6 @@ LRESULT MenuUi_WmCommandHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         MenuUi_SubmenuSwap(hwnd, LOWORD(wParam));
         SendMessage(hwnd, WM_SIZE, 0, MAKELPARAM(currentWindowState.currentWidth,  currentWindowState.currentHeight));
-    }
-
-    else
-    {
-        MenuUi_SubmenuWmParamCallback(hwnd, wParam);
     }
 }
 
