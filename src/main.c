@@ -17,7 +17,7 @@ const char g_szClassName[] = "MyWindowClass";
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 
-    currentWindowState.wmParamHashTable = WmParamHashTable_Init();
+    currentWindowState.wmParamHashTable = WmParamHandlerTable_Init();
 
     InitialzeHandlers();
 

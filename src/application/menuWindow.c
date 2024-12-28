@@ -52,8 +52,11 @@ LRESULT Menu2_Destroy(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     button2 = NULL;
 }
 
+LRESULT Menu2_DestroyFake(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+    printf("FAKE!\n");
+}
+
 LRESULT Menu1_WmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
-    printf("TEST");
     switch(LOWORD(wParam)){
         case 500:
             printf("Menu 1 button 500 pressed\n");
@@ -61,7 +64,6 @@ LRESULT Menu1_WmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 }
 
 LRESULT Menu2_WmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
-    printf("TEST");
     switch(LOWORD(wParam)){
          case 500:
             printf("Menu 2 button 501 pressed\n");
@@ -76,6 +78,7 @@ void MenuUi_SubmenuInitAll(void){
     MenuUi_SubmenuAddLoadHandler(&Menu2_Load, menu2_key);
     MenuUi_SubmenuAddDestroyHandler(&Menu1_Destroy, menu1_key);
     MenuUi_SubmenuAddDestroyHandler(&Menu2_Destroy, menu2_key);
+    MenuUi_SubmenuAddDestroyHandler(&Menu2_DestroyFake, menu2_key);
 
     MenuUi_SubmenuAddHandler(&Menu1_WmCommand, WM_COMMAND, menu1_key);
     MenuUi_SubmenuAddHandler(&Menu2_WmCommand, WM_COMMAND, menu2_key);

@@ -6,7 +6,7 @@
 typedef struct WindowState{
     int currentWidth;
     int currentHeight;
-    HashTable_t * wmParamHashTable;
+    WmParamHandlerTable_t * wmParamHashTable;
     HDC hdc;
     HPEN hPen;
     PAINTSTRUCT ps;

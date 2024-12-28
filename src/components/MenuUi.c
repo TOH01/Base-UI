@@ -34,7 +34,7 @@ int MenuUi_SubmenuInit(char name[30]){
         },
     };
 
-    submenu.WmParamHashTable = WmParamHashTable_Init();
+    submenu.WmParamHashTable = WmParamHandlerTable_Init();
 
     memcpy(MenuUi_SubmenuLoadButton.name, name, 30);
 
@@ -45,25 +45,25 @@ int MenuUi_SubmenuInit(char name[30]){
     return submenu.SubmenuID;
 }
 
+
+
 void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     if (submenus[MenuUi_currentSubmenuIdx].WmParamHashTable != NULL){
         
-        MessageHandler_t handler =  WmParamHashTable_Get(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg);
-        
-        if (handler != NULL){
-            handler(hwnd, msg, wParam, lParam);
+        if (WmParamHandlerTable_IdHasHandler(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg)){
+            WmParamHandlerTable_CallHandlersOfId(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, hwnd, msg, wParam, lParam);
         }
         else {
             
-            // insert the key with value 0, so dont loop through whole hashtable for unknown keys
+            // insert the WmParamKey with value Default Handler, so dont loop through whole hashtable for unknown keys (this is purely for perfomance reasons)
 
-            WmParamHashTable_Insert(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg, NULL);
+            WmParamHanderTable_Insert(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg, &NopHandler);
         }
     }
 }
 
-void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int key, int MenuId){
-    WmParamHashTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)].WmParamHashTable, key, handler);
+void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, int MenuId){
+    WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)].WmParamHashTable, WmParamKey, handler);
 }
 
 void MenuUi_RenderMenuButtons(HWND hwnd){
@@ -91,11 +91,11 @@ void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
 }
 
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id){
-    WmParamHashTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_LOAD_ID, handler);
+    WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_LOAD_ID, handler);
 }
 
 void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, int id){
-    WmParamHashTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_DESTROY_ID, handler);
+    WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_DESTROY_ID, handler);
 }
 
 void MenuUi_ResizeSidebar(int width, int height){
@@ -167,8 +167,8 @@ LRESULT MenuUi_WmCommandHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 void MenuUi_InitBaseHandlers(void){
-    WmParamHashTable_Insert(currentWindowState.wmParamHashTable, WM_CREATE, &MenuUi_WmCreateHook);
-    WmParamHashTable_Insert(currentWindowState.wmParamHashTable, WM_SIZE, &MenuUi_WmSizeHook);
-    WmParamHashTable_Insert(currentWindowState.wmParamHashTable, WM_PAINT, &MenuUi_WmPaintHook);
-    WmParamHashTable_Insert(currentWindowState.wmParamHashTable, WM_COMMAND, &MenuUi_WmCommandHook);
+    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_CREATE, &MenuUi_WmCreateHook);
+    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_SIZE, &MenuUi_WmSizeHook);
+    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_PAINT, &MenuUi_WmPaintHook);
+    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_COMMAND, &MenuUi_WmCommandHook);
 }
