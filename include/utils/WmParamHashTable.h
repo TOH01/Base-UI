@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #define MAX_WM_PARAM_AMOUNT 128
+#define WM_PARAM_TABLE_UNUSED_ID -1
 
 typedef LRESULT (*MessageHandler_t)(HWND, UINT, WPARAM, LPARAM);
 
@@ -32,7 +33,6 @@ typedef struct {
 WmParamHandlerTable_t * WmParamHandlerTable_Init();
 int WmParamHanderTable_Insert(WmParamHandlerTable_t * hashtable, int WmParamKey, MessageHandler_t handler);
 void WmParamHandlerTable_Destroy(WmParamHandlerTable_t * hashtable);
-bool WmParamHandlerTable_IdHasNonDefaultHandler(WmParamHandlerTable_t * hashtable, int msg);
 void WmParamHandlerTable_CallHandlersOfId(WmParamHandlerTable_t * hashtable, HWND hwnd, int id, WPARAM wparam, LPARAM lparam);
 bool WmParamHandlerTable_IdHasHandler(WmParamHandlerTable_t * hashtable, int msg);
 

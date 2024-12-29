@@ -53,12 +53,6 @@ void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         if (WmParamHandlerTable_IdHasHandler(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg)){
             WmParamHandlerTable_CallHandlersOfId(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, hwnd, msg, wParam, lParam);
         }
-        else {
-            
-            // insert the WmParamKey with value Default Handler, so dont loop through whole hashtable for unknown keys (this is purely for perfomance reasons)
-
-            WmParamHanderTable_Insert(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg, &NopHandler);
-        }
     }
 }
 

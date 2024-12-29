@@ -5,7 +5,4 @@
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-LRESULT NopHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT DefaultHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 #endif
