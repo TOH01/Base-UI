@@ -33,6 +33,10 @@ void UiUtils_moveButton(HWND hwnd, buttonPos_t pos, int width, int height){
     );
 }
 
+bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos){
+    
+}
+
 #include "main.h"
 #include <stdio.h>
 

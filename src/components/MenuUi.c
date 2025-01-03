@@ -13,6 +13,10 @@ int MenuUi_currentSubmenuIdx = 0;
 int MenuUi_SubmenuIdCounter = MENU_UI_SUBMENU_START_ID;
 MenuUi_Submenu_t submenus[MENU_UI_SUBMENU_MAX];
 
+void MenuUi_SubmenuAddContainer(int MenuId){
+    submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)];
+}
+
 int MenuUi_SubmenuInit(char name[30]){
     
     if ((MenuUi_SubmenuIdCounter - MENU_UI_SUBMENU_START_ID ) >= MENU_UI_SUBMENU_MAX){

@@ -6,6 +6,7 @@
 #include "windows.h"
 #include "WmParamHashTable.h"
 #include "coreWndProc.h"
+#include "container.h"
 
 #define MENU_UI_CUSTOM_MESSAGE_ID 0x10000
 #define MENU_UI_SUBMENU_LOAD_ID (MENU_UI_CUSTOM_MESSAGE_ID + 1)
@@ -25,8 +26,9 @@ typedef struct {
     int SubmenuID;                                          // unique submenu id
     button_t SubmenuLoadButton;                             // button struct for button in the main menu to load submenu, will be initialized by MenuUi.c
     HWND hSubmenuLoadButton;                                // handle of described button
-    WmParamHandlerTable_t * WmParamHashTable;                         // hashtable of callbacks
-
+    WmParamHandlerTable_t * WmParamHashTable;               // hashtable of callbacks
+    container_t * containers[5];
+    
 } MenuUi_Submenu_t;
 
 int MenuUi_SubmenuInit(char name[30]);

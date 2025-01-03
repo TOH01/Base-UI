@@ -28,6 +28,7 @@ typedef struct HashNode{
 typedef struct {
     int size;
     WmParamHandlerNode_t content[MAX_WM_PARAM_AMOUNT];
+    bool hasContainerHandlers;
 } WmParamHandlerTable_t;
 
 WmParamHandlerTable_t * WmParamHandlerTable_Init();

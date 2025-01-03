@@ -2,15 +2,12 @@
 #define UI_UTILS_H
 
 #include <windows.h>
+#include "common.h"
 
 #define UI_UTILS_CALCULATE_PERCENTAGE(value, percentage) ((value) * (percentage) / 100)
 
-typedef struct buttonPos{
-    int spacingTop;
-    int spacingLeft;
-    int width;
-    int height;
-} buttonPos_t;
+
+#define buttonPos_t CommonPos_t
 
 typedef struct button{
     buttonPos_t pos;

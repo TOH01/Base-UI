@@ -7,4 +7,11 @@
 
 extern WindowState_t currentWindowState;
 
+typedef struct CoomonPos{
+    int spacingTop;
+    int spacingLeft;
+    int width;
+    int height;
+} CommonPos_t;
+
 #endif
