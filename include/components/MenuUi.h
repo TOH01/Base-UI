@@ -21,6 +21,9 @@
 #define MENU_UI_BUTTON_WIDTH (MENU_UI_BUTTON_SPACING_RIGHT - MENU_UI_BUTTON_SPACING_LEFT)
 #define MENU_UI_BUTTON_GET_START_Y(num) ((((num) + 1) * MENU_UI_BUTTON_SPACING_TOP) + ((num) * (MENU_UI_BUTTON_HEIGHT)))
 
+typedef struct container_t container_t;
+#define containerPos_t CommonPos_t
+
 typedef struct {
     
     int SubmenuID;                                          // unique submenu id
@@ -28,6 +31,7 @@ typedef struct {
     HWND hSubmenuLoadButton;                                // handle of described button
     WmParamHandlerTable_t * WmParamHashTable;               // hashtable of callbacks
     container_t * containers[5];
+    int containerIdx;
     
 } MenuUi_Submenu_t;
 
@@ -37,5 +41,7 @@ void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, int MenuId);
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id);
 void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, int id);
+MenuUi_Submenu_t * getGurrentSubmenu(void);
+container_t * MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos);
 
 #endif

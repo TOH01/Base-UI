@@ -25,7 +25,7 @@ const button_t button2_struct = {
     .name = "Button 2",
     .wParam = 501,
     .pos = {
-                .spacingTop = MENU_UI_BUTTON_SPACING_TOP,
+        .spacingTop = MENU_UI_BUTTON_SPACING_TOP,
         .height = MENU_UI_BUTTON_HEIGHT,
         .spacingLeft = MENU_UI_BUTTON_SPACING_LEFT + MENU_UI_MENU_WIDTH_PERCENTAGE,
         .width = MENU_UI_BUTTON_WIDTH,
@@ -38,22 +38,28 @@ void InitialzeHandlers(void){
 
 LRESULT Menu1_Load(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     button1 = UiUtils_initButton(hwnd, button1_struct);
+    printf("Load Menu 1\n");
 }
 
 LRESULT Menu2_Load(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     button2 = UiUtils_initButton(hwnd, button2_struct);
+    printf("Load Menu 2\n");
 }
 
 LRESULT Menu1_Destroy(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+    DestroyWindow(button1);
     button1 = NULL;
+    printf("Destroy Menu 1\n");
 }
 
 LRESULT Menu2_Destroy(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+    DestroyWindow(button2);
     button2 = NULL;
+    printf("Destroy Menu 2\n");
 }
 
 LRESULT Menu2_DestroyFake(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
-    printf("FAKE!\n");
+
 }
 
 LRESULT Menu1_WmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
@@ -65,14 +71,18 @@ LRESULT Menu1_WmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
 LRESULT Menu2_WmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     switch(LOWORD(wParam)){
-         case 500:
+         case 501:
             printf("Menu 2 button 501 pressed\n");
     }
 }
 
 void MenuUi_SubmenuInitAll(void){
-    menu1_key = MenuUi_SubmenuInit("Menu 1");
-    menu2_key = MenuUi_SubmenuInit("Menu 2");
+    
+    char menu1_name[30] = "Menu 1";
+    char menu2_name[30] = "Menu 2";
+    
+    menu1_key = MenuUi_SubmenuInit(menu1_name);
+    menu2_key = MenuUi_SubmenuInit(menu2_name);
 
     MenuUi_SubmenuAddLoadHandler(&Menu1_Load, menu1_key);
     MenuUi_SubmenuAddLoadHandler(&Menu2_Load, menu2_key);
@@ -82,6 +92,10 @@ void MenuUi_SubmenuInitAll(void){
 
     MenuUi_SubmenuAddHandler(&Menu1_WmCommand, WM_COMMAND, menu1_key);
     MenuUi_SubmenuAddHandler(&Menu2_WmCommand, WM_COMMAND, menu2_key);
+
+    //CommonPos_t pos = {0, 0, 500, 500};
+
+    //MenuUi_SubmenuAddContainer(menu2_key, pos);
 }
 
 #endif

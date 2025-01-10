@@ -77,8 +77,6 @@ WmParamHandlerTable_t * WmParamHandlerTable_Init(void){
 
 int WmParamHanderTable_Insert(WmParamHandlerTable_t * hashtable, int WmParamKey, MessageHandler_t handler){
     
-    printf("%d inserted\n", WmParamKey);
-
     if(!hashtable){
         printf("Cannot Insert, because Hashtable does not exist.");
         return -1;

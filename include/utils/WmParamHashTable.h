@@ -9,18 +9,18 @@
 
 typedef LRESULT (*MessageHandler_t)(HWND, UINT, WPARAM, LPARAM);
 
-typedef struct ListNode HandlerNode_t;
+typedef struct HandlerNote HandlerNode_t;
 
-typedef struct ListNode{
+typedef struct HandlerNote{
     MessageHandler_t handler;
     HandlerNode_t * nextHandlerNode;
 } HandlerNode_t;
 
-typedef struct List{
+typedef struct {
     HandlerNode_t * firstHandlerNode;
 } HandlerList_t;
 
-typedef struct HashNode{
+typedef struct {
     int WmParamKey;
     HandlerList_t * WmParamHandler;
 } WmParamHandlerNode_t;

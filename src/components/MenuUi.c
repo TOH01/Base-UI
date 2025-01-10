@@ -2,6 +2,7 @@
 #include "common.h"
 #include "MenuUi.h"
 #include "UiUtils.h"
+#include <stdio.h>
 
 #define MENU_UI_SUBMENU_MAX 10
 #define MENU_UI_SUBMENU_START_ID 15100
@@ -13,8 +14,20 @@ int MenuUi_currentSubmenuIdx = 0;
 int MenuUi_SubmenuIdCounter = MENU_UI_SUBMENU_START_ID;
 MenuUi_Submenu_t submenus[MENU_UI_SUBMENU_MAX];
 
-void MenuUi_SubmenuAddContainer(int MenuId){
-    submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)];
+container_t * MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos){
+    MenuUi_Submenu_t * submenu = &submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)];
+    
+    container_t * container = initContainer(pos, submenu->WmParamHashTable);
+
+    submenu->containers[submenu->containerIdx] = container;
+
+    submenu->containerIdx++;
+
+    return container;
+}
+
+MenuUi_Submenu_t * getGurrentSubmenu(void){
+    return &(submenus[MenuUi_currentSubmenuIdx]);
 }
 
 int MenuUi_SubmenuInit(char name[30]){
@@ -23,33 +36,31 @@ int MenuUi_SubmenuInit(char name[30]){
         return -1;
     }
 
-    MenuUi_Submenu_t submenu;
+    MenuUi_Submenu_t * submenu = (MenuUi_Submenu_t *) calloc(1, sizeof(MenuUi_Submenu_t));
     
-    submenu.SubmenuID = MenuUi_SubmenuIdCounter;
+    submenu->SubmenuID = MenuUi_SubmenuIdCounter;
     MenuUi_SubmenuIdCounter++;
     
     button_t MenuUi_SubmenuLoadButton = {
-        .wParam = submenu.SubmenuID,
+        .wParam = submenu->SubmenuID,
         .pos = {
-            .spacingTop = MENU_UI_BUTTON_GET_START_Y((MENU_UI_SUBMENU_GET_IDX(submenu.SubmenuID))),
+            .spacingTop = MENU_UI_BUTTON_GET_START_Y((MENU_UI_SUBMENU_GET_IDX(submenu->SubmenuID))),
             .height = MENU_UI_BUTTON_HEIGHT,
             .spacingLeft = MENU_UI_BUTTON_SPACING_LEFT,
             .width = MENU_UI_BUTTON_WIDTH,
         },
     };
 
-    submenu.WmParamHashTable = WmParamHandlerTable_Init();
+    submenu->WmParamHashTable = WmParamHandlerTable_Init();
 
     memcpy(MenuUi_SubmenuLoadButton.name, name, 30);
 
-    submenu.SubmenuLoadButton = MenuUi_SubmenuLoadButton;
+    submenu->SubmenuLoadButton = MenuUi_SubmenuLoadButton;
 
-    submenus[MENU_UI_SUBMENU_GET_IDX(submenu.SubmenuID)] = submenu;
+    submenus[MENU_UI_SUBMENU_GET_IDX(submenu->SubmenuID)] = *submenu;
 
-    return submenu.SubmenuID;
+    return submenu->SubmenuID;
 }
-
-
 
 void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     if (submenus[MenuUi_currentSubmenuIdx].WmParamHashTable != NULL){
@@ -73,9 +84,11 @@ void MenuUi_RenderMenuButtons(HWND hwnd){
         }
 }
 
+#include <stdio.h>
+
 void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
 
-    if (menuId == MenuUi_currentSubmenuIdx){
+    if (MENU_UI_SUBMENU_GET_IDX(menuId) == MenuUi_currentSubmenuIdx){
         return;
     }
 
@@ -125,7 +138,7 @@ LRESULT MenuUi_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     MenuUi_RenderMenuButtons(hwnd);
 
-    MenuUi_SubmenuSwap(hwnd, 0);
+    MenuUi_SubmenuSwap(hwnd, MENU_UI_SUBMENU_START_ID);
 
     InvalidateRect(hwnd, NULL, TRUE);
 }
@@ -160,7 +173,6 @@ LRESULT MenuUi_WmCommandHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (MenuUi_IsSidebarCommand(LOWORD(wParam)))
     {
         MenuUi_SubmenuSwap(hwnd, LOWORD(wParam));
-        SendMessage(hwnd, WM_SIZE, 0, MAKELPARAM(currentWindowState.currentWidth,  currentWindowState.currentHeight));
     }
 }
 
