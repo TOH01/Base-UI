@@ -33,10 +33,14 @@ void UiUtils_moveButton(HWND hwnd, buttonPos_t pos, int width, int height){
     );
 }
 
+void UiUitls_DrawRectangleRelative(int x, int y, int width, int height){
+    Rectangle(currentWindowState.hdc, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, x), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, y), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, height));
+}
+
 bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos){
     
 }
 
-#include "main.h"
-#include <stdio.h>
+bool UiUtils_CoordinateIsOnBorderOf(int x, int y, CommonPos_t pos){
 
+}

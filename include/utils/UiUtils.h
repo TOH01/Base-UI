@@ -18,5 +18,6 @@ typedef struct button{
 HWND UiUtils_initButton(HWND hwnd, button_t button);
 void UiUtils_moveButton(HWND hwnd, buttonPos_t pos, int width, int height);
 void UiUtils_CreatePens(void);
+void UiUitls_DrawRectangleRelative(int x, int y, int width, int height);
 
 #endif

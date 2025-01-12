@@ -30,7 +30,7 @@ MenuUi_Submenu_t * getGurrentSubmenu(void){
     return &(submenus[MenuUi_currentSubmenuIdx]);
 }
 
-int MenuUi_SubmenuInit(char name[30]){
+int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]){
     
     if ((MenuUi_SubmenuIdCounter - MENU_UI_SUBMENU_START_ID ) >= MENU_UI_SUBMENU_MAX){
         return -1;
@@ -53,7 +53,7 @@ int MenuUi_SubmenuInit(char name[30]){
 
     submenu->WmParamHashTable = WmParamHandlerTable_Init();
 
-    memcpy(MenuUi_SubmenuLoadButton.name, name, 30);
+    memcpy(MenuUi_SubmenuLoadButton.name, name, MENU_UI_MAX_NAME_LENGTH);
 
     submenu->SubmenuLoadButton = MenuUi_SubmenuLoadButton;
 
@@ -84,8 +84,6 @@ void MenuUi_RenderMenuButtons(HWND hwnd){
         }
 }
 
-#include <stdio.h>
-
 void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
 
     if (MENU_UI_SUBMENU_GET_IDX(menuId) == MenuUi_currentSubmenuIdx){
@@ -98,7 +96,7 @@ void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
 
     MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
 
-    InvalidateRect(hwnd, NULL, TRUE);
+    InvalidateRect(hwnd, NULL, TRUE); // trigger redraw when swapping submenus
 }
 
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id){
@@ -139,8 +137,6 @@ LRESULT MenuUi_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     MenuUi_RenderMenuButtons(hwnd);
 
     MenuUi_SubmenuSwap(hwnd, MENU_UI_SUBMENU_START_ID);
-
-    InvalidateRect(hwnd, NULL, TRUE);
 }
 
 LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -156,16 +152,11 @@ LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     MenuUi_ResizeSidebar(currentWindowState.currentWidth,  currentWindowState.currentHeight);
 
-    InvalidateRect(hwnd, NULL, TRUE);
 }
 
 LRESULT MenuUi_WmPaintHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
-    
     MenuUi_DrawSidebar(hwnd, currentWindowState.currentWidth,  currentWindowState.currentHeight);
-
-    EndPaint(hwnd, &currentWindowState.ps);
 }
 
 LRESULT MenuUi_WmCommandHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

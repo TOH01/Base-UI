@@ -38,24 +38,20 @@ void InitialzeHandlers(void){
 
 LRESULT Menu1_Load(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     button1 = UiUtils_initButton(hwnd, button1_struct);
-    printf("Load Menu 1\n");
 }
 
 LRESULT Menu2_Load(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     button2 = UiUtils_initButton(hwnd, button2_struct);
-    printf("Load Menu 2\n");
 }
 
 LRESULT Menu1_Destroy(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     DestroyWindow(button1);
     button1 = NULL;
-    printf("Destroy Menu 1\n");
 }
 
 LRESULT Menu2_Destroy(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     DestroyWindow(button2);
     button2 = NULL;
-    printf("Destroy Menu 2\n");
 }
 
 LRESULT Menu2_DestroyFake(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
@@ -93,9 +89,9 @@ void MenuUi_SubmenuInitAll(void){
     MenuUi_SubmenuAddHandler(&Menu1_WmCommand, WM_COMMAND, menu1_key);
     MenuUi_SubmenuAddHandler(&Menu2_WmCommand, WM_COMMAND, menu2_key);
 
-    //CommonPos_t pos = {0, 0, 500, 500};
+    CommonPos_t pos = {0, 0, 50, 50};
 
-    //MenuUi_SubmenuAddContainer(menu2_key, pos);
+    MenuUi_SubmenuAddContainer(menu2_key, pos);
 }
 
 #endif

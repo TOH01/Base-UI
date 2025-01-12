@@ -10,15 +10,11 @@ int currentIdx = 0;
 
 void redrawContainer(container_t * container){
    SelectObject(currentWindowState.hdc, currentWindowState.hPen);
-   Rectangle(currentWindowState.hdc, container->pos.spacingLeft, container->pos.spacingTop, container->pos.width, container->pos.height);
+   UiUitls_DrawRectangleRelative(container->pos.spacingLeft, container->pos.spacingTop, container->pos.width, container->pos.height);
 }
 
 LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    
-   printf("TEST\n");
-
-   currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
-    
    #ifndef DISABLE_MENU
   
    MenuUi_Submenu_t * submenu = getGurrentSubmenu();
@@ -33,9 +29,27 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    }
    #endif
 
-   EndPaint(hwnd, &currentWindowState.ps);
+}
+
+LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    
 }
+
+LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+   int x = LOWORD(lParam); // Horizontal position in client area
+   int y = HIWORD(lParam); // Vertical position in client area
+}
+
+LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+   int x = LOWORD(lParam); // Horizontal position in client area
+   int y = HIWORD(lParam); // Vertical position in client area
+}
+
+LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+ int x = LOWORD(lParam); // Horizontal position in client area
+        int y = HIWORD(lParam); // Vertical position in client area
+}
+
 
 container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerTable){
 
@@ -43,17 +57,19 @@ container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerT
 
    container->pos = pos;
 
-   if (handlerTable->hasContainerHandlers){
+   if (!handlerTable->hasContainerHandlers){
       WmParamHanderTable_Insert(handlerTable, WM_PAINT, &redrawContainers);
+      WmParamHanderTable_Insert(handlerTable, WM_SIZE, &resizeContainers);
+      WmParamHanderTable_Insert(handlerTable, WM_LBUTTONDOWN, &LButtonDownCallback);
+      WmParamHanderTable_Insert(handlerTable, WM_LBUTTONUP, &LButtonUpCallback);
 
       handlerTable->hasContainerHandlers = true;
    }
 
-}
-
-void resizeContainerContent(container_t * container){
+   return container;
 
 }
+
 
 void containerAddHWNDItem(HWND hwnd){
 

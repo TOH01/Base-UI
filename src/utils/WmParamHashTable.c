@@ -165,6 +165,11 @@ void WmParamHandlerTable_CallHandlersOfId(WmParamHandlerTable_t * hashtable, HWN
     }
 
     HandlerList_t * handlers = WmParamHandlerTable_GetHandlerList(hashtable, id);
+
+    if (handlers == NULL){
+        return;
+    }
+
     HandlerNode_t * currentNode = handlers->firstHandlerNode;
 
     while (currentNode != NULL){
