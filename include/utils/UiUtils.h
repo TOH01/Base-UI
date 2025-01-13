@@ -19,5 +19,7 @@ HWND UiUtils_initButton(HWND hwnd, button_t button);
 void UiUtils_moveButton(HWND hwnd, buttonPos_t pos, int width, int height);
 void UiUtils_CreatePens(void);
 void UiUitls_DrawRectangleRelative(CommonPos_t pos);
+bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos);
+bool UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos);
 
 #endif

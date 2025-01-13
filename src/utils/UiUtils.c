@@ -38,9 +38,42 @@ void UiUitls_DrawRectangleRelative(CommonPos_t pos){
 }
 
 bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos){
-    
+    if (x > pos.spacingLeft * currentWindowState.currentWidth && x < pos.width * currentWindowState.currentWidth){
+        if (y > pos.spacingTop * currentWindowState.currentHeight && y < pos.height * currentWindowState.currentHeight){
+            return true;
+        }
+    }
+    return false;
 }
 
-bool UiUtils_CoordinateIsOnBorderOf(int x, int y, CommonPos_t pos){
+bool UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos){
+    // check if on left border
+    if (x >= (pos.spacingLeft - 0.005f) * currentWindowState.currentWidth && (x + borderWidth) <= (pos.spacingLeft + 0.005f) * currentWindowState.currentWidth){
+        if (y >= pos.spacingTop * currentWindowState.currentHeight && y <= pos.height * currentWindowState.currentHeight){
+            return true;
+        }
+    }
 
+    //check if on right border
+    if (x >= (pos.width - 0.005f) * currentWindowState.currentWidth && (x + borderWidth) <= (pos.width + 0.005f) * currentWindowState.currentWidth){
+        if (y >= pos.spacingTop * currentWindowState.currentHeight && y <= pos.height * currentWindowState.currentHeight){
+            return true;
+        }
+    }
+
+    //check if on bottom border
+    if (y >= (pos.height - 0.005f) * currentWindowState.currentHeight && (y - borderWidth) <= (pos.height + 0.005f) * currentWindowState.currentHeight){
+        if(x >= pos.spacingLeft * currentWindowState.currentWidth && x <= pos.width * currentWindowState.currentWidth) {
+            return true;
+        }
+    }
+
+    //check if on top border
+    if (y >= (pos.spacingTop - 0.005f) * currentWindowState.currentHeight && (y - borderWidth) <= (pos.spacingTop + 0.005f) * currentWindowState.currentHeight){
+        if(x >= pos.spacingLeft * currentWindowState.currentWidth && x <= pos.width * currentWindowState.currentWidth) {
+            return true;
+        }
+    }
+
+    return false;
 }

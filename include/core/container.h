@@ -9,8 +9,7 @@
 
 typedef struct container_t {
     containerPos_t pos;
-    bool moving;
-    bool resizing;
+    int borderWitdh;
 } container_t;
 
 container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerTable);
