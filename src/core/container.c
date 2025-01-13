@@ -10,7 +10,7 @@ int currentIdx = 0;
 
 void redrawContainer(container_t * container){
    SelectObject(currentWindowState.hdc, currentWindowState.hPen);
-   UiUitls_DrawRectangleRelative(container->pos.spacingLeft, container->pos.spacingTop, container->pos.width, container->pos.height);
+   UiUitls_DrawRectangleRelative(container->pos);
 }
 
 LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){

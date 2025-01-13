@@ -136,7 +136,11 @@ LRESULT MenuUi_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     MenuUi_RenderMenuButtons(hwnd);
 
-    MenuUi_SubmenuSwap(hwnd, MENU_UI_SUBMENU_START_ID);
+    // make sure that base submenu is loaded, when creating window
+
+    MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
+
+    InvalidateRect(hwnd, NULL, TRUE); // trigger redraw when swapping submenus
 }
 
 LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

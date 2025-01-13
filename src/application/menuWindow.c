@@ -89,7 +89,7 @@ void MenuUi_SubmenuInitAll(void){
     MenuUi_SubmenuAddHandler(&Menu1_WmCommand, WM_COMMAND, menu1_key);
     MenuUi_SubmenuAddHandler(&Menu2_WmCommand, WM_COMMAND, menu2_key);
 
-    CommonPos_t pos = {0, 0, 50, 50};
+    CommonPos_t pos = {0, 0, UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50)};
 
     MenuUi_SubmenuAddContainer(menu2_key, pos);
 }
