@@ -9,7 +9,7 @@ int currentIdx = 0;
 #endif
 
 bool lockMovement = 0;
-bool resizing = 0;
+int resizing = 0;
 bool moving = 0;
 int start_x = 0;
 int start_y = 0;
@@ -56,7 +56,7 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    for (int i = 0; i < submenu->containerIdx; i++){
       if (!(lockMovement) && (UiUtils_CoordinateIsOnBorderOf(x, y, submenu->containers[i]->borderWitdh, submenu->containers[i]->pos))){
          lockMovement = 1;
-         resizing = 1;
+         resizing = UiUtils_CoordinateIsOnBorderOf(x, y, submenu->containers[i]->borderWitdh, submenu->containers[i]->pos);
          start_x = x;
          start_y = y;
          movingContainer = submenu->containers[i];
@@ -69,6 +69,7 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
          start_y = y;
          movingContainer = submenu->containers[i];
          containerStartPos = submenu->containers[i]->pos;
+
       }
    }
 
@@ -97,6 +98,13 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    int y = HIWORD(lParam); // Vertical position in client area
 
    if (lockMovement){
+      
+      RECT rectOld, rectNew;
+      rectOld.left = (movingContainer->pos.spacingLeft - 0.01) * currentWindowState.currentWidth;
+      rectOld.top = (movingContainer->pos.spacingTop - 0.01) * currentWindowState.currentHeight;
+      rectOld.right = rectOld.left + (movingContainer->pos.width + 0.01) * currentWindowState.currentWidth;
+      rectOld.bottom = rectOld.top + (movingContainer->pos.height + 0.01) * currentWindowState.currentHeight;
+
       float x_relative = (float) x / (float) currentWindowState.currentWidth;
       float y_relative = (float) y / (float) currentWindowState.currentHeight;
 
@@ -111,11 +119,34 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
       }
 
       if(resizing){
-
+         switch (resizing)
+         {
+         case TOP:
+            movingContainer->pos.spacingTop = containerStartPos.spacingTop + (y_relative - start_y_relative);
+            break;
+         case BOTTOM:
+            movingContainer->pos.height = containerStartPos.height + (y_relative - start_y_relative);
+            break;
+         case LEFT:
+            movingContainer->pos.spacingLeft = containerStartPos.spacingLeft + (x_relative - start_x_relative);
+            break;
+         case RIGHT:
+            movingContainer->pos.width = containerStartPos.width + (x_relative - start_x_relative);
+            break;
+         default:
+            break;
+         }
       }
 
-   }
+      rectNew.left = (movingContainer->pos.spacingLeft - 0.01) * currentWindowState.currentWidth;
+      rectNew.top = (movingContainer->pos.spacingTop - 0.01) * currentWindowState.currentHeight;
+      rectNew.right = rectNew.left + (movingContainer->pos.width + 0.01) * currentWindowState.currentWidth;
+      rectNew.bottom = rectNew.top + (movingContainer->pos.height + 0.01) * currentWindowState.currentHeight;
 
+      InvalidateRect(hwnd, &rectNew, TRUE); // 'TRUE' ensures the background is erased
+      InvalidateRect(hwnd, &rectOld, TRUE); // 'TRUE' ensures the background is erased
+
+   }
 }
 
 
