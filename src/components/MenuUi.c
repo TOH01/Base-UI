@@ -96,7 +96,7 @@ void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
 
     MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
 
-    InvalidateRect(hwnd, NULL, TRUE); // trigger redraw when swapping submenus
+    InvalidateRect(hwnd, NULL, FALSE);
 }
 
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id){
@@ -128,23 +128,27 @@ bool MenuUi_IsSidebarCommand(WORD commandId){
 }
 
 void MenuUi_DrawSidebar(HWND hwnd, int width, int height){
-    SelectObject(currentWindowState.hdc, currentWindowState.hPen);
-    Rectangle(currentWindowState.hdc, 0, 0, UI_UTILS_CALCULATE_PERCENTAGE(width, MENU_UI_MENU_WIDTH_PERCENTAGE), height);
+    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
+    Rectangle(currentWindowState.memHDC, 0, 0, UI_UTILS_CALCULATE_PERCENTAGE(width, MENU_UI_MENU_WIDTH_PERCENTAGE), height);
 }
 
 LRESULT MenuUi_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+
     MenuUi_RenderMenuButtons(hwnd);
 
     // make sure that base submenu is loaded, when creating window
 
     MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
 
-    InvalidateRect(hwnd, NULL, TRUE); // trigger redraw when swapping submenus
+    InvalidateRect(hwnd, NULL, FALSE);
 }
 
 LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    
+    InvalidateRect(hwnd, NULL, FALSE);
+
     if (LOWORD(lParam) > CONFIG_MIN_WINDOW_WIDTH)
     {
         currentWindowState.currentWidth = LOWORD(lParam);;

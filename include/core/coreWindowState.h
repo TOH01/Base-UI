@@ -10,6 +10,8 @@ typedef struct WindowState{
     HDC hdc;
     HPEN hPen;
     PAINTSTRUCT ps;
+    HDC memHDC;
+    HBITMAP memBitmap;
 } WindowState_t;
 
 #endif

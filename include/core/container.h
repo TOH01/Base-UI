@@ -12,6 +12,16 @@ typedef struct container_t {
     int borderWitdh;
 } container_t;
 
+typedef struct movingContainer_t {
+    int action;
+    container_t * container;
+    CommonPos_t startPos;
+    int mouseStartX;
+    int mouseStartY;
+} movingContainer_t;
+
+#define CONTAINER_MOVE_ACTION 5
+
 container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerTable);
 
 #endif
