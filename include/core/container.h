@@ -4,12 +4,14 @@
 #include "common.h"
 #include "MenuUi.h"
 #include <stdbool.h>
+#include "widget.h"
 
 #define containerPos_t CommonPos_t
 
 typedef struct container_t {
     containerPos_t pos;
     int borderWitdh;
+    WidgetList_t * widgetList;
 } container_t;
 
 typedef struct movingContainer_t {

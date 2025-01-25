@@ -23,11 +23,13 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
    for (int i = 0; i < submenu->containerIdx; i++){
       redrawContainer(submenu->containers[i]);
+      renderWidgetList(submenu->containers[i]->widgetList);
    }
 
    #elif defined(DISABLE_MENU)
    for (int i = 0; i < currentIdx; i++){
       redrawContainer(containerList[i]);
+      renderWidgetList(submenu->containers[i]->widgetList);
    }
    #endif
 
@@ -143,14 +145,13 @@ container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerT
 
    container->borderWitdh = 2; //TODO: make container drawable with different borderWidths
 
+   container->widgetList = initWidgetList();
+
    return container;
 
 }
 
-void containerAddHWNDItem(HWND hwnd){
 
-}
-
-void containerAddCostumButton(char * name, MessageHandler_t callback){
-
+void containerAddWidget(container_t * container, BaseWidget_t * widget){
+   addWidget(container->widgetList, widget);
 }
