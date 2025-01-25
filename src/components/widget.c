@@ -12,6 +12,7 @@ void addWidget(WidgetList_t * list, BaseWidget_t * widget){
     }
 
     if (list->headWidget == NULL){
+        list->headWidget = (WidgetNode_t *) calloc(1, sizeof(WidgetNode_t));
         list->headWidget->widget = widget;
         return;
     }
@@ -37,10 +38,39 @@ void renderWidgetList(WidgetList_t * list){
     
     WidgetNode_t * node = list->headWidget;
 
-    node->widget->drawHandler();
+    node->widget->drawHandler(node->widget);
 
     while(node->nextWidgetNode != NULL){
         node = node->nextWidgetNode;
-        node->widget->drawHandler();
+        node->widget->drawHandler(node->widget);
     }
 }
+
+CommonPos_t getPosToContainer(CommonPos_t containerPos, CommonPos_t widgetPos){
+    CommonPos_t pos;
+    
+    pos.spacingLeft = containerPos.spacingLeft + ((containerPos.width - containerPos.spacingLeft) * widgetPos.spacingLeft);
+    pos.width = containerPos.spacingLeft + ((containerPos.width - containerPos.spacingLeft) * widgetPos.width);
+
+    pos.spacingTop = containerPos.spacingTop + ((containerPos.height - containerPos.spacingTop) * widgetPos.spacingTop);
+    pos.height = containerPos.spacingTop + ((containerPos.height - containerPos.spacingTop) * widgetPos.height);
+
+    return pos;
+}
+
+void updatePosToContainerList(CommonPos_t containerPos, WidgetList_t * list){
+    
+    if (!list || !list->headWidget){
+        return;
+    }
+    
+    WidgetNode_t * node = list->headWidget;
+
+    node->widget->pos = getPosToContainer(containerPos, node->widget->initPos);
+
+    while(node->nextWidgetNode != NULL){
+        node = node->nextWidgetNode;
+        node->widget->pos = getPosToContainer(containerPos, node->widget->initPos);
+    }
+}
+

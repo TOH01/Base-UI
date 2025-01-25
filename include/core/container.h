@@ -25,5 +25,6 @@ typedef struct movingContainer_t {
 #define CONTAINER_MOVE_ACTION 5
 
 container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerTable);
+void containerAddWidget(container_t * container, BaseWidget_t * widget);
 
 #endif

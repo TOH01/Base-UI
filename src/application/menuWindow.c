@@ -2,7 +2,9 @@
 
 #include "MenuUi.h"
 #include "common.h"
+#include "widget.h"
 #include <stdio.h>
+#include "costumButton.h"
 
 int menu1_key;
 int menu2_key;
@@ -89,9 +91,16 @@ void MenuUi_SubmenuInitAll(void){
     MenuUi_SubmenuAddHandler(&Menu1_WmCommand, WM_COMMAND, menu1_key);
     MenuUi_SubmenuAddHandler(&Menu2_WmCommand, WM_COMMAND, menu2_key);
 
-    CommonPos_t pos = {0, 0, UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50)};
+    CommonPos_t pos = {UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50)};
 
-    MenuUi_SubmenuAddContainer(menu2_key, pos);
+    container_t * container = MenuUi_SubmenuAddContainer(menu2_key, pos);
+    
+    CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
+
+    buttonWidget_t * button = initButton(posButton);
+
+    containerAddWidget(container, button->baseWidget);
+
 }
 
 #endif

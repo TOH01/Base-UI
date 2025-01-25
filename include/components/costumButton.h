@@ -2,10 +2,13 @@
 #define COSTUM_BUTTON_H
 
 #include "common.h"
+#include "widget.h"
 
 typedef struct ButtonWidget {
-    CommonPos_t pos;
+    BaseWidget_t * baseWidget;
     void * onClick;
 } buttonWidget_t;
+
+buttonWidget_t * initButton(CommonPos_t pos);
 
 #endif

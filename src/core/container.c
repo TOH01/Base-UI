@@ -23,7 +23,10 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
    for (int i = 0; i < submenu->containerIdx; i++){
       redrawContainer(submenu->containers[i]);
-      renderWidgetList(submenu->containers[i]->widgetList);
+      if(!movingContainer.action){
+         renderWidgetList(submenu->containers[i]->widgetList);
+      }
+      
    }
 
    #elif defined(DISABLE_MENU)
@@ -79,7 +82,26 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    if (movingContainer.action){
       movingContainer.action = 0;
+
+      #ifndef DISABLE_MENU
+  
+      MenuUi_Submenu_t * submenu = getGurrentSubmenu();
+
+      for (int i = 0; i < submenu->containerIdx; i++){
+
+            WidgetList_t * list = submenu->containers[i]->widgetList;
+
+            updatePosToContainerList(movingContainer.container->pos, list);
+      }
+
+      #elif defined(DISABLE_MENU)
+
+      #endif
+
+      InvalidateRect(hwnd, NULL, FALSE);
+
    }
+
 }
 
 LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
@@ -153,5 +175,6 @@ container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerT
 
 
 void containerAddWidget(container_t * container, BaseWidget_t * widget){
+   widget->pos = getPosToContainer(container->pos, widget->pos);
    addWidget(container->widgetList, widget);
 }
