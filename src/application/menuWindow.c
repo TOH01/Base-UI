@@ -74,6 +74,10 @@ LRESULT Menu2_WmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     }
 }
 
+void button1Handler(void){
+    printf("BUTTON 1 CLICKED\n");
+}
+
 void MenuUi_SubmenuInitAll(void){
     
     char menu1_name[30] = "Menu 1";
@@ -97,9 +101,9 @@ void MenuUi_SubmenuInitAll(void){
     
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
 
-    buttonWidget_t * button = initButton(posButton);
+    buttonWidget_t * button = initButton(posButton, &button1Handler);
 
-    containerAddWidget(container, button->baseWidget);
+    containerAddWidget(container, (BaseWidget_t *) button);
 
 }
 

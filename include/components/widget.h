@@ -3,17 +3,12 @@
 
 #include "common.h"
 
-enum WidgetType {
-    button,
-    input,
-};
-
 typedef struct BaseWidget BaseWidget_t;
 
 typedef struct BaseWidget {
     void (*drawHandler)(BaseWidget_t *);
     CommonPos_t initPos;
-    int type;
+    void (*onClick)(BaseWidget_t *);
     CommonPos_t pos;
 } BaseWidget_t;
 
@@ -34,5 +29,6 @@ WidgetList_t * initWidgetList(void);
 void renderWidgetList(WidgetList_t * list);
 CommonPos_t getPosToContainer(CommonPos_t containerPos, CommonPos_t widgetPos);
 void updatePosToContainerList(CommonPos_t containerPos, WidgetList_t * list);
+BaseWidget_t * widgetClicked(int x, int y, WidgetList_t * list);
 
 #endif

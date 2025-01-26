@@ -1,5 +1,6 @@
 #include "widget.h"
 #include "common.h"
+#include "UiUtils.h"
 
 WidgetList_t * initWidgetList(void){
     WidgetList_t * list = (WidgetList_t *) calloc(1, sizeof(WidgetList_t));
@@ -74,3 +75,26 @@ void updatePosToContainerList(CommonPos_t containerPos, WidgetList_t * list){
     }
 }
 
+BaseWidget_t * widgetClicked(int x, int y, WidgetList_t * list){
+
+    if (!list || !list->headWidget){
+        return NULL;
+    }
+    
+    WidgetNode_t * node = list->headWidget;
+
+    if (UiUtils_CoordinateIsInsideOf(x, y, node->widget->pos)) {
+        return node->widget;
+    }
+
+    while(node->nextWidgetNode != NULL){
+        node = node->nextWidgetNode;
+        
+        if (UiUtils_CoordinateIsInsideOf(x, y, node->widget->pos)) {
+            return node->widget;
+        }
+    }
+
+    return NULL;
+
+}

@@ -37,6 +37,10 @@ void UiUitls_DrawRectangleRelative(CommonPos_t pos){
     Rectangle(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height));
 }
 
+void UiUtils_DrawRoundRectangleRelative(CommonPos_t pos){
+    RoundRect(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, 0.2 * ((pos.height - pos.spacingTop) + (pos.width - pos.spacingLeft) / 2)), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, 0.2 * ((pos.height - pos.spacingTop) + (pos.width - pos.spacingLeft) / 2)));
+}
+
 bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos){
     if (x > pos.spacingLeft * currentWindowState.currentWidth && x < pos.width * currentWindowState.currentWidth){
         if (y > pos.spacingTop * currentWindowState.currentHeight && y < pos.height * currentWindowState.currentHeight){

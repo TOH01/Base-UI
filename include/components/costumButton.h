@@ -5,10 +5,10 @@
 #include "widget.h"
 
 typedef struct ButtonWidget {
-    BaseWidget_t * baseWidget;
-    void * onClick;
+    BaseWidget_t baseWidget;
+    void ( * onClickUserCallback) (void);
 } buttonWidget_t;
 
-buttonWidget_t * initButton(CommonPos_t pos);
+buttonWidget_t * initButton(CommonPos_t pos, void (*onClickUserCallback)(void));
 
 #endif

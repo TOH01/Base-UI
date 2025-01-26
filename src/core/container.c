@@ -42,6 +42,22 @@ LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    InvalidateRect(hwnd, NULL, FALSE);
 }
 
+void moveContainerOnTop(container_t * containerArray[], int idx){
+   
+   if (idx == 0){
+      return; //container is already at the top
+   }
+   
+   container_t * topContainer = containerArray[idx];
+
+   for (int i = idx; i > 0; i--){
+      containerArray[i] = containerArray[i -1];
+   }
+
+   containerArray[0] = topContainer;
+
+}
+
 LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    int x = LOWORD(lParam); // Horizontal position in client area
    int y = HIWORD(lParam); // Vertical position in client area
@@ -51,24 +67,37 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    MenuUi_Submenu_t * submenu = getGurrentSubmenu();
 
    for (int i = 0; i < submenu->containerIdx; i++){
-      if (!(movingContainer.action) && (UiUtils_CoordinateIsOnBorderOf(x, y, submenu->containers[i]->borderWitdh, submenu->containers[i]->pos))){
-         
-         movingContainer.startPos = submenu->containers[i]->pos;
-         movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, submenu->containers[i]->borderWitdh, submenu->containers[i]->pos);
-         movingContainer.container = submenu->containers[i];
-         movingContainer.mouseStartX = x;
-         movingContainer.mouseStartY = y;
-   
-      }
-      if (!(movingContainer.action) && (UiUtils_CoordinateIsInsideOf(x, y, submenu->containers[i]->pos))){
-         
-         movingContainer.startPos = submenu->containers[i]->pos;
-         movingContainer.action = CONTAINER_MOVE_ACTION;
-         movingContainer.container = submenu->containers[i];
-         movingContainer.mouseStartX = x;
-         movingContainer.mouseStartY = y;
       
+      if (UiUtils_CoordinateIsOnBorderOf(x, y, submenu->containers[i]->borderWitdh, submenu->containers[i]->pos)){
+         if (!movingContainer.action){
+            movingContainer.startPos = submenu->containers[i]->pos;
+            movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, submenu->containers[i]->borderWitdh, submenu->containers[i]->pos);
+            movingContainer.container = submenu->containers[i];
+            movingContainer.mouseStartX = x;
+            movingContainer.mouseStartY = y;
+            return 1;
+         }
       }
+      
+      if (UiUtils_CoordinateIsInsideOf(x, y, submenu->containers[i]->pos)){
+         
+         BaseWidget_t * widget = widgetClicked(x, y, submenu->containers[i]->widgetList);
+
+         if (widget){
+            widget->onClick(widget);
+            return 1;
+         }
+
+         if (!movingContainer.action){
+            movingContainer.startPos = submenu->containers[i]->pos;
+            movingContainer.action = CONTAINER_MOVE_ACTION;
+            movingContainer.container = submenu->containers[i];
+            movingContainer.mouseStartX = x;
+            movingContainer.mouseStartY = y;
+            return 1;
+         }
+      }
+   
    }
 
    #elif defined(DISABLE_MENU)
@@ -77,6 +106,8 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
       printf("%d\n", UiUtils_CoordinateIsOnBorderOf(x, y, containerList[i]->borderWidth, containerList[i]->pos));
    }
    #endif 
+
+   InvalidateRect(hwnd, NULL, FALSE);
 }
 
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){

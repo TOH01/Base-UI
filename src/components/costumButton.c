@@ -7,20 +7,18 @@ void drawButton(BaseWidget_t * button){
     UiUitls_DrawRectangleRelative(button->pos);
 }
 
-buttonWidget_t * initButton(CommonPos_t pos){
+void onClick(BaseWidget_t * button){
+    buttonWidget_t * buttonWidget = (buttonWidget_t *) button;
+    buttonWidget->onClickUserCallback();
+}
+
+buttonWidget_t * initButton(CommonPos_t pos, void (*onClickUserCallback)(void)){
     buttonWidget_t * button = (buttonWidget_t *) calloc(1, sizeof(buttonWidget_t));
-    BaseWidget_t * base = (BaseWidget_t *) calloc(1, sizeof(BaseWidget_t));
-    button->baseWidget = base;
-    button->baseWidget->drawHandler = &drawButton;
-    button->baseWidget->initPos = pos; 
-    button->baseWidget->pos = pos;
+    button->baseWidget.drawHandler = &drawButton;
+    button->baseWidget.initPos = pos; 
+    button->baseWidget.pos = pos;
+    button->baseWidget.onClick = &onClick;
+    button->onClickUserCallback = onClickUserCallback;
     return button;
 }
 
-buttonWidget_t * initButtonContainer(){
-
-}
-
-bool isClicked(int x, int y, BaseWidget_t * button){
-    return UiUtils_CoordinateIsInsideOf(x, y, button->pos);
-}
