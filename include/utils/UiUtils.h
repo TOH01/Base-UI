@@ -29,5 +29,6 @@ void UiUitls_DrawRectangleRelative(CommonPos_t pos);
 bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos);
 int UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos);
 void UiUtils_DrawRoundRectangleRelative(CommonPos_t pos);
+void UiUtils_FillRectangleRelative(CommonPos_t pos);
 
 #endif

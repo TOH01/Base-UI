@@ -85,6 +85,7 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
          if (widget){
             widget->onClick(widget);
+            InvalidateRect(hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
             return 1;
          }
 
@@ -108,6 +109,7 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    #endif 
 
    InvalidateRect(hwnd, NULL, FALSE);
+
 }
 
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){

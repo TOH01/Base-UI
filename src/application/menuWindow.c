@@ -5,6 +5,7 @@
 #include "widget.h"
 #include <stdio.h>
 #include "costumButton.h"
+#include "costumCheckbox.h"
 
 int menu1_key;
 int menu2_key;
@@ -74,8 +75,10 @@ LRESULT Menu2_WmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     }
 }
 
+bool checkbox1value = 0;
+
 void button1Handler(void){
-    printf("BUTTON 1 CLICKED\n");
+    printf("BUTTON 1 CLICKED, Checkbox 1 Value : %d\n", checkbox1value);
 }
 
 void MenuUi_SubmenuInitAll(void){
@@ -100,10 +103,13 @@ void MenuUi_SubmenuInitAll(void){
     container_t * container = MenuUi_SubmenuAddContainer(menu2_key, pos);
     
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
-
+    CommonPos_t posCheckbox = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(60), UI_UTILS_PERCENT(60)};
+    
     buttonWidget_t * button = initButton(posButton, &button1Handler);
+    checkboxWidget_t * checkbox = initCheckbox(posCheckbox, &checkbox1value);
 
     containerAddWidget(container, (BaseWidget_t *) button);
+    containerAddWidget(container, (BaseWidget_t *) checkbox);
 
 }
 
