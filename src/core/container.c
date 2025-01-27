@@ -84,7 +84,7 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
          BaseWidget_t * widget = widgetClicked(x, y, submenu->containers[i]->widgetList);
 
          if (widget){
-            widget->onClick(widget);
+            widget->onClick(widget, x, y);
             InvalidateRect(hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
             return 1;
          }

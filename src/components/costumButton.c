@@ -2,9 +2,9 @@
 #include "costumButton.h"
 #include "UiUtils.h"
 
-void drawButton(BaseWidget_t * button){
+void drawButton(BaseWidget_t * baseWidget){
     SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
-    UiUitls_DrawRectangleRelative(button->pos);
+    UiUitls_DrawRectangleRelative(baseWidget->pos);
 }
 
 void onClickButton(BaseWidget_t * button){
