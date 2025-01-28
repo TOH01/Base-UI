@@ -15,7 +15,7 @@ void drawCheckbox(BaseWidget_t * baseWidget){
 
 }
 
-void onClickCheckbox(BaseWidget_t * baseWidget){
+void onClickCheckbox(BaseWidget_t * baseWidget, int x, int y){
     checkboxWidget_t * checkbox = (checkboxWidget_t *) baseWidget;
     *(checkbox->value) = !*(checkbox->value);
 }

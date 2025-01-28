@@ -3,10 +3,8 @@
 #include "MenuUi.h"
 #include <stdio.h>
 
-#ifndef DISABLE_MENU
 container_t * containerList[50];
-int currentIdx = 0;
-#endif
+int currentWindowContainerIdx = 0;
 
 movingContainer_t movingContainer;
 
@@ -29,13 +27,16 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
       
    }
 
-   #elif defined(DISABLE_MENU)
-   for (int i = 0; i < currentIdx; i++){
-      redrawContainer(containerList[i]);
-      renderWidgetList(submenu->containers[i]->widgetList);
-   }
    #endif
 
+   for (int i = 0; i < currentWindowContainerIdx; i++){
+      redrawContainer(containerList[i]);
+      
+      if(!movingContainer.action){
+         renderWidgetList(containerList[i]->widgetList);
+      }
+   }
+   
 }
 
 LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
@@ -61,6 +62,43 @@ void moveContainerOnTop(container_t * containerArray[], int idx){
 LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    int x = LOWORD(lParam); // Horizontal position in client area
    int y = HIWORD(lParam); // Vertical position in client area
+
+      for (int i = 0; i < currentWindowContainerIdx; i++){
+      
+      if (UiUtils_CoordinateIsOnBorderOf(x, y, containerList[i]->borderWitdh, containerList[i]->pos)){
+         if (!movingContainer.action){
+            movingContainer.startPos = containerList[i]->pos;
+            movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, containerList[i]->borderWitdh, containerList[i]->pos);
+            movingContainer.container = containerList[i];
+            movingContainer.mouseStartX = x;
+            movingContainer.mouseStartY = y;
+            return 1;
+         }
+      }
+      
+      if (UiUtils_CoordinateIsInsideOf(x, y, containerList[i]->pos)){
+         
+         BaseWidget_t * widget = widgetClicked(x, y, containerList[i]->widgetList);
+
+         if (widget){
+            widget->onClick(widget, x, y);
+            InvalidateRect(hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
+            return 1;
+         }
+
+         if (!movingContainer.action){
+            movingContainer.startPos = containerList[i]->pos;
+            movingContainer.action = CONTAINER_MOVE_ACTION;
+            movingContainer.container = containerList[i];
+            movingContainer.mouseStartX = x;
+            movingContainer.mouseStartY = y;
+            moveContainerOnTop(containerList, i);
+            return 1;
+         }
+
+      }
+   
+   }
 
    #ifndef DISABLE_MENU
   
@@ -95,45 +133,27 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
             movingContainer.container = submenu->containers[i];
             movingContainer.mouseStartX = x;
             movingContainer.mouseStartY = y;
+            moveContainerOnTop(submenu->containers, i);
             return 1;
          }
       }
    
    }
 
-   #elif defined(DISABLE_MENU)
-   for (int i = 0; i < currentIdx; i++){
-      printf("%d", UiUtils_CoordinateIsInsideOf(x, y, containerList[i]->pos));
-      printf("%d\n", UiUtils_CoordinateIsOnBorderOf(x, y, containerList[i]->borderWidth, containerList[i]->pos));
-   }
-   #endif 
-
-   InvalidateRect(hwnd, NULL, FALSE);
+   #endif
 
 }
 
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    if (movingContainer.action){
+      
+      updatePosToContainerList(movingContainer.container->pos, movingContainer.container->widgetList);
+
       movingContainer.action = 0;
 
-      #ifndef DISABLE_MENU
-  
-      MenuUi_Submenu_t * submenu = getGurrentSubmenu();
-
-      for (int i = 0; i < submenu->containerIdx; i++){
-
-            WidgetList_t * list = submenu->containers[i]->widgetList;
-
-            updatePosToContainerList(movingContainer.container->pos, list);
-      }
-
-      #elif defined(DISABLE_MENU)
-
-      #endif
-
-      InvalidateRect(hwnd, NULL, FALSE);
-
    }
+
+   InvalidateRect(hwnd, NULL, FALSE);
 
 }
 
@@ -210,4 +230,23 @@ container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerT
 void containerAddWidget(container_t * container, BaseWidget_t * widget){
    widget->pos = getPosToContainer(container->pos, widget->pos);
    addWidget(container->widgetList, widget);
+}
+
+container_t * windowAddContainer(CommonPos_t pos){
+   
+   #ifndef DISABLE_MENU
+   // each submenu has their own container handlers, which will automatically handle shared containers aswell
+   // setting hasContainerHandles to true, will prevent handlers being called twice
+
+   currentWindowState.wmParamHashTable->hasContainerHandlers = 1; 
+   #endif
+   
+   
+   container_t * container = initContainer(pos, currentWindowState.wmParamHashTable);
+
+   containerList[currentWindowContainerIdx] = container;
+
+   currentWindowContainerIdx++;
+
+   return container;
 }

@@ -31,9 +31,12 @@ void MenuUi_SubmenuInitAll(void){
     menu2_key = MenuUi_SubmenuInit(menu2_name);
 
     CommonPos_t pos = {UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50)};
+    CommonPos_t pos2 = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(100)};
 
     container_t * container1 = MenuUi_SubmenuAddContainer(menu1_key, pos);
     container_t * container2 = MenuUi_SubmenuAddContainer(menu2_key, pos);
+
+    container_t * sharedContainer = windowAddContainer(pos2);
     
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
     CommonPos_t posCheckbox = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(60), UI_UTILS_PERCENT(60)};

@@ -7,7 +7,7 @@ void drawButton(BaseWidget_t * baseWidget){
     UiUitls_DrawRectangleRelative(baseWidget->pos);
 }
 
-void onClickButton(BaseWidget_t * button){
+void onClickButton(BaseWidget_t * button, int x, int y){
     buttonWidget_t * buttonWidget = (buttonWidget_t *) button;
     buttonWidget->onClickUserCallback();
 }

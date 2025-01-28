@@ -26,5 +26,6 @@ typedef struct movingContainer_t {
 
 container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerTable);
 void containerAddWidget(container_t * container, BaseWidget_t * widget);
+container_t * windowAddContainer(CommonPos_t pos);
 
 #endif
