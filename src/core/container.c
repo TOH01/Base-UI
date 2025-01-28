@@ -21,7 +21,7 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
    for (int i = 0; i < submenu->containerIdx; i++){
       redrawContainer(submenu->containers[i]);
-      if(!movingContainer.action){
+      if(!(movingContainer.action && submenu->containers[i] == movingContainer.container)){
          renderWidgetList(submenu->containers[i]->widgetList);
       }
       
@@ -32,7 +32,7 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    for (int i = 0; i < currentWindowContainerIdx; i++){
       redrawContainer(containerList[i]);
       
-      if(!movingContainer.action){
+      if(! (movingContainer.action && containerList[i] == movingContainer.container)){
          renderWidgetList(containerList[i]->widgetList);
       }
    }
