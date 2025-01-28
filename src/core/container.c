@@ -13,30 +13,73 @@ void redrawContainer(container_t * container){
    UiUitls_DrawRectangleRelative(container->pos);
 }
 
+void redrawContainerList(container_t * containers[], int num){
+   for (int i = 0; i < num; i++){
+      redrawContainer(containers[i]);
+      if(!(movingContainer.action && containers[i] == movingContainer.container)){
+         renderWidgetList(containers[i]->widgetList);
+      }
+      
+   }
+}
+
+/* 
+
+return: true if need redraw
+
+*/
+
+bool containerListLButtonDown(container_t * containers[], int num, int x, int y){
+   for (int i = 0; i < num; i++){
+      
+      if (UiUtils_CoordinateIsOnBorderOf(x, y, containers[i]->borderWitdh, containers[i]->pos)){
+         if (!movingContainer.action){
+            movingContainer.startPos = containers[i]->pos;
+            movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, containers[i]->borderWitdh, containers[i]->pos);
+            movingContainer.container = containers[i];
+            movingContainer.mouseStartX = x;
+            movingContainer.mouseStartY = y;
+            return 0;
+         }
+      }
+      
+      if (UiUtils_CoordinateIsInsideOf(x, y, containers[i]->pos)){
+         
+         BaseWidget_t * widget = widgetClicked(x, y, containers[i]->widgetList);
+
+         if (widget){
+            widget->onClick(widget, x, y);
+            return 1;
+         }
+
+         if (!movingContainer.action){
+            movingContainer.startPos = containers[i]->pos;
+            movingContainer.action = CONTAINER_MOVE_ACTION;
+            movingContainer.container = containers[i];
+            movingContainer.mouseStartX = x;
+            movingContainer.mouseStartY = y;
+            moveContainerOnTop(containers, i);
+            return 0;
+         }
+
+      }
+   
+   }
+}
+
+
 LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    
    #ifndef DISABLE_MENU
   
    MenuUi_Submenu_t * submenu = getGurrentSubmenu();
 
-   for (int i = 0; i < submenu->containerIdx; i++){
-      redrawContainer(submenu->containers[i]);
-      if(!(movingContainer.action && submenu->containers[i] == movingContainer.container)){
-         renderWidgetList(submenu->containers[i]->widgetList);
-      }
-      
-   }
+   redrawContainerList(submenu->containers, submenu->containerIdx);
 
    #endif
 
-   for (int i = 0; i < currentWindowContainerIdx; i++){
-      redrawContainer(containerList[i]);
-      
-      if(! (movingContainer.action && containerList[i] == movingContainer.container)){
-         renderWidgetList(containerList[i]->widgetList);
-      }
-   }
-   
+   redrawContainerList(containerList, currentWindowContainerIdx);
+
 }
 
 LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
@@ -63,84 +106,21 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    int x = LOWORD(lParam); // Horizontal position in client area
    int y = HIWORD(lParam); // Vertical position in client area
 
-      for (int i = 0; i < currentWindowContainerIdx; i++){
-      
-      if (UiUtils_CoordinateIsOnBorderOf(x, y, containerList[i]->borderWitdh, containerList[i]->pos)){
-         if (!movingContainer.action){
-            movingContainer.startPos = containerList[i]->pos;
-            movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, containerList[i]->borderWitdh, containerList[i]->pos);
-            movingContainer.container = containerList[i];
-            movingContainer.mouseStartX = x;
-            movingContainer.mouseStartY = y;
-            return 1;
-         }
-      }
-      
-      if (UiUtils_CoordinateIsInsideOf(x, y, containerList[i]->pos)){
-         
-         BaseWidget_t * widget = widgetClicked(x, y, containerList[i]->widgetList);
+   bool needRedraw = 0;
 
-         if (widget){
-            widget->onClick(widget, x, y);
-            InvalidateRect(hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
-            return 1;
-         }
-
-         if (!movingContainer.action){
-            movingContainer.startPos = containerList[i]->pos;
-            movingContainer.action = CONTAINER_MOVE_ACTION;
-            movingContainer.container = containerList[i];
-            movingContainer.mouseStartX = x;
-            movingContainer.mouseStartY = y;
-            moveContainerOnTop(containerList, i);
-            return 1;
-         }
-
-      }
-   
-   }
+   needRedraw = needRedraw | containerListLButtonDown(containerList, currentWindowContainerIdx, x, y);
 
    #ifndef DISABLE_MENU
   
    MenuUi_Submenu_t * submenu = getGurrentSubmenu();
 
-   for (int i = 0; i < submenu->containerIdx; i++){
-      
-      if (UiUtils_CoordinateIsOnBorderOf(x, y, submenu->containers[i]->borderWitdh, submenu->containers[i]->pos)){
-         if (!movingContainer.action){
-            movingContainer.startPos = submenu->containers[i]->pos;
-            movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, submenu->containers[i]->borderWitdh, submenu->containers[i]->pos);
-            movingContainer.container = submenu->containers[i];
-            movingContainer.mouseStartX = x;
-            movingContainer.mouseStartY = y;
-            return 1;
-         }
-      }
-      
-      if (UiUtils_CoordinateIsInsideOf(x, y, submenu->containers[i]->pos)){
-         
-         BaseWidget_t * widget = widgetClicked(x, y, submenu->containers[i]->widgetList);
-
-         if (widget){
-            widget->onClick(widget, x, y);
-            InvalidateRect(hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
-            return 1;
-         }
-
-         if (!movingContainer.action){
-            movingContainer.startPos = submenu->containers[i]->pos;
-            movingContainer.action = CONTAINER_MOVE_ACTION;
-            movingContainer.container = submenu->containers[i];
-            movingContainer.mouseStartX = x;
-            movingContainer.mouseStartY = y;
-            moveContainerOnTop(submenu->containers, i);
-            return 1;
-         }
-      }
-   
-   }
+   needRedraw = needRedraw | containerListLButtonDown(submenu->containers, submenu->containerIdx, x, y);
 
    #endif
+
+   if (needRedraw){
+      InvalidateRect(hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
+   }
 
 }
 
