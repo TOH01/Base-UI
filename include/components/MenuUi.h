@@ -27,11 +27,11 @@
 typedef struct container_t container_t;
 #define containerPos_t CommonPos_t
 
+extern container_t * topContainer;
+
 typedef struct {
     
     int SubmenuID;                                          // unique submenu id
-    button_t SubmenuLoadButton;                             // button struct for button in the main menu to load submenu, will be initialized by MenuUi.c
-    HWND hSubmenuLoadButton;                                // handle of described button
     WmParamHandlerTable_t * WmParamHashTable;               // hashtable of callbacks
     container_t * containers[MENU_UI_MAX_CONTAINER];
     int containerIdx;

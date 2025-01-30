@@ -6,6 +6,10 @@
 container_t * containerList[50];
 int currentWindowContainerIdx = 0;
 
+container_t * topContainer = NULL;
+container_t ** topContainerList;
+int topContainerIdx;
+
 movingContainer_t movingContainer;
 
 void redrawContainer(container_t * container){
@@ -23,12 +27,27 @@ void redrawContainerList(container_t * containers[], int num){
    }
 }
 
+void moveContainerOnTop(container_t * containerArray[], int idx){
+   
+
+   if (topContainer != containerArray[idx]){
+      
+      if(topContainer){
+         topContainerList[topContainerIdx] = topContainer;
+      }
+      
+      topContainer = containerArray[idx];
+      topContainerList = containerArray;
+      topContainerIdx = idx;
+
+   }
+
+}
+
+
 /* 
-
-return: true if need redraw
-
+return: true if click was inside of or on border of container from param containers[]
 */
-
 bool containerListLButtonDown(container_t * containers[], int num, int x, int y){
    for (int i = 0; i < num; i++){
       
@@ -39,7 +58,7 @@ bool containerListLButtonDown(container_t * containers[], int num, int x, int y)
             movingContainer.container = containers[i];
             movingContainer.mouseStartX = x;
             movingContainer.mouseStartY = y;
-            return 0;
+            return 1;
          }
       }
       
@@ -49,6 +68,7 @@ bool containerListLButtonDown(container_t * containers[], int num, int x, int y)
 
          if (widget){
             widget->onClick(widget, x, y);
+            InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
             return 1;
          }
 
@@ -59,12 +79,15 @@ bool containerListLButtonDown(container_t * containers[], int num, int x, int y)
             movingContainer.mouseStartX = x;
             movingContainer.mouseStartY = y;
             moveContainerOnTop(containers, i);
-            return 0;
+            return 1;
          }
 
       }
    
    }
+
+   return 0;
+
 }
 
 
@@ -80,47 +103,37 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
    redrawContainerList(containerList, currentWindowContainerIdx);
 
+   if(topContainer){
+      redrawContainerList(&topContainer, 1);
+   }
+   
 }
 
 LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    InvalidateRect(hwnd, NULL, FALSE);
 }
 
-void moveContainerOnTop(container_t * containerArray[], int idx){
-   
-   if (idx == 0){
-      return; //container is already at the top
-   }
-   
-   container_t * topContainer = containerArray[idx];
-
-   for (int i = idx; i > 0; i--){
-      containerArray[i] = containerArray[i -1];
-   }
-
-   containerArray[0] = topContainer;
-
-}
-
 LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    int x = LOWORD(lParam); // Horizontal position in client area
    int y = HIWORD(lParam); // Vertical position in client area
 
-   bool needRedraw = 0;
+   bool widgetClicked = 0;
 
-   needRedraw = needRedraw | containerListLButtonDown(containerList, currentWindowContainerIdx, x, y);
+   if (topContainer){
+      widgetClicked = widgetClicked | containerListLButtonDown(&topContainer, 1, x, y);
+   }
+   
+   if(!widgetClicked){
+      widgetClicked = widgetClicked | containerListLButtonDown(containerList, currentWindowContainerIdx, x, y);
+   }
 
    #ifndef DISABLE_MENU
-  
-   MenuUi_Submenu_t * submenu = getGurrentSubmenu();
+   if(!widgetClicked){
+      MenuUi_Submenu_t * submenu = getGurrentSubmenu();
 
-   needRedraw = needRedraw | containerListLButtonDown(submenu->containers, submenu->containerIdx, x, y);
-
-   #endif
-
-   if (needRedraw){
-      InvalidateRect(hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
+      widgetClicked = widgetClicked | containerListLButtonDown(submenu->containers, submenu->containerIdx, x, y);
    }
+   #endif
 
 }
 

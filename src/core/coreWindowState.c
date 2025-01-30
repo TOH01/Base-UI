@@ -9,3 +9,8 @@ WindowState_t currentWindowState = {
     .ps = NULL,
     .hdc = NULL,
 };
+
+LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    currentWindowState.hwnd = hwnd;
+}

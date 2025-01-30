@@ -6,9 +6,10 @@
 
 typedef struct ButtonWidget {
     BaseWidget_t baseWidget;
-    void ( * onClickUserCallback) (void);
+    int id;
+    void ( * onClickUserCallback) (int);
 } buttonWidget_t;
 
-buttonWidget_t * initButton(CommonPos_t pos, void (*onClickUserCallback)(void));
+buttonWidget_t * initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id);
 
 #endif

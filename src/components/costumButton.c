@@ -7,18 +7,19 @@ void drawButton(BaseWidget_t * baseWidget){
     UiUitls_DrawRectangleRelative(baseWidget->pos);
 }
 
-void onClickButton(BaseWidget_t * button, int x, int y){
-    buttonWidget_t * buttonWidget = (buttonWidget_t *) button;
-    buttonWidget->onClickUserCallback();
+void onClickButton(BaseWidget_t * base, int x, int y){
+    buttonWidget_t * button = (buttonWidget_t *) base;
+    button->onClickUserCallback(button->id);
 }
 
-buttonWidget_t * initButton(CommonPos_t pos, void (*onClickUserCallback)(void)){
+buttonWidget_t * initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id){
     buttonWidget_t * button = (buttonWidget_t *) calloc(1, sizeof(buttonWidget_t));
     button->baseWidget.drawHandler = &drawButton;
     button->baseWidget.initPos = pos; 
     button->baseWidget.pos = pos;
     button->baseWidget.onClick = &onClickButton;
     button->onClickUserCallback = onClickUserCallback;
+    button->id = id;
     return button;
 }
 

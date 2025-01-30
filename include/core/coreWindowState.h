@@ -12,6 +12,9 @@ typedef struct WindowState{
     PAINTSTRUCT ps;
     HDC memHDC;
     HBITMAP memBitmap;
+    HWND hwnd;
 } WindowState_t;
+
+LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #endif

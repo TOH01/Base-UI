@@ -9,12 +9,6 @@
 
 #define buttonPos_t CommonPos_t
 
-typedef struct button{
-    buttonPos_t pos;
-    char name[30];
-    int wParam;
-} button_t;
-
 typedef enum{
     TOP = 1,
     RIGHT = 2,
@@ -22,8 +16,7 @@ typedef enum{
     LEFT = 4,
 } Borders;
 
-HWND UiUtils_initButton(HWND hwnd, button_t button);
-void UiUtils_moveButton(HWND hwnd, buttonPos_t pos, int width, int height);
+
 void UiUtils_CreatePens(void);
 void UiUitls_DrawRectangleRelative(CommonPos_t pos);
 bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos);

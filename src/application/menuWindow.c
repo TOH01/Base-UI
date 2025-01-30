@@ -18,8 +18,8 @@ void InitialzeHandlers(void){
     MenuUi_InitBaseHandlers();
 }
 
-void button1Handler(void){
-    printf("BUTTON 1 CLICKED, Checkbox 1 Value : %d\n", checkbox1value);
+void button1Handler(int id){
+    printf("BUTTON %d CLICKED, Checkbox  Value : %d\n", id, checkbox1value);
 }
 
 void MenuUi_SubmenuInitAll(void){
@@ -42,7 +42,7 @@ void MenuUi_SubmenuInitAll(void){
     CommonPos_t posCheckbox = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(60), UI_UTILS_PERCENT(60)};
     CommonPos_t posSlider = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(20)};
     
-    buttonWidget_t * button = initButton(posButton, &button1Handler);
+    buttonWidget_t * button = initButton(posButton, &button1Handler, 1);
     checkboxWidget_t * checkbox = initCheckbox(posCheckbox, &checkbox1value);
     sliderWidget_t * slider = initSlider(posSlider, &sliderValue, 5);
 

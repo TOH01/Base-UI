@@ -2,6 +2,8 @@
 #include "common.h"
 #include "MenuUi.h"
 #include "UiUtils.h"
+#include "container.h"
+#include "costumButton.h"
 #include <stdio.h>
 
 #define MENU_UI_SUBMENU_MAX 10
@@ -13,6 +15,11 @@ int MenuUi_currentSubmenuIdx = 0;
 
 int MenuUi_SubmenuIdCounter = MENU_UI_SUBMENU_START_ID;
 MenuUi_Submenu_t submenus[MENU_UI_SUBMENU_MAX];
+
+container_t * sidebarContainer = NULL;
+
+const CommonPos_t sidebarPos = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(15), UI_UTILS_PERCENT(100)};
+CommonPos_t sidebarButtonPos = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(5), UI_UTILS_PERCENT(90), UI_UTILS_PERCENT(15)};
 
 container_t * MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos){
     MenuUi_Submenu_t * submenu = &submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)];
@@ -26,6 +33,24 @@ container_t * MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos){
     return container;
 }
 
+
+void MenuUi_SubmenuSwap(int menuId) {
+
+    if (MENU_UI_SUBMENU_GET_IDX(menuId) == MenuUi_currentSubmenuIdx){
+        return;
+    }
+
+    MenuUi_SubmenuCommandHandler(currentWindowState.hwnd, MENU_UI_SUBMENU_DESTROY_ID, 0, 0);
+
+    MenuUi_currentSubmenuIdx = MENU_UI_SUBMENU_GET_IDX(menuId);
+ 
+    MenuUi_SubmenuCommandHandler(currentWindowState.hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
+
+    topContainer = NULL;
+
+    InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+}
+
 MenuUi_Submenu_t * getGurrentSubmenu(void){
     return &(submenus[MenuUi_currentSubmenuIdx]);
 }
@@ -36,28 +61,25 @@ int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]){
         return -1;
     }
 
+    if (sidebarContainer == NULL){
+        sidebarContainer = windowAddContainer(sidebarPos);
+    }
+
     MenuUi_Submenu_t * submenu = (MenuUi_Submenu_t *) calloc(1, sizeof(MenuUi_Submenu_t));
     
     submenu->SubmenuID = MenuUi_SubmenuIdCounter;
     MenuUi_SubmenuIdCounter++;
     
-    button_t MenuUi_SubmenuLoadButton = {
-        .wParam = submenu->SubmenuID,
-        .pos = {
-            .spacingTop = MENU_UI_BUTTON_GET_START_Y((MENU_UI_SUBMENU_GET_IDX(submenu->SubmenuID))),
-            .height = MENU_UI_BUTTON_HEIGHT,
-            .spacingLeft = MENU_UI_BUTTON_SPACING_LEFT,
-            .width = MENU_UI_BUTTON_WIDTH,
-        },
-    };
-
     submenu->WmParamHashTable = WmParamHandlerTable_Init();
 
-    memcpy(MenuUi_SubmenuLoadButton.name, name, MENU_UI_MAX_NAME_LENGTH);
-
-    submenu->SubmenuLoadButton = MenuUi_SubmenuLoadButton;
-
     submenus[MENU_UI_SUBMENU_GET_IDX(submenu->SubmenuID)] = *submenu;
+
+
+    buttonWidget_t * sidebarButton = initButton(sidebarButtonPos, &MenuUi_SubmenuSwap , submenu->SubmenuID);
+
+    containerAddWidget(sidebarContainer, (BaseWidget_t *) sidebarButton);
+    sidebarButtonPos.spacingTop += 0.1f;
+    sidebarButtonPos.height += 0.1f;
 
     return submenu->SubmenuID;
 }
@@ -75,29 +97,6 @@ void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, int Menu
     WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)].WmParamHashTable, WmParamKey, handler);
 }
 
-void MenuUi_RenderMenuButtons(HWND hwnd){
-            
-        for (int i = 0; i < MENU_UI_SUBMENU_GET_IDX(MenuUi_SubmenuIdCounter); i++){
-            if ((submenus[i]).SubmenuLoadButton.wParam != 0){
-                submenus[i].hSubmenuLoadButton = UiUtils_initButton(hwnd, submenus[i].SubmenuLoadButton);
-            }
-        }
-}
-
-void MenuUi_SubmenuSwap(HWND hwnd, int menuId) {
-
-    if (MENU_UI_SUBMENU_GET_IDX(menuId) == MenuUi_currentSubmenuIdx){
-        return;
-    }
-
-    MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_DESTROY_ID, 0, 0);
-
-    MenuUi_currentSubmenuIdx = MENU_UI_SUBMENU_GET_IDX(menuId);
-
-    MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
-
-    InvalidateRect(hwnd, NULL, FALSE);
-}
 
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id){
     WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_LOAD_ID, handler);
@@ -107,35 +106,8 @@ void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, int id){
     WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_DESTROY_ID, handler);
 }
 
-void MenuUi_ResizeSidebar(int width, int height){
-
-    for (int i = 0; i < MENU_UI_SUBMENU_GET_IDX(MenuUi_SubmenuIdCounter); i++){
-        UiUtils_moveButton(submenus[i].hSubmenuLoadButton, submenus[i].SubmenuLoadButton.pos, width, height);
-    }
-
-}
-
-bool MenuUi_IsSidebarCommand(WORD commandId){
-    
-    for (int i = 0; i < MENU_UI_SUBMENU_GET_IDX(MenuUi_SubmenuIdCounter); i++){
-        if (commandId == submenus[i].SubmenuID){
-            return true;
-        }
-    }
-
-    return false;
-
-}
-
-void MenuUi_DrawSidebar(HWND hwnd, int width, int height){
-    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
-    Rectangle(currentWindowState.memHDC, 0, 0, UI_UTILS_CALCULATE_PERCENTAGE(width, MENU_UI_MENU_WIDTH_PERCENTAGE), height);
-}
-
 LRESULT MenuUi_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-
-    MenuUi_RenderMenuButtons(hwnd);
 
     // make sure that base submenu is loaded, when creating window
 
@@ -158,26 +130,10 @@ LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         currentWindowState.currentHeight = HIWORD(lParam);
     }
 
-    MenuUi_ResizeSidebar(currentWindowState.currentWidth,  currentWindowState.currentHeight);
-
 }
 
-LRESULT MenuUi_WmPaintHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    MenuUi_DrawSidebar(hwnd, currentWindowState.currentWidth,  currentWindowState.currentHeight);
-}
-
-LRESULT MenuUi_WmCommandHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    if (MenuUi_IsSidebarCommand(LOWORD(wParam)))
-    {
-        MenuUi_SubmenuSwap(hwnd, LOWORD(wParam));
-    }
-}
 
 void MenuUi_InitBaseHandlers(void){
     WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_CREATE, &MenuUi_WmCreateHook);
     WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_SIZE, &MenuUi_WmSizeHook);
-    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_PAINT, &MenuUi_WmPaintHook);
-    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_COMMAND, &MenuUi_WmCommandHook);
 }
