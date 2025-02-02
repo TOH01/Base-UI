@@ -43,6 +43,8 @@ void MenuUi_SubmenuInitAll(void){
     CommonPos_t posSlider = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(20)};
     
     buttonWidget_t * button = initButton(posButton, &button1Handler, 1);
+    buttonSetText(button, "Test");
+
     checkboxWidget_t * checkbox = initCheckbox(posCheckbox, &checkbox1value);
     sliderWidget_t * slider = initSlider(posSlider, &sliderValue, 5);
 

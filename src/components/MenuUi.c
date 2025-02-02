@@ -74,8 +74,11 @@ int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]){
 
     submenus[MENU_UI_SUBMENU_GET_IDX(submenu->SubmenuID)] = *submenu;
 
+    memcpy(submenu->name, name, MENU_UI_MAX_NAME_LENGTH);
+
 
     buttonWidget_t * sidebarButton = initButton(sidebarButtonPos, &MenuUi_SubmenuSwap , submenu->SubmenuID);
+    buttonSetText(sidebarButton, name);
 
     containerAddWidget(sidebarContainer, (BaseWidget_t *) sidebarButton);
     sidebarButtonPos.spacingTop += 0.1f;

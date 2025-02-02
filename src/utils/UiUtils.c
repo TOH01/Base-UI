@@ -19,6 +19,20 @@ void UiUtils_DrawEllipseRelative(CommonPos_t pos){
     Ellipse(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height));
 }
 
+void UiUitls_DrawText(CommonPos_t pos, char name[]){
+    
+    // adjust for border witdh
+    RECT textRect = {
+        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft) * 1.02, 
+        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop) * 1.02, 
+        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width) * 0.98, 
+        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height) * 0.98,    
+    };
+
+    DrawText(currentWindowState.memHDC, name, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);  // Left align, wrap words at edges
+
+}
+
 void UiUtils_FillRectangleRelative(CommonPos_t pos){
     HBRUSH hBrush = CreateSolidBrush(RGB(0, 255, 0));
     
