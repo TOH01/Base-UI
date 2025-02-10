@@ -7,6 +7,7 @@
 #include "costumButton.h"
 #include "costumCheckbox.h"
 #include "costumSlider.h"
+#include "costumInput.h"
 
 int menu1_key;
 int menu2_key;
@@ -41,6 +42,7 @@ void MenuUi_SubmenuInitAll(void){
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
     CommonPos_t posCheckbox = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(60), UI_UTILS_PERCENT(60)};
     CommonPos_t posSlider = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(20)};
+    CommonPos_t posInput = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
     
     buttonWidget_t * button = initButton(posButton, &button1Handler, 1);
     buttonSetText(button, "Test");
@@ -48,9 +50,12 @@ void MenuUi_SubmenuInitAll(void){
     checkboxWidget_t * checkbox = initCheckbox(posCheckbox, &checkbox1value);
     sliderWidget_t * slider = initSlider(posSlider, &sliderValue, 5);
 
+    inputWidget_t * input = initInput(posInput);
+
     containerAddWidget(container1, (BaseWidget_t *) slider);
     containerAddWidget(container2, (BaseWidget_t *) button);
     containerAddWidget(container2, (BaseWidget_t *) checkbox);
+    containerAddWidget(sharedContainer, (BaseWidget_t *) input);
 
 }
 

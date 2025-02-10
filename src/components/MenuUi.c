@@ -6,6 +6,7 @@
 #include "costumButton.h"
 #include <stdio.h>
 
+
 #define MENU_UI_SUBMENU_MAX 10
 #define MENU_UI_SUBMENU_START_ID 15100
 
@@ -35,6 +36,9 @@ container_t * MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos){
 
 
 void MenuUi_SubmenuSwap(int menuId) {
+
+    // when swapping submenu reset active input
+    activeInput = NULL;
 
     if (MENU_UI_SUBMENU_GET_IDX(menuId) == MenuUi_currentSubmenuIdx){
         return;

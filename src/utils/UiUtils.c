@@ -1,7 +1,7 @@
 #include <windows.h>
 #include "UiUtils.h"
 #include "common.h"
-
+#include "string.h"
 
 void UiUtils_CreatePens(void){
     currentWindowState.hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
@@ -21,7 +21,7 @@ void UiUtils_DrawEllipseRelative(CommonPos_t pos){
 
 void UiUitls_DrawText(CommonPos_t pos, char name[]){
     
-    // adjust for border witdh
+    // multipliers to temporarily adjust for border witdh
     RECT textRect = {
         UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft) * 1.02, 
         UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop) * 1.02, 
@@ -29,7 +29,7 @@ void UiUitls_DrawText(CommonPos_t pos, char name[]){
         UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height) * 0.98,    
     };
 
-    DrawText(currentWindowState.memHDC, name, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);  // Left align, wrap words at edges
+    DrawText(currentWindowState.memHDC, name, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);  // Left align, wrap words at edges
 
 }
 
@@ -49,6 +49,19 @@ bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos){
         }
     }
     return false;
+}
+
+bool UiUtils_TextFitsBox(char text[], CommonPos_t pos){
+    
+    SIZE textSize;
+    GetTextExtentPoint32(currentWindowState.memHDC, text, strlen(text), &textSize);
+
+    // multipliers to temporarily adjust for border witdh
+    if (textSize.cx > ((pos.width * currentWindowState.currentWidth) * 0.98 - (pos.spacingLeft * currentWindowState.currentWidth) * 1.02)) {
+        return false;
+    }
+
+    return true;
 }
 
 int UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos){

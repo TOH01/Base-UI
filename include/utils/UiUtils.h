@@ -25,5 +25,6 @@ void UiUtils_DrawRoundRectangleRelative(CommonPos_t pos);
 void UiUtils_FillRectangleRelative(CommonPos_t pos);
 void UiUtils_DrawEllipseRelative(CommonPos_t pos);
 void UiUitls_DrawText(CommonPos_t pos, char name[]);
+bool UiUtils_TextFitsBox(char text[], CommonPos_t pos);
 
 #endif

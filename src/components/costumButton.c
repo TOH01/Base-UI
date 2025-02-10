@@ -8,7 +8,11 @@ void drawButton(BaseWidget_t * baseWidget){
     SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
 
     UiUitls_DrawRectangleRelative(baseWidget->pos);
-    UiUitls_DrawText(baseWidget->pos, button->name);
+    
+    if (UiUtils_TextFitsBox(button->name, baseWidget->pos)){
+        UiUitls_DrawText(baseWidget->pos, button->name);
+    }
+
 }
 
 void onClickButton(BaseWidget_t * base, int x, int y){

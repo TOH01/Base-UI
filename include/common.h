@@ -7,6 +7,10 @@
 
 extern WindowState_t currentWindowState;
 
+typedef struct InputWidget inputWidget_t;
+
+extern inputWidget_t * activeInput;
+
 typedef struct CoomonPos{
     float spacingTop;
     float spacingLeft;

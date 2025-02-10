@@ -49,6 +49,10 @@ void moveContainerOnTop(container_t * containerArray[], int idx){
 return: true if click was inside of or on border of container from param containers[]
 */
 bool containerListLButtonDown(container_t * containers[], int num, int x, int y){
+   
+   // reset selected input, has to be done before widget callback
+   activeInput = NULL;
+   
    for (int i = 0; i < num; i++){
       
       if (UiUtils_CoordinateIsOnBorderOf(x, y, containers[i]->borderWitdh, containers[i]->pos)){
