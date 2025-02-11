@@ -29,7 +29,7 @@ void UiUitls_DrawText(CommonPos_t pos, char name[]){
         UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height) * 0.98,    
     };
 
-    DrawText(currentWindowState.memHDC, name, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);  // Left align, wrap words at edges
+    DrawText(currentWindowState.memHDC, name, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP);  // Left align, wrap words at edges
 
 }
 

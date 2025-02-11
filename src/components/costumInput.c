@@ -1,5 +1,6 @@
 #include "costumInput.h"
 #include "UiUtils.h"
+#include "string.h"
 
 bool handlerInit = 0;
 inputWidget_t * activeInput = NULL;
@@ -13,8 +14,20 @@ void drawInput(BaseWidget_t * baseWidget){
     UiUitls_DrawRectangleRelative(baseWidget->pos);
     
 
-    UiUitls_DrawText(baseWidget->pos, input->buffer);
- 
+    if(UiUtils_TextFitsBox(input->buffer, baseWidget->pos)){
+        UiUitls_DrawText(baseWidget->pos, input->buffer);
+    }
+    else {
+        int lastElementIdx = strlen(input->buffer) - 1;
+
+        while(UiUtils_TextFitsBox(&input->buffer[lastElementIdx], baseWidget->pos)){
+            lastElementIdx--;
+        }
+
+        UiUitls_DrawText(baseWidget->pos, &input->buffer[lastElementIdx]);
+
+    }
+    
 }
 
 LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
@@ -26,6 +39,15 @@ LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
         if(wParam == VK_ESCAPE){
             activeInput = NULL;
+            return 1;
+        }
+
+        if(wParam == VK_DELETE || wParam  == VK_BACK){
+            if(buffLen){
+                activeInput->buffer[buffLen - 1] = '\0';
+                InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+            }
+            
             return 1;
         }
 
