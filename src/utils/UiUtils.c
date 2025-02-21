@@ -3,6 +3,7 @@
 #include "common.h"
 #include "string.h"
 
+
 void UiUtils_CreatePens(void){
     currentWindowState.hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 }
@@ -19,7 +20,7 @@ void UiUtils_DrawEllipseRelative(CommonPos_t pos){
     Ellipse(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height));
 }
 
-void UiUitls_DrawText(CommonPos_t pos, char name[]){
+void UiUitls_DrawText(CommonPos_t pos, char * name, UINT format){
     
     // multipliers to temporarily adjust for border witdh
     RECT textRect = {
@@ -29,7 +30,7 @@ void UiUitls_DrawText(CommonPos_t pos, char name[]){
         UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height) * 0.98,    
     };
 
-    DrawText(currentWindowState.memHDC, name, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP);  // Left align, wrap words at edges
+    DrawText(currentWindowState.memHDC, name, -1, &textRect, format);  // Left align, wrap words at edges
 
 }
 
@@ -95,3 +96,4 @@ int UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t po
 
     return false;
 }
+

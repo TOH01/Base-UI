@@ -24,7 +24,7 @@ int UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t po
 void UiUtils_DrawRoundRectangleRelative(CommonPos_t pos);
 void UiUtils_FillRectangleRelative(CommonPos_t pos);
 void UiUtils_DrawEllipseRelative(CommonPos_t pos);
-void UiUitls_DrawText(CommonPos_t pos, char name[]);
+void UiUitls_DrawText(CommonPos_t pos, char * name, UINT format);
 bool UiUtils_TextFitsBox(char text[], CommonPos_t pos);
 
 #endif

@@ -8,12 +8,15 @@
 #include "costumCheckbox.h"
 #include "costumSlider.h"
 #include "costumInput.h"
+#include "textDump.h"
 
 int menu1_key;
 int menu2_key;
 
 bool checkbox1value = 0;
 int sliderValue = 2;
+
+char text[] = "DAS IST EIN TEST: TES:T TEST:TA:TAOJTISARHAISHFAIFHAISHFIAFA";
 
 void InitialzeHandlers(void){
     MenuUi_InitBaseHandlers();
@@ -33,11 +36,19 @@ void MenuUi_SubmenuInitAll(void){
 
     CommonPos_t pos = {UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50)};
     CommonPos_t pos2 = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(100)};
+    CommonPos_t pos3 = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(50)};
+    CommonPos_t pos4 = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(100)};
 
     container_t * container1 = MenuUi_SubmenuAddContainer(menu1_key, pos);
     container_t * container2 = MenuUi_SubmenuAddContainer(menu2_key, pos);
 
+    container_t * textDumpContainer = windowAddContainer(pos3);
+    
+    textDumpWidget_t * textDump = initTextDump(pos4, text);
+
     container_t * sharedContainer = windowAddContainer(pos2);
+
+    containerAddWidget(textDumpContainer, (BaseWidget_t *)textDump);
     
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
     CommonPos_t posCheckbox = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(60), UI_UTILS_PERCENT(60)};

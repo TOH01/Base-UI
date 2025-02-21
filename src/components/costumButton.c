@@ -10,7 +10,7 @@ void drawButton(BaseWidget_t * baseWidget){
     UiUitls_DrawRectangleRelative(baseWidget->pos);
     
     if (UiUtils_TextFitsBox(button->name, baseWidget->pos)){
-        UiUitls_DrawText(baseWidget->pos, button->name);
+        UiUitls_DrawText(baseWidget->pos, button->name, DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_WORDBREAK);
     }
 
 }
