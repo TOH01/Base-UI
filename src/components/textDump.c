@@ -47,7 +47,7 @@ void refreshTextDump(textDumpWidget_t * textDump){
 void AddLine(textDumpWidget_t * textDump, const char * newText){
     textLineNode_t * newNode = (textLineNode_t *)malloc(sizeof(textLineNode_t));
     
-    newNode->line = _strdup(newText);  // Duplicate string
+    newNode->line = _strdup(newText);
     newNode->nextNode = NULL;
     newNode->prevNode = NULL;
 
@@ -56,14 +56,8 @@ void AddLine(textDumpWidget_t * textDump, const char * newText){
         textDump->currentLine = newNode;
     } 
     else {
-        textLineNode_t * temp = textDump->firstLine;
-        
-        while (temp->nextNode){
-            temp = temp->nextNode;
-        } 
-        
-        temp->nextNode = newNode;
-        newNode->prevNode = temp;
+        textDump->lastLine->nextNode = newNode;
+        newNode->prevNode = textDump->lastLine;
     }
 
     textDump->lastLine = newNode;
@@ -73,22 +67,30 @@ void AddLine(textDumpWidget_t * textDump, const char * newText){
 LRESULT scrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    
     if(activeTextDump){
-        int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-
-        if(delta > 0){
-            if(activeTextDump->currentLine != activeTextDump->firstLine){
-                activeTextDump->currentLine = activeTextDump->currentLine->prevNode;
-                InvalidateRect(hwnd, NULL, FALSE);
-            }
-        }
-        else{
+        
+        POINT mousePos;
+        GetCursorPos(&mousePos);
+        ScreenToClient(hwnd, &mousePos); 
             
-            if(activeTextDump->currentLine != activeTextDump->lastLine){
-                activeTextDump->currentLine = activeTextDump->currentLine->nextNode;
-                InvalidateRect(hwnd, NULL, FALSE);
+        if(UiUtils_CoordinateIsInsideOf(mousePos.x, mousePos.y, activeTextDump->baseWidget.pos)) {
+        
+        
+            int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+            if(delta > 0){
+                if(activeTextDump->currentLine != activeTextDump->firstLine){
+                    activeTextDump->currentLine = activeTextDump->currentLine->prevNode;
+                    InvalidateRect(hwnd, NULL, FALSE);
+                }
+            }
+            else{
+                
+                if(activeTextDump->currentLine != activeTextDump->lastLine){
+                    activeTextDump->currentLine = activeTextDump->currentLine->nextNode;
+                    InvalidateRect(hwnd, NULL, FALSE);
+                }
             }
         }
-
     }
 }    
     

@@ -11,5 +11,6 @@ typedef struct InputWidget {
 
 
 inputWidget_t * initInput(CommonPos_t pos);
+void clearInput(inputWidget_t * input);
 
 #endif

@@ -39,6 +39,7 @@ void MenuUi_SubmenuSwap(int menuId) {
 
     // when swapping submenu reset active input
     activeInput = NULL;
+    activeTextDump = NULL;
 
     if (MENU_UI_SUBMENU_GET_IDX(menuId) == MenuUi_currentSubmenuIdx){
         return;

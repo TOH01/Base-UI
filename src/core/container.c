@@ -52,6 +52,7 @@ bool containerListLButtonDown(container_t * containers[], int num, int x, int y)
    
    // reset selected input, has to be done before widget callback
    activeInput = NULL;
+   activeTextDump = NULL;
    
    for (int i = 0; i < num; i++){
       

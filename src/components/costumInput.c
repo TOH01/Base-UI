@@ -33,33 +33,38 @@ void drawInput(BaseWidget_t * baseWidget){
 LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
     if(activeInput){
-        
-        int buffLen = strlen(activeInput->buffer);
+        POINT mousePos;
+        GetCursorPos(&mousePos);
+        ScreenToClient(hwnd, &mousePos); 
+            
+        if(UiUtils_CoordinateIsInsideOf(mousePos.x, mousePos.y, activeInput->baseWidget.pos)) {
+            int buffLen = strlen(activeInput->buffer);
 
 
-        if(wParam == VK_ESCAPE){
-            activeInput = NULL;
-            return 1;
-        }
+            if(wParam == VK_ESCAPE){
+                activeInput = NULL;
+                return 1;
+            }
 
-        if(wParam == VK_DELETE || wParam  == VK_BACK){
-            if(buffLen){
-                activeInput->buffer[buffLen - 1] = '\0';
-                InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+            if(wParam == VK_DELETE || wParam  == VK_BACK){
+                if(buffLen){
+                    activeInput->buffer[buffLen - 1] = '\0';
+                    InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+                }
+                
+                return 1;
+            }
+
+            if (buffLen < 255 && wParam >= 32 && wParam <= 126){
+                activeInput->buffer[buffLen] = (char) wParam;
+                activeInput->buffer[buffLen + 1] = '\0';
             }
             
-            return 1;
+            // trigger redraw to show new letters
+            InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+    
         }
-
-        if (buffLen < 255 && wParam >= 32 && wParam <= 126){
-            activeInput->buffer[buffLen] = (char) wParam;
-            activeInput->buffer[buffLen + 1] = '\0';
-        }
-        
-        // trigger redraw to show new letters
-        InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
     }
-
 }
 
 void onClickInput(BaseWidget_t * baseWidget, int x, int y){
@@ -67,7 +72,9 @@ void onClickInput(BaseWidget_t * baseWidget, int x, int y){
     activeInput = input;
 }
 
-
+void clearInput(inputWidget_t * input){
+    strcpy(input->buffer, "");
+}
 
 inputWidget_t * initInput(CommonPos_t pos){
     inputWidget_t * input = (inputWidget_t *) calloc(1, sizeof(inputWidget_t));
