@@ -15,7 +15,7 @@ void drawInput(BaseWidget_t * baseWidget){
     
 
     if(UiUtils_TextFitsBox(input->buffer, baseWidget->pos)){
-        UiUitls_DrawText(baseWidget->pos, input->buffer);
+        UiUitls_DrawText(baseWidget->pos, input->buffer, DT_CENTER | DT_VCENTER | DT_NOCLIP);
     }
     else {
         int lastElementIdx = strlen(input->buffer) - 1;
@@ -24,7 +24,7 @@ void drawInput(BaseWidget_t * baseWidget){
             lastElementIdx--;
         }
 
-        UiUitls_DrawText(baseWidget->pos, &input->buffer[lastElementIdx]);
+        UiUitls_DrawText(baseWidget->pos, &input->buffer[lastElementIdx], DT_CENTER | DT_VCENTER | DT_NOCLIP);
 
     }
     

@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
-#include "main.h"
 #include "WmParamHashTable.h"
+#include "main.h"
 #include "UiUtils.h"
 #include "common.h"
 #include "coreWndProc.h"

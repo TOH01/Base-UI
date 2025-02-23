@@ -3,6 +3,19 @@
 #include "common.h"
 #include "string.h"
 
+RECT CommonPosToRect(CommonPos_t pos){
+    
+    RECT rect = {UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height)};
+    
+    return rect;
+}
+
+CommonPos_t RectToCommonPos(RECT rect){
+    CommonPos_t pos = {(rect.top / (float)currentWindowState.currentHeight), (rect.left / (float)currentWindowState.currentWidth), (rect.right / (float)currentWindowState.currentWidth), (rect.bottom / (float)currentWindowState.currentHeight)};
+
+    return pos;
+}
+
 
 void UiUtils_CreatePens(void){
     currentWindowState.hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
@@ -37,7 +50,7 @@ void UiUitls_DrawText(CommonPos_t pos, char * name, UINT format){
 void UiUtils_FillRectangleRelative(CommonPos_t pos){
     HBRUSH hBrush = CreateSolidBrush(RGB(0, 255, 0));
     
-    RECT rect = {UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height)};
+    RECT rect = CommonPosToRect(pos);
 
     FillRect(currentWindowState.memHDC, &rect, hBrush);
 
