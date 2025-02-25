@@ -14,21 +14,21 @@ void drawSlider(BaseWidget_t * baseWidget){
     CommonPos_t pointPos = baseWidget->pos;
     CommonPos_t barPos = baseWidget->pos;
 
-    float barWidth = baseWidget->pos.width - baseWidget->pos.spacingLeft;
-    float barHeight = baseWidget->pos.height - baseWidget->pos.spacingTop;
+    float barWidth = baseWidget->pos.right - baseWidget->pos.left;
+    float barHeight = baseWidget->pos.bottom - baseWidget->pos.top;
 
-    barPos.spacingTop = baseWidget->pos.spacingTop + (barHeight  * 0.4);
-    barPos.height = baseWidget->pos.spacingTop + (barHeight * 0.6);
+    barPos.top = baseWidget->pos.top + (barHeight  * 0.4);
+    barPos.bottom = baseWidget->pos.top + (barHeight * 0.6);
 
     float pointWidth = barWidth / (float) (slider->range);
 
-    float pointX = baseWidget->pos.spacingLeft + ((*slider->value) * (barWidth - pointWidth)) / (slider->range - 1);
+    float pointX = baseWidget->pos.left + ((*slider->value) * (barWidth - pointWidth)) / (slider->range - 1);
     
-    pointPos.spacingLeft = pointX;
-    pointPos.width = pointX + pointWidth;
+    pointPos.left = pointX;
+    pointPos.right = pointX + pointWidth;
     
-    pointPos.spacingTop = baseWidget->pos.spacingTop + (barHeight  * 0.2);
-    pointPos.height = baseWidget->pos.spacingTop + (barHeight * 0.8);
+    pointPos.top = baseWidget->pos.top + (barHeight  * 0.2);
+    pointPos.bottom = baseWidget->pos.top + (barHeight * 0.8);
 
     UiUtils_DrawRoundRectangleRelative(barPos);
     UiUtils_DrawEllipseRelative(pointPos);
@@ -38,12 +38,12 @@ void drawSlider(BaseWidget_t * baseWidget){
 void onClickSlider(BaseWidget_t * baseWidget, int x, int y){
     sliderWidget_t * slider = (sliderWidget_t *) baseWidget;
 
-    float width = (slider->baseWidget.pos.width - slider->baseWidget.pos.spacingLeft);
+    float width = (slider->baseWidget.pos.right - slider->baseWidget.pos.left);
 
     for (int i = 0; i < slider->range; i++){
         CommonPos_t pos = baseWidget->pos;
-        pos.spacingLeft = (baseWidget->pos.spacingLeft + ((width / slider->range) * i));
-        pos.width = baseWidget->pos.spacingLeft + ((width / slider->range) * (i + 1));
+        pos.left = (baseWidget->pos.left + ((width / slider->range) * i));
+        pos.right = baseWidget->pos.left + ((width / slider->range) * (i + 1));
 
         if (UiUtils_CoordinateIsInsideOf(x, y, pos)){
             *(slider->value) = i;
@@ -62,12 +62,12 @@ LRESULT mouseMoveSlider(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
         GetCursorPos(&mousePos);
         ScreenToClient(hwnd, &mousePos);
         
-        float width = (activeSlider->baseWidget.pos.width - activeSlider->baseWidget.pos.spacingLeft);
+        float width = (activeSlider->baseWidget.pos.right - activeSlider->baseWidget.pos.left);
 
         for (int i = 0; i < activeSlider->range; i++){
             CommonPos_t pos = activeSlider->baseWidget.pos;
-            pos.spacingLeft = (activeSlider->baseWidget.pos.spacingLeft + ((width / activeSlider->range) * i));
-            pos.width = activeSlider->baseWidget.pos.spacingLeft + ((width / activeSlider->range) * (i + 1));
+            pos.left = (activeSlider->baseWidget.pos.left + ((width / activeSlider->range) * i));
+            pos.right = activeSlider->baseWidget.pos.left + ((width / activeSlider->range) * (i + 1));
 
             if (UiUtils_CoordinateIsInsideOf(mousePos.x, mousePos.y, pos)){
                 *(activeSlider->value) = i;
@@ -85,7 +85,7 @@ LRESULT mouseReleaseSlider(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     }
 }
 
-sliderWidget_t * initSlider(CommonPos_t pos, int * value, int range){
+sliderWidget_t * costumSlider_initSlider(CommonPos_t pos, int * value, int range){
     sliderWidget_t * slider = (sliderWidget_t *) calloc(1, sizeof(sliderWidget_t));
     slider->baseWidget.pos = pos;
     slider->baseWidget.initPos = pos;
@@ -96,8 +96,8 @@ sliderWidget_t * initSlider(CommonPos_t pos, int * value, int range){
     slider->value = value;
 
     if(!sliderHandlersRegistered){
-        WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_MOUSEMOVE, (void *)&mouseMoveSlider);
-        WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_LBUTTONUP, (void *)&mouseReleaseSlider);
+        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, (void *)&mouseMoveSlider);
+        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONUP, (void *)&mouseReleaseSlider);
         sliderHandlersRegistered = true;
     }
 

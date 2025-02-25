@@ -10,6 +10,6 @@ typedef struct SliderWidget {
     int range;
 } sliderWidget_t;
 
-sliderWidget_t * initSlider(CommonPos_t pos, int * value, int range);
+sliderWidget_t * costumSlider_initSlider(CommonPos_t pos, int * value, int range);
 
 #endif

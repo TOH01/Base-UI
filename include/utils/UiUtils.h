@@ -14,19 +14,19 @@ typedef enum{
     RIGHT = 2,
     BOTTOM = 3,
     LEFT = 4,
-} Borders;
+} UiUtils_BorderEnum;
 
 
 void UiUtils_CreatePens(void);
-void UiUitls_DrawRectangleRelative(CommonPos_t pos);
+void UiUtils_DrawRectangleRelative(CommonPos_t pos);
 bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos);
-int UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos);
+UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos);
 void UiUtils_DrawRoundRectangleRelative(CommonPos_t pos);
 void UiUtils_FillRectangleRelative(CommonPos_t pos);
 void UiUtils_DrawEllipseRelative(CommonPos_t pos);
-void UiUitls_DrawText(CommonPos_t pos, char * name, UINT format);
+void UiUtils_DrawText(CommonPos_t pos, char * name, UINT format);
 bool UiUtils_TextFitsBox(char text[], CommonPos_t pos);
-RECT CommonPosToRect(CommonPos_t pos);
-CommonPos_t RectToCommonPos(RECT rect);
+RECT UiUtils_CommonPosToRect(CommonPos_t pos);
+CommonPos_t UiUtils_RectToCommonsPos(RECT rect);
 
 #endif

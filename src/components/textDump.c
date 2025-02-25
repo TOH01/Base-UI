@@ -12,7 +12,7 @@ void drawTextDump(BaseWidget_t * baseWidget){
     GetTextMetrics(currentWindowState.hdc, &tm);
     int lineHeight = tm.tmHeight;
 
-    RECT containerRect = CommonPosToRect(baseWidget->pos);
+    RECT containerRect = UiUtils_CommonPosToRect(baseWidget->pos);
 
     int visibleLines = (containerRect.bottom - containerRect.top) / lineHeight;  
 
@@ -21,14 +21,14 @@ void drawTextDump(BaseWidget_t * baseWidget){
     textLineNode_t * currentLine = textDump->currentLine;
 
     if(currentLine == NULL){
-        UiUitls_DrawText(baseWidget->pos, "EMPTY TEXT DUMP ERROR", DT_LEFT | DT_SINGLELINE | DT_NOCLIP);
+        UiUtils_DrawText(baseWidget->pos, "EMPTY TEXT DUMP ERROR", DT_LEFT | DT_SINGLELINE | DT_NOCLIP);
         return;
     }
 
     for (int i = 0; (i < visibleLines) && (currentLine != NULL); i++) {
         
         RECT textRect = {containerRect.left, y, containerRect.right, y + lineHeight};
-        UiUitls_DrawText(RectToCommonPos(textRect), currentLine->line, DT_LEFT | DT_SINGLELINE | DT_NOCLIP);
+        UiUtils_DrawText(UiUtils_RectToCommonsPos(textRect), currentLine->line, DT_LEFT | DT_SINGLELINE | DT_NOCLIP);
         y += lineHeight;
         currentLine = currentLine->nextNode;
     }
@@ -44,7 +44,7 @@ void refreshTextDump(textDumpWidget_t * textDump){
     InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
-void AddLine(textDumpWidget_t * textDump, const char * newText){
+void costumTextDump_AddLine(textDumpWidget_t * textDump, const char * newText){
     textLineNode_t * newNode = (textLineNode_t *)malloc(sizeof(textLineNode_t));
     
     newNode->line = _strdup(newText);
@@ -96,7 +96,7 @@ LRESULT scrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     
 
 
-textDumpWidget_t * initTextDump(CommonPos_t pos){
+textDumpWidget_t * costumTextDump_initTextDump(CommonPos_t pos){
     textDumpWidget_t * textDump = (textDumpWidget_t *) calloc(1, sizeof(textDumpWidget_t));
     textDump->baseWidget.pos = pos;
     textDump->baseWidget.initPos = pos;
@@ -104,7 +104,7 @@ textDumpWidget_t * initTextDump(CommonPos_t pos){
     textDump->baseWidget.drawHandler = &drawTextDump;
 
     if(!scrollCallbackRegisters){
-        WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_MOUSEWHEEL, &scrollCallback);
+        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEWHEEL, &scrollCallback);
         scrollCallbackRegisters = true;
     }
 

@@ -9,6 +9,6 @@ typedef struct CheckboxWidget {
     bool * value;
 } checkboxWidget_t;
 
-checkboxWidget_t * initCheckbox(CommonPos_t pos, bool * value);
+checkboxWidget_t * costumCheckbox_initCheckbox(CommonPos_t pos, bool * value);
 
 #endif

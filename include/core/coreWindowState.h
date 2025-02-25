@@ -4,9 +4,9 @@
 #include "WmParamHashTable.h"
 
 typedef struct WindowState{
-    int currentWidth;
-    int currentHeight;
-    WmParamHandlerTable_t * wmParamHashTable;
+    int width;
+    int height;
+    WmParamHandlerTable_t * handlerTable;
     HDC hdc;
     HPEN hPen;
     PAINTSTRUCT ps;

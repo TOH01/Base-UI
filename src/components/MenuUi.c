@@ -56,7 +56,7 @@ void MenuUi_SubmenuSwap(int menuId) {
     InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
-MenuUi_Submenu_t * getGurrentSubmenu(void){
+MenuUi_Submenu_t * MenuUi_GetCurrentSubmenu(void){
     return &(submenus[MenuUi_currentSubmenuIdx]);
 }
 
@@ -82,12 +82,12 @@ int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]){
     memcpy(submenu->name, name, MENU_UI_MAX_NAME_LENGTH);
 
 
-    buttonWidget_t * sidebarButton = initButton(sidebarButtonPos, &MenuUi_SubmenuSwap , submenu->SubmenuID);
-    buttonSetText(sidebarButton, name);
+    buttonWidget_t * sidebarButton = costumButton_initButton(sidebarButtonPos, &MenuUi_SubmenuSwap , submenu->SubmenuID);
+    costumButton_SetButtonText(sidebarButton, name);
 
     containerAddWidget(sidebarContainer, (BaseWidget_t *) sidebarButton);
-    sidebarButtonPos.spacingTop += 0.1f;
-    sidebarButtonPos.height += 0.1f;
+    sidebarButtonPos.top += 0.1f;
+    sidebarButtonPos.bottom += 0.1f;
 
     return submenu->SubmenuID;
 }
@@ -131,17 +131,17 @@ LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     if (LOWORD(lParam) > CONFIG_MIN_WINDOW_WIDTH)
     {
-        currentWindowState.currentWidth = LOWORD(lParam);;
+        currentWindowState.width = LOWORD(lParam);;
     }
     if (HIWORD(lParam) > CONFIG_MIN_WINDOW_Height)
     {
-        currentWindowState.currentHeight = HIWORD(lParam);
+        currentWindowState.height = HIWORD(lParam);
     }
 
 }
 
 
 void MenuUi_InitBaseHandlers(void){
-    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_CREATE, &MenuUi_WmCreateHook);
-    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_SIZE, &MenuUi_WmSizeHook);
+    WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_CREATE, &MenuUi_WmCreateHook);
+    WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE, &MenuUi_WmSizeHook);
 }

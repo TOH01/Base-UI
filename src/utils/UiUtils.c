@@ -3,15 +3,15 @@
 #include "common.h"
 #include "string.h"
 
-RECT CommonPosToRect(CommonPos_t pos){
+RECT UiUtils_CommonPosToRect(CommonPos_t pos){
     
-    RECT rect = {UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height)};
+    RECT rect = {UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom)};
     
     return rect;
 }
 
-CommonPos_t RectToCommonPos(RECT rect){
-    CommonPos_t pos = {(rect.top / (float)currentWindowState.currentHeight), (rect.left / (float)currentWindowState.currentWidth), (rect.right / (float)currentWindowState.currentWidth), (rect.bottom / (float)currentWindowState.currentHeight)};
+CommonPos_t UiUtils_RectToCommonsPos(RECT rect){
+    CommonPos_t pos = {(rect.top / (float)currentWindowState.height), (rect.left / (float)currentWindowState.width), (rect.right / (float)currentWindowState.width), (rect.bottom / (float)currentWindowState.height)};
 
     return pos;
 }
@@ -21,26 +21,26 @@ void UiUtils_CreatePens(void){
     currentWindowState.hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 }
 
-void UiUitls_DrawRectangleRelative(CommonPos_t pos){
-    Rectangle(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height));
+void UiUtils_DrawRectangleRelative(CommonPos_t pos){
+    Rectangle(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom));
 }
 
 void UiUtils_DrawRoundRectangleRelative(CommonPos_t pos){
-    RoundRect(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, 0.2 * ((pos.height - pos.spacingTop) + (pos.width - pos.spacingLeft) / 2)), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, 0.2 * ((pos.height - pos.spacingTop) + (pos.width - pos.spacingLeft) / 2)));
+    RoundRect(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, 0.2 * ((pos.bottom - pos.top) + (pos.right - pos.left) / 2)), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, 0.2 * ((pos.bottom - pos.top) + (pos.right - pos.left) / 2)));
 }
 
 void UiUtils_DrawEllipseRelative(CommonPos_t pos){
-    Ellipse(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height));
+    Ellipse(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom));
 }
 
-void UiUitls_DrawText(CommonPos_t pos, char * name, UINT format){
+void UiUtils_DrawText(CommonPos_t pos, char * name, UINT format){
     
     // multipliers to temporarily adjust for border witdh
     RECT textRect = {
-        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.spacingLeft) * 1.02, 
-        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.spacingTop) * 1.02, 
-        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentWidth, pos.width) * 0.98, 
-        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.currentHeight, pos.height) * 0.98,    
+        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left) * 1.02, 
+        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top) * 1.02, 
+        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right) * 0.98, 
+        UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom) * 0.98,    
     };
 
     DrawText(currentWindowState.memHDC, name, -1, &textRect, format);  // Left align, wrap words at edges
@@ -50,15 +50,15 @@ void UiUitls_DrawText(CommonPos_t pos, char * name, UINT format){
 void UiUtils_FillRectangleRelative(CommonPos_t pos){
     HBRUSH hBrush = CreateSolidBrush(RGB(0, 255, 0));
     
-    RECT rect = CommonPosToRect(pos);
+    RECT rect = UiUtils_CommonPosToRect(pos);
 
     FillRect(currentWindowState.memHDC, &rect, hBrush);
 
 }
 
 bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos){
-    if (x > pos.spacingLeft * currentWindowState.currentWidth && x < pos.width * currentWindowState.currentWidth){
-        if (y > pos.spacingTop * currentWindowState.currentHeight && y < pos.height * currentWindowState.currentHeight){
+    if (x > pos.left * currentWindowState.width && x < pos.right * currentWindowState.width){
+        if (y > pos.top * currentWindowState.height && y < pos.bottom * currentWindowState.height){
             return true;
         }
     }
@@ -71,38 +71,38 @@ bool UiUtils_TextFitsBox(char text[], CommonPos_t pos){
     GetTextExtentPoint32(currentWindowState.memHDC, text, strlen(text), &textSize);
 
     // multipliers to temporarily adjust for border witdh
-    if (textSize.cx > ((pos.width * currentWindowState.currentWidth) * 0.98 - (pos.spacingLeft * currentWindowState.currentWidth) * 1.02)) {
+    if (textSize.cx > ((pos.right * currentWindowState.width) * 0.98 - (pos.left * currentWindowState.width) * 1.02)) {
         return false;
     }
 
     return true;
 }
 
-int UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos){
+UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos){
     // check if on left border
-    if (x >= (pos.spacingLeft - 0.005f) * currentWindowState.currentWidth && (x + borderWidth) <= (pos.spacingLeft + 0.005f) * currentWindowState.currentWidth){
-        if (y >= pos.spacingTop * currentWindowState.currentHeight && y <= pos.height * currentWindowState.currentHeight){
+    if (x >= (pos.left - 0.005f) * currentWindowState.width && (x + borderWidth) <= (pos.left + 0.005f) * currentWindowState.width){
+        if (y >= pos.top * currentWindowState.height && y <= pos.bottom * currentWindowState.height){
             return LEFT;
         }
     }
 
     //check if on right border
-    if (x >= (pos.width - 0.005f) * currentWindowState.currentWidth && (x + borderWidth) <= (pos.width + 0.005f) * currentWindowState.currentWidth){
-        if (y >= pos.spacingTop * currentWindowState.currentHeight && y <= pos.height * currentWindowState.currentHeight){
+    if (x >= (pos.right - 0.005f) * currentWindowState.width && (x + borderWidth) <= (pos.right + 0.005f) * currentWindowState.width){
+        if (y >= pos.top * currentWindowState.height && y <= pos.bottom * currentWindowState.height){
             return RIGHT;
         }
     }
 
     //check if on bottom border
-    if (y >= (pos.height - 0.005f) * currentWindowState.currentHeight && (y - borderWidth) <= (pos.height + 0.005f) * currentWindowState.currentHeight){
-        if(x >= pos.spacingLeft * currentWindowState.currentWidth && x <= pos.width * currentWindowState.currentWidth) {
+    if (y >= (pos.bottom - 0.005f) * currentWindowState.height && (y - borderWidth) <= (pos.bottom + 0.005f) * currentWindowState.height){
+        if(x >= pos.left * currentWindowState.width && x <= pos.right * currentWindowState.width) {
             return BOTTOM;
         }
     }
 
     //check if on top border
-    if (y >= (pos.spacingTop - 0.005f) * currentWindowState.currentHeight && (y - borderWidth) <= (pos.spacingTop + 0.005f) * currentWindowState.currentHeight){
-        if(x >= pos.spacingLeft * currentWindowState.currentWidth && x <= pos.width * currentWindowState.currentWidth) {
+    if (y >= (pos.top - 0.005f) * currentWindowState.height && (y - borderWidth) <= (pos.top + 0.005f) * currentWindowState.height){
+        if(x >= pos.left * currentWindowState.width && x <= pos.right * currentWindowState.width) {
             return TOP;
         }
     }

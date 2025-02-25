@@ -6,7 +6,7 @@
 void drawCheckbox(BaseWidget_t * baseWidget){
     
     checkboxWidget_t * checkbox = (checkboxWidget_t *) baseWidget;
-    UiUitls_DrawRectangleRelative(baseWidget->pos);
+    UiUtils_DrawRectangleRelative(baseWidget->pos);
 
 
     if (*(checkbox->value)){
@@ -20,7 +20,7 @@ void onClickCheckbox(BaseWidget_t * baseWidget, int x, int y){
     *(checkbox->value) = !*(checkbox->value);
 }
 
-checkboxWidget_t * initCheckbox(CommonPos_t pos, bool * value){
+checkboxWidget_t * costumCheckbox_initCheckbox(CommonPos_t pos, bool * value){
     checkboxWidget_t * checkbox = (checkboxWidget_t *) calloc(1, sizeof(checkboxWidget_t));
     checkbox->baseWidget.pos = pos;
     checkbox->baseWidget.drawHandler = &drawCheckbox;

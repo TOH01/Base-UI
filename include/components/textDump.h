@@ -19,7 +19,7 @@ typedef struct textDumpWidget {
     textLineNode_t * currentLine;
 } textDumpWidget_t;
 
-textDumpWidget_t * initTextDump(CommonPos_t pos);
-void AddLine(textDumpWidget_t * textDump, const char * newText);
+textDumpWidget_t * costumTextDump_initTextDump(CommonPos_t pos);
+void costumTextDump_AddLine(textDumpWidget_t * textDump, const char * newText);
 
 #endif

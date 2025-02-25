@@ -13,7 +13,7 @@ typedef struct ButtonWidget {
     char name[BUTTON_MAX_NAME_LENGTH];
 } buttonWidget_t;
 
-buttonWidget_t * initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id);
-void buttonSetText(buttonWidget_t * button, char name[BUTTON_MAX_NAME_LENGTH]);
+buttonWidget_t * costumButton_initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id);
+void costumButton_SetButtonText(buttonWidget_t * button, char name[BUTTON_MAX_NAME_LENGTH]);
 
 #endif

@@ -2,9 +2,9 @@
 #include "config.h"
 
 WindowState_t currentWindowState = {
-    .currentWidth = CONFIG_INIT_WINDOW_WIDTH,
-    .currentHeight = CONFIG_INIT_WINDOW_HEIGTH,
-    .wmParamHashTable = NULL,
+    .width = CONFIG_INIT_WINDOW_WIDTH,
+    .height = CONFIG_INIT_WINDOW_HEIGTH,
+    .handlerTable = NULL,
     .hPen = NULL,
     .ps = NULL,
     .hdc = NULL,

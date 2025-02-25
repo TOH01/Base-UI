@@ -11,11 +11,11 @@ void drawInput(BaseWidget_t * baseWidget){
     
     SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
 
-    UiUitls_DrawRectangleRelative(baseWidget->pos);
+    UiUtils_DrawRectangleRelative(baseWidget->pos);
     
 
     if(UiUtils_TextFitsBox(input->buffer, baseWidget->pos)){
-        UiUitls_DrawText(baseWidget->pos, input->buffer, DT_CENTER | DT_VCENTER | DT_NOCLIP);
+        UiUtils_DrawText(baseWidget->pos, input->buffer, DT_CENTER | DT_VCENTER | DT_NOCLIP);
     }
     else {
         int lastElementIdx = strlen(input->buffer) - 1;
@@ -24,7 +24,7 @@ void drawInput(BaseWidget_t * baseWidget){
             lastElementIdx--;
         }
 
-        UiUitls_DrawText(baseWidget->pos, &input->buffer[lastElementIdx], DT_CENTER | DT_VCENTER | DT_NOCLIP);
+        UiUtils_DrawText(baseWidget->pos, &input->buffer[lastElementIdx], DT_CENTER | DT_VCENTER | DT_NOCLIP);
 
     }
     
@@ -51,7 +51,7 @@ LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
             return 1;
         }
 
-        if (buffLen < 255 && wParam >= 32 && wParam <= 126){
+        if (buffLen < INPUT_MAX_STRING_SIZE - 1 && wParam >= 32 && wParam <= 126){
             activeInput->buffer[buffLen] = (char) wParam;
             activeInput->buffer[buffLen + 1] = '\0';
         }
@@ -68,15 +68,15 @@ void onClickInput(BaseWidget_t * baseWidget, int x, int y){
     activeInput = input;
 }
 
-void clearInput(inputWidget_t * input){
+void costumInput_clearInput(inputWidget_t * input){
     strcpy(input->buffer, "");
 }
 
-inputWidget_t * initInput(CommonPos_t pos){
+inputWidget_t * costumInput_initInput(CommonPos_t pos){
     inputWidget_t * input = (inputWidget_t *) calloc(1, sizeof(inputWidget_t));
 
     if(!handlerInit){
-        WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_KEYDOWN, &keystoreCallback);
+        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_KEYDOWN, &keystoreCallback);
     }
 
     input->baseWidget.pos = pos;

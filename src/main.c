@@ -17,9 +17,9 @@ const char g_szClassName[] = "MyWindowClass";
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 
-    currentWindowState.wmParamHashTable = WmParamHandlerTable_Init();
+    currentWindowState.handlerTable = WmParamHandlerTable_Init();
 
-    WmParamHanderTable_Insert(currentWindowState.wmParamHashTable, WM_CREATE, &CoreWindowState_WmCreateHook); // init handle in core window state
+    WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_CREATE, &CoreWindowState_WmCreateHook); // init handle in core window state
 
     InitialzeHandlers();
 

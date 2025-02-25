@@ -13,7 +13,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         DestroyWindow(hwnd);
         break;
     case WM_DESTROY:
-        WmParamHandlerTable_Destroy(currentWindowState.wmParamHashTable);
+        WmParamHandlerTable_Destroy(currentWindowState.handlerTable);
         PostQuitMessage(0);
         break;
     case WM_PAINT:
@@ -22,18 +22,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         // Create and select the memory device context
         currentWindowState.memHDC = CreateCompatibleDC(currentWindowState.hdc);
-        currentWindowState.memBitmap = CreateCompatibleBitmap(currentWindowState.hdc, currentWindowState.currentWidth, currentWindowState.currentHeight);
+        currentWindowState.memBitmap = CreateCompatibleBitmap(currentWindowState.hdc, currentWindowState.width, currentWindowState.height);
         HBITMAP hbmOld = SelectObject(currentWindowState.memHDC, currentWindowState.memBitmap);
 
         // call draw handlers (draw to memDC)
         #ifndef DISABLE_MENU
-        WmParamHandlerTable_CallHandlersOfId(getGurrentSubmenu()->WmParamHashTable, hwnd, msg, wParam, lParam);
+        WmParamHandlerTable_CallHandlersOfId(MenuUi_GetCurrentSubmenu()->WmParamHashTable, hwnd, msg, wParam, lParam);
         #endif
 
-        WmParamHandlerTable_CallHandlersOfId(currentWindowState.wmParamHashTable, hwnd, msg, wParam, lParam);
+        WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
 
         // Blit to the screen
-        BitBlt(currentWindowState.hdc, 0, 0, currentWindowState.currentWidth, currentWindowState.currentHeight, currentWindowState.memHDC, 0, 0, SRCCOPY);
+        BitBlt(currentWindowState.hdc, 0, 0, currentWindowState.width, currentWindowState.height, currentWindowState.memHDC, 0, 0, SRCCOPY);
 
         // Clean up memory DC and bitmap
         SelectObject(currentWindowState.memHDC, hbmOld);
@@ -50,9 +50,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         MenuUi_SubmenuCommandHandler(hwnd, msg, wParam, lParam);
         #endif
 
-        if (WmParamHandlerTable_IdHasHandler(currentWindowState.wmParamHashTable, msg)){
+        if (WmParamHandlerTable_IdHasHandler(currentWindowState.handlerTable, msg)){
             
-            WmParamHandlerTable_CallHandlersOfId(currentWindowState.wmParamHashTable, hwnd, msg, wParam, lParam);
+            WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
             
         }
         else {

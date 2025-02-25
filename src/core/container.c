@@ -20,7 +20,7 @@ DWORD hoverStartTime = 0;
 
 void redrawContainer(container_t * container){
    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
-   UiUitls_DrawRectangleRelative(container->pos);
+   UiUtils_DrawRectangleRelative(container->pos);
 }
 
 void redrawContainerList(container_t * containers[], int num){
@@ -106,7 +106,7 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
    
    #ifndef DISABLE_MENU
   
-   MenuUi_Submenu_t * submenu = getGurrentSubmenu();
+   MenuUi_Submenu_t * submenu = MenuUi_GetCurrentSubmenu();
 
    redrawContainerList(submenu->containers, submenu->containerIdx);
 
@@ -140,7 +140,7 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
    #ifndef DISABLE_MENU
    if(!widgetClicked){
-      MenuUi_Submenu_t * submenu = getGurrentSubmenu();
+      MenuUi_Submenu_t * submenu = MenuUi_GetCurrentSubmenu();
 
       widgetClicked = widgetClicked | containerListLButtonDown(submenu->containers, submenu->containerIdx, x, y);
    }
@@ -167,33 +167,33 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
    if (movingContainer.action){
       
-      float x_relative = (float) x / (float) currentWindowState.currentWidth;
-      float y_relative = (float) y / (float) currentWindowState.currentHeight;
+      float x_relative = (float) x / (float) currentWindowState.width;
+      float y_relative = (float) y / (float) currentWindowState.height;
 
-      float start_x_relative = (float) movingContainer.mouseStartX / (float) currentWindowState.currentWidth;
-      float start_y_relative = (float) movingContainer.mouseStartY / (float) currentWindowState.currentHeight;
+      float start_x_relative = (float) movingContainer.mouseStartX / (float) currentWindowState.width;
+      float start_y_relative = (float) movingContainer.mouseStartY / (float) currentWindowState.height;
 
       if(movingContainer.action == CONTAINER_MOVE_ACTION){
-         movingContainer.container->pos.spacingLeft = movingContainer.startPos.spacingLeft + (x_relative - start_x_relative);
-         movingContainer.container->pos.spacingTop = movingContainer.startPos.spacingTop + (y_relative - start_y_relative);
-         movingContainer.container->pos.width = movingContainer.startPos.width + (x_relative - start_x_relative);
-         movingContainer.container->pos.height = movingContainer.startPos.height + (y_relative - start_y_relative);
+         movingContainer.container->pos.left = movingContainer.startPos.left + (x_relative - start_x_relative);
+         movingContainer.container->pos.top = movingContainer.startPos.top + (y_relative - start_y_relative);
+         movingContainer.container->pos.right = movingContainer.startPos.right + (x_relative - start_x_relative);
+         movingContainer.container->pos.bottom = movingContainer.startPos.bottom + (y_relative - start_y_relative);
       }
 
       else {
          switch (movingContainer.action)
          {
          case TOP:
-            movingContainer.container->pos.spacingTop = movingContainer.startPos.spacingTop + (y_relative - start_y_relative);
+            movingContainer.container->pos.top = movingContainer.startPos.top + (y_relative - start_y_relative);
             break;
          case BOTTOM:
-            movingContainer.container->pos.height = movingContainer.startPos.height + (y_relative - start_y_relative);
+            movingContainer.container->pos.bottom = movingContainer.startPos.bottom + (y_relative - start_y_relative);
             break;
          case LEFT:
-            movingContainer.container->pos.spacingLeft = movingContainer.startPos.spacingLeft + (x_relative - start_x_relative);
+            movingContainer.container->pos.left = movingContainer.startPos.left + (x_relative - start_x_relative);
             break;
          case RIGHT:
-            movingContainer.container->pos.width = movingContainer.startPos.width + (x_relative - start_x_relative);
+            movingContainer.container->pos.right = movingContainer.startPos.right + (x_relative - start_x_relative);
             break;
          default:
             break;
@@ -218,6 +218,7 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
          
       }
       
+      
       if(!hoverCandidate){
          for (int i = 0; i < currentWindowContainerIdx; i++){
             if(!hoverCandidate && !overlapFlag){
@@ -227,14 +228,16 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
          }
       }
 
+      #ifndef DISABLE_MENU
       if(!hoverCandidate){
-         for (int i = 0; i < getGurrentSubmenu()->containerIdx; i++){
+         for (int i = 0; i < MenuUi_GetCurrentSubmenu()->containerIdx; i++){
             if(!hoverCandidate && !overlapFlag){
-               hoverCandidate = widgetClicked(x, y, getGurrentSubmenu()->containers[i]->widgetList);
-               overlapFlag = UiUtils_CoordinateIsInsideOf(x, y, getGurrentSubmenu()->containers[i]->pos);
+               hoverCandidate = widgetClicked(x, y, MenuUi_GetCurrentSubmenu()->containers[i]->widgetList);
+               overlapFlag = UiUtils_CoordinateIsInsideOf(x, y, MenuUi_GetCurrentSubmenu()->containers[i]->pos);
             }
          }
       }
+      #endif
 
       
       if (hoverCandidate != lastHoverCandidate) {
@@ -303,11 +306,11 @@ container_t * windowAddContainer(CommonPos_t pos){
    // each submenu has their own container handlers, which will automatically handle shared containers aswell
    // setting hasContainerHandles to true, will prevent handlers being called twice
 
-   currentWindowState.wmParamHashTable->hasContainerHandlers = 1; 
+   currentWindowState.handlerTable->hasContainerHandlers = 1; 
    #endif
    
    
-   container_t * container = initContainer(pos, currentWindowState.wmParamHashTable);
+   container_t * container = initContainer(pos, currentWindowState.handlerTable);
 
    containerList[currentWindowContainerIdx] = container;
 

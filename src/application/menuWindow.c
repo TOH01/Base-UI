@@ -28,8 +28,8 @@ void button1Handler(int id){
 }
 
 void button2Handler(int id){
-    AddLine(textDump, input->buffer);
-    clearInput(input);
+    costumTextDump_AddLine(textDump, input->buffer);
+    costumInput_clearInput(input);
 }
 
 void MenuUi_SubmenuInitAll(void){
@@ -50,7 +50,7 @@ void MenuUi_SubmenuInitAll(void){
 
     container_t * textDumpContainer = windowAddContainer(pos3);
     
-    textDump = initTextDump(pos4);
+    textDump = costumTextDump_initTextDump(pos4);
 
     container_t * sharedContainer = windowAddContainer(pos2);
 
@@ -63,16 +63,16 @@ void MenuUi_SubmenuInitAll(void){
     
     CommonPos_t posButton2 = {UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(66), UI_UTILS_PERCENT(45)};
     
-    buttonWidget_t * button = initButton(posButton, &button1Handler, 1);
-    buttonSetText(button, "Test");
+    buttonWidget_t * button = costumButton_initButton(posButton, &button1Handler, 1);
+    costumButton_SetButtonText(button, "Test");
 
-    buttonWidget_t * button2 = initButton(posButton2, &button2Handler, 5);
-    buttonSetText(button2, "ADD");
+    buttonWidget_t * button2 = costumButton_initButton(posButton2, &button2Handler, 5);
+    costumButton_SetButtonText(button2, "ADD");
 
-    checkboxWidget_t * checkbox = initCheckbox(posCheckbox, &checkbox1value);
-    sliderWidget_t * slider = initSlider(posSlider, &sliderValue, 5);
+    checkboxWidget_t * checkbox = costumCheckbox_initCheckbox(posCheckbox, &checkbox1value);
+    sliderWidget_t * slider = costumSlider_initSlider(posSlider, &sliderValue, 5);
 
-    input = initInput(posInput);
+    input = costumInput_initInput(posInput);
 
     containerAddWidget(container1, (BaseWidget_t *) slider);
     containerAddWidget(container2, (BaseWidget_t *) button);
