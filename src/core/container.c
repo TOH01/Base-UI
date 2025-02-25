@@ -12,6 +12,12 @@ int topContainerIdx;
 
 movingContainer_t movingContainer;
 
+BaseWidget_t * hoverCandidate = NULL;
+BaseWidget_t * lastHoverCandidate = NULL;
+DWORD hoverStartTime = 0;
+#define HOVER_TIMER_ID 1
+#define HOVER_DELAY_MS 300  // 300ms delay
+
 void redrawContainer(container_t * container){
    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
    UiUitls_DrawRectangleRelative(container->pos);
@@ -197,8 +203,68 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
       InvalidateRect(hwnd, NULL, FALSE);
 
    }
+
+   else {
+      
+      hoverCandidate = NULL;
+      bool overlapFlag = false;
+      
+      if(!hoverCandidate){
+         
+         if(topContainer){
+            hoverCandidate = widgetClicked(x, y, topContainer->widgetList);
+            overlapFlag = UiUtils_CoordinateIsInsideOf(x, y, topContainer->pos);
+         }
+         
+      }
+      
+      if(!hoverCandidate){
+         for (int i = 0; i < currentWindowContainerIdx; i++){
+            if(!hoverCandidate && !overlapFlag){
+               hoverCandidate = widgetClicked(x, y, containerList[i]->widgetList);
+               overlapFlag = UiUtils_CoordinateIsInsideOf(x, y, containerList[i]->pos);
+            }
+         }
+      }
+
+      if(!hoverCandidate){
+         for (int i = 0; i < getGurrentSubmenu()->containerIdx; i++){
+            if(!hoverCandidate && !overlapFlag){
+               hoverCandidate = widgetClicked(x, y, getGurrentSubmenu()->containers[i]->widgetList);
+               overlapFlag = UiUtils_CoordinateIsInsideOf(x, y, getGurrentSubmenu()->containers[i]->pos);
+            }
+         }
+      }
+
+      
+      if (hoverCandidate != lastHoverCandidate) {
+         if (hoverCandidate) {
+             // Hovered element changed, restart timer
+             hoverStartTime = GetTickCount();
+             SetTimer(currentWindowState.hwnd, HOVER_TIMER_ID, HOVER_DELAY_MS, NULL);
+         } else {
+             // Mouse moved away, stop timer
+             KillTimer(currentWindowState.hwnd, HOVER_TIMER_ID);
+         }
+         lastHoverCandidate = hoverCandidate;
+     }
+
+   }   
 }
 
+LRESULT CALLBACK TimerCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+   if (msg == WM_TIMER && wParam == HOVER_TIMER_ID) {
+      if (lastHoverCandidate) {
+          if (GetTickCount() - hoverStartTime >= HOVER_DELAY_MS) {
+              // Hover effect triggered
+              printf("HOVER TRIGGERED\n");
+          }
+      } else {
+          // No hover candidate, stop timer
+          KillTimer(hwnd, HOVER_TIMER_ID);
+      }
+  }
+}
 
 container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerTable){
 
@@ -212,6 +278,7 @@ container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerT
       WmParamHanderTable_Insert(handlerTable, WM_LBUTTONDOWN, &LButtonDownCallback);
       WmParamHanderTable_Insert(handlerTable, WM_LBUTTONUP, &LButtonUpCallback);
       WmParamHanderTable_Insert(handlerTable, WM_MOUSEMOVE, &MouseMoveCallback);
+      WmParamHanderTable_Insert(handlerTable, WM_TIMER, &TimerCallback);
 
       handlerTable->hasContainerHandlers = true;
    }
