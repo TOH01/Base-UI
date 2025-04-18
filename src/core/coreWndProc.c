@@ -25,6 +25,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         currentWindowState.memBitmap = CreateCompatibleBitmap(currentWindowState.hdc, currentWindowState.width, currentWindowState.height);
         HBITMAP hbmOld = SelectObject(currentWindowState.memHDC, currentWindowState.memBitmap);
 
+        HFONT hFont = CreateFont(
+            -MulDiv(10, GetDeviceCaps(currentWindowState.memHDC, LOGPIXELSY), 72), 
+            0, 0, 0,
+            FW_NORMAL,
+            FALSE, FALSE, FALSE,
+            DEFAULT_CHARSET,
+            OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS,
+            CLEARTYPE_QUALITY, 
+            DEFAULT_PITCH | FF_DONTCARE,
+            TEXT("Segoe UI")
+        );
+
+
+        SelectObject(currentWindowState.memHDC, hFont);
+
         // call draw handlers (draw to memDC)
         #ifndef DISABLE_MENU
         WmParamHandlerTable_CallHandlersOfId(MenuUi_GetCurrentSubmenu()->WmParamHashTable, hwnd, msg, wParam, lParam);
