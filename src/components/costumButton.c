@@ -5,9 +5,7 @@
 void drawButton(BaseWidget_t * baseWidget){
     buttonWidget_t * button = (buttonWidget_t *) baseWidget;
 
-    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
-
-    UiUtils_DrawRectangleRelative(baseWidget->pos);
+    UiUtils_DrawColoredRectangle(baseWidget->pos, currentWindowState.activeTheme.button.color.border);
     
     if (UiUtils_TextFitsBox(button->name, baseWidget->pos)){
         UiUtils_DrawText(baseWidget->pos, button->name, DT_CENTER | DT_VCENTER | DT_NOCLIP);

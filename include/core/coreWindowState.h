@@ -2,6 +2,7 @@
 #define CORE_WINDOW_STATE_H
 
 #include "WmParamHashTable.h"
+#include "UiTheme.h"
 
 typedef struct WindowState{
     int width;
@@ -13,6 +14,7 @@ typedef struct WindowState{
     HDC memHDC;
     HBITMAP memBitmap;
     HWND hwnd;
+    UiTheme_t activeTheme;
 } WindowState_t;
 
 LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

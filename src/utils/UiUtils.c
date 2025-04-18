@@ -25,6 +25,17 @@ void UiUtils_DrawRectangleRelative(CommonPos_t pos){
     Rectangle(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom));
 }
 
+void UiUtils_DrawColoredRectangle(CommonPos_t pos, COLORREF color){
+    
+    HPEN pen = CreatePen(PS_SOLID, 2, color);
+    HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
+
+    UiUtils_DrawRectangleRelative(pos);
+
+    SelectObject(currentWindowState.memHDC, oldPen);
+    DeleteObject(pen);
+}
+
 void UiUtils_DrawRoundRectangleRelative(CommonPos_t pos){
     RoundRect(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, 0.2 * ((pos.bottom - pos.top) + (pos.right - pos.left) / 2)), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, 0.2 * ((pos.bottom - pos.top) + (pos.right - pos.left) / 2)));
 }
