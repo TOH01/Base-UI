@@ -16,7 +16,7 @@ BaseWidget_t * hoverCandidate = NULL;
 BaseWidget_t * lastHoverCandidate = NULL;
 DWORD hoverStartTime = 0;
 #define HOVER_TIMER_ID 1
-#define HOVER_DELAY_MS 300  // 300ms delay
+#define HOVER_DELAY_MS 5  // 300ms delay
 
 void redrawContainer(container_t * container){
    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
@@ -248,6 +248,22 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
          } else {
              // Mouse moved away, stop timer
              KillTimer(currentWindowState.hwnd, HOVER_TIMER_ID);
+             
+             if(lastHoverCandidate != NULL){
+               
+               if(lastHoverCandidate->onHoverEnd != NULL){
+                  lastHoverCandidate->onHoverEnd(lastHoverCandidate);
+               }
+               else{
+                  printf("Hover End callback missing");
+               }
+               
+             }
+             else{
+               printf("Hover Error"); 
+             }
+
+             
          }
          lastHoverCandidate = hoverCandidate;
      }
@@ -260,7 +276,9 @@ LRESULT CALLBACK TimerCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
       if (lastHoverCandidate) {
           if (GetTickCount() - hoverStartTime >= HOVER_DELAY_MS) {
               // Hover effect triggered
-              printf("HOVER TRIGGERED\n");
+              if (hoverCandidate->onHover != NULL){
+                  hoverCandidate->onHover(hoverCandidate);
+              }
           }
       } else {
           // No hover candidate, stop timer

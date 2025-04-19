@@ -11,6 +11,7 @@ typedef struct ButtonWidget {
     int id;
     void ( * onClickUserCallback) (int);
     char name[BUTTON_MAX_NAME_LENGTH];
+    int beingHovered;
 } buttonWidget_t;
 
 buttonWidget_t * costumButton_initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id);

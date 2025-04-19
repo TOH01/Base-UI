@@ -30,6 +30,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     #endif
 
     UiUtils_CreatePens();
+    UiTheme_initFonts();
 
     WNDCLASSEX wc;
     HWND hwnd;

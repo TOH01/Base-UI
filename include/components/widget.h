@@ -9,6 +9,8 @@ typedef struct BaseWidget {
     void (*drawHandler)(BaseWidget_t *);
     CommonPos_t initPos;
     void (*onClick)(BaseWidget_t *, int, int);
+    void (*onHover)(BaseWidget_t *);
+    void (*onHoverEnd)(BaseWidget_t *);
     CommonPos_t pos;
 } BaseWidget_t;
 

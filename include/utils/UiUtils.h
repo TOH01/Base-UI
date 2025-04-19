@@ -28,6 +28,10 @@ void UiUtils_DrawText(CommonPos_t pos, char * name, UINT format);
 bool UiUtils_TextFitsBox(char text[], CommonPos_t pos);
 RECT UiUtils_CommonPosToRect(CommonPos_t pos);
 CommonPos_t UiUtils_RectToCommonsPos(RECT rect);
-void UiUtils_DrawColoredRectangle(CommonPos_t pos, COLORREF color);
+HFONT UiUtils_CreateFont();
+void UiUtils_DrawTextTheme(CommonPos_t pos, char * name, UINT format, HFONT font, COLORREF color);
+bool UiUtils_TextFitsBoxTheme(char text[], CommonPos_t pos, HFONT font);
+void UiUtils_DrawFilledRectangle(CommonPos_t pos, COLORREF color);
+void UiUtils_DrawColoredRectangle(CommonPos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize);
 
 #endif
