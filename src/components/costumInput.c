@@ -9,25 +9,47 @@ inputWidget_t * activeInput = NULL;
 void drawInput(BaseWidget_t * baseWidget){
     inputWidget_t * input = (inputWidget_t*) baseWidget;
     
-    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
+    COLORREF fill = input->beingHovered ? currentWindowState.activeTheme.input.color.hover : currentWindowState.activeTheme.input.color.fill;
+    COLORREF border = (input == activeInput) ? currentWindowState.activeTheme.input.active.border : currentWindowState.activeTheme.input.color.border;
 
-    UiUtils_DrawRectangleRelative(baseWidget->pos);
+    UiUtils_DrawColoredRectangle(baseWidget->pos, fill, border, currentWindowState.activeTheme.input.borderWidth);
     
 
-    if(UiUtils_TextFitsBox(input->buffer, baseWidget->pos)){
-        UiUtils_DrawText(baseWidget->pos, input->buffer, DT_CENTER | DT_VCENTER | DT_NOCLIP);
+    if (strlen(input->buffer)){
+        if(UiUtils_TextFitsBox(input->buffer, baseWidget->pos)){
+            UiUtils_DrawTextTheme(baseWidget->pos, input->buffer, currentWindowState.activeTheme.input.inputText.formatFlags, currentWindowState.activeTheme.input.inputText.font, currentWindowState.activeTheme.input.inputText.color);
+        }
+        else {
+            int lastElementIdx = strlen(input->buffer) - 1;
+    
+            while(UiUtils_TextFitsBox(&input->buffer[lastElementIdx], baseWidget->pos)){
+                lastElementIdx--;
+            }
+    
+            UiUtils_DrawTextTheme(baseWidget->pos, &input->buffer[lastElementIdx], currentWindowState.activeTheme.input.inputText.formatFlags, currentWindowState.activeTheme.input.inputText.font, currentWindowState.activeTheme.input.inputText.color);
+    
+        }
     }
     else {
-        int lastElementIdx = strlen(input->buffer) - 1;
-
-        while(UiUtils_TextFitsBox(&input->buffer[lastElementIdx], baseWidget->pos)){
-            lastElementIdx--;
-        }
-
-        UiUtils_DrawText(baseWidget->pos, &input->buffer[lastElementIdx], DT_CENTER | DT_VCENTER | DT_NOCLIP);
-
+        UiUtils_DrawTextTheme(baseWidget->pos, input->defaultText, currentWindowState.activeTheme.input.emptyText.formatFlags, currentWindowState.activeTheme.input.emptyText.font, currentWindowState.activeTheme.input.emptyText.color);
     }
+
+}
+
+void onHoverInput(BaseWidget_t * base){
+    inputWidget_t * input = (inputWidget_t *) base;
     
+    if(!input->beingHovered){
+        input->beingHovered = 1;
+        InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+    }
+
+}
+
+void onHoverEndInput(BaseWidget_t * base){
+    inputWidget_t * input = (inputWidget_t *) base;
+    input->beingHovered = 0;
+    InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
 LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
@@ -46,7 +68,7 @@ LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
             if(buffLen){
                 activeInput->buffer[buffLen - 1] = '\0';
                 InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
-        }
+            }
                 
             return 1;
         }
@@ -83,6 +105,10 @@ inputWidget_t * costumInput_initInput(CommonPos_t pos){
     input->baseWidget.drawHandler = &drawInput;
     input->baseWidget.initPos = pos;
     input->baseWidget.onClick = &onClickInput;
+    input->baseWidget.onHover = &onHoverInput;
+    input->baseWidget.onHoverEnd = &onHoverEndInput;
+
+    strcpy(input->defaultText, "Input ...");
 
     return input;
 }
