@@ -4,7 +4,7 @@
 #include "common.h"
 #include "widget.h"
 #include <stdio.h>
-#include "costumButton.h"
+#include "customButton.h"
 #include "costumCheckbox.h"
 #include "costumSlider.h"
 #include "costumInput.h"
@@ -63,11 +63,11 @@ void MenuUi_SubmenuInitAll(void){
     
     CommonPos_t posButton2 = {UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(66), UI_UTILS_PERCENT(45)};
     
-    buttonWidget_t * button = costumButton_initButton(posButton, &button1Handler, 1);
-    costumButton_SetButtonText(button, "Test");
+    buttonWidget_t * button = customButton_initButton(posButton, &button1Handler, 1);
+    customButton_SetButtonText(button, "Test");
 
-    buttonWidget_t * button2 = costumButton_initButton(posButton2, &button2Handler, 5);
-    costumButton_SetButtonText(button2, "ADD");
+    buttonWidget_t * button2 = customButton_initButton(posButton2, &button2Handler, 5);
+    customButton_SetButtonText(button2, "ADD");
 
     checkboxWidget_t * checkbox = costumCheckbox_initCheckbox(posCheckbox, &checkbox1value);
     sliderWidget_t * slider = costumSlider_initSlider(posSlider, &sliderValue, 5);

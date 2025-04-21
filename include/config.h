@@ -7,4 +7,6 @@
 #define CONFIG_MIN_WINDOW_WIDTH 700
 #define CONFIG_MIN_WINDOW_Height 400
 
+#define DEBUG
+
 #endif

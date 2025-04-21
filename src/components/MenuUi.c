@@ -3,7 +3,7 @@
 #include "MenuUi.h"
 #include "UiUtils.h"
 #include "container.h"
-#include "costumButton.h"
+#include "customButton.h"
 #include <stdio.h>
 
 
@@ -82,8 +82,8 @@ int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]){
     memcpy(submenu->name, name, MENU_UI_MAX_NAME_LENGTH);
 
 
-    buttonWidget_t * sidebarButton = costumButton_initButton(sidebarButtonPos, &MenuUi_SubmenuSwap , submenu->SubmenuID);
-    costumButton_SetButtonText(sidebarButton, name);
+    buttonWidget_t * sidebarButton = customButton_initButton(sidebarButtonPos, &MenuUi_SubmenuSwap , submenu->SubmenuID);
+    customButton_SetButtonText(sidebarButton, name);
 
     containerAddWidget(sidebarContainer, (BaseWidget_t *) sidebarButton);
     sidebarButtonPos.top += 0.1f;

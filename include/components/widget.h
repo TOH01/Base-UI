@@ -5,12 +5,18 @@
 
 typedef struct BaseWidget BaseWidget_t;
 
+typedef enum {
+    WIDGET_TYPE_BUTTON,
+    WIDGET_TYPE_INPUT,
+} WidgetType_t;
+
 typedef struct BaseWidget {
     void (*drawHandler)(BaseWidget_t *);
     CommonPos_t initPos;
     void (*onClick)(BaseWidget_t *, int, int);
     void (*onHover)(BaseWidget_t *);
     void (*onHoverEnd)(BaseWidget_t *);
+    WidgetType_t type;
     CommonPos_t pos;
 } BaseWidget_t;
 

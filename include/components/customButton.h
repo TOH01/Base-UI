@@ -11,10 +11,11 @@ typedef struct ButtonWidget {
     int id;
     void ( * onClickUserCallback) (int);
     char name[BUTTON_MAX_NAME_LENGTH];
-    int beingHovered;
+    bool beingHovered;
+    ButtonTheme_t * theme;
 } buttonWidget_t;
 
-buttonWidget_t * costumButton_initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id);
-void costumButton_SetButtonText(buttonWidget_t * button, char name[BUTTON_MAX_NAME_LENGTH]);
+buttonWidget_t * customButton_initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id);
+void customButton_SetButtonText(buttonWidget_t * button, const char name[BUTTON_MAX_NAME_LENGTH]);
 
 #endif
