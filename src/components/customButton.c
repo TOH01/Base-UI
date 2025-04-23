@@ -26,6 +26,7 @@ static void drawButton(BaseWidget_t * baseWidget){
 }
 
 static void onClickButton(BaseWidget_t * base, int x, int y){
+    assert(base->type == WIDGET_TYPE_BUTTON);
     buttonWidget_t * button = (buttonWidget_t *) base;
     
     if(button->onClickUserCallback != NULL){
@@ -40,6 +41,7 @@ static void onClickButton(BaseWidget_t * base, int x, int y){
 }
 
 static void onHoverButton(BaseWidget_t * base){
+    assert(base->type == WIDGET_TYPE_BUTTON);
     buttonWidget_t * button = (buttonWidget_t *) base;
     
     if(!button->beingHovered){
@@ -50,6 +52,7 @@ static void onHoverButton(BaseWidget_t * base){
 }
 
 static void onHoverEndButton(BaseWidget_t * base){
+    assert(base->type == WIDGET_TYPE_BUTTON);
     buttonWidget_t * button = (buttonWidget_t *) base;
     
     button->beingHovered = false;

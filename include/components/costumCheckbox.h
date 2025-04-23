@@ -7,6 +7,7 @@
 typedef struct CheckboxWidget {
     BaseWidget_t baseWidget;
     bool * value;
+    CheckboxTheme_t * theme;
 } checkboxWidget_t;
 
 checkboxWidget_t * costumCheckbox_initCheckbox(CommonPos_t pos, bool * value);

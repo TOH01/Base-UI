@@ -1,42 +1,57 @@
+#include <stdio.h>
 #include "costumInput.h"
 #include "UiUtils.h"
 #include "string.h"
+#include "assert.h"
 
 bool handlerInit = 0;
 inputWidget_t * activeInput = NULL;
 
-
-void drawInput(BaseWidget_t * baseWidget){
+static void drawInput(BaseWidget_t * baseWidget){
+    assert(baseWidget->type == WIDGET_TYPE_INPUT);
     inputWidget_t * input = (inputWidget_t*) baseWidget;
     
-    COLORREF fill = input->beingHovered ? currentWindowState.activeTheme.input.color.hover : currentWindowState.activeTheme.input.color.fill;
-    COLORREF border = (input == activeInput) ? currentWindowState.activeTheme.input.active.border : currentWindowState.activeTheme.input.color.border;
+    if(input->theme != NULL){
+        COLORREF fill = input->beingHovered ? input->theme->color.hover : input->theme->color.fill;
+        COLORREF border = (input == activeInput) ? input->theme->active.border : input->theme->color.border;
 
-    UiUtils_DrawColoredRectangle(baseWidget->pos, fill, border, currentWindowState.activeTheme.input.borderWidth);
-    
+        UiUtils_DrawColoredRectangle(baseWidget->pos, fill, border, input->theme->borderWidth);
 
-    if (strlen(input->buffer)){
-        if(UiUtils_TextFitsBox(input->buffer, baseWidget->pos)){
-            UiUtils_DrawTextTheme(baseWidget->pos, input->buffer, currentWindowState.activeTheme.input.inputText.formatFlags, currentWindowState.activeTheme.input.inputText.font, currentWindowState.activeTheme.input.inputText.color);
+        if (strlen(input->buffer) >= 1){
+            if(UiUtils_TextFitsBox(input->buffer, baseWidget->pos)){
+                UiUtils_DrawTextTheme(baseWidget->pos, input->buffer, input->theme->inputText.formatFlags, input->theme->inputText.font, input->theme->inputText.color);
+            }
+            else {
+                int lastElementIdx = strlen(input->buffer) - 1;
+        
+                while(UiUtils_TextFitsBox(&input->buffer[lastElementIdx], baseWidget->pos)){
+                    lastElementIdx--;
+                }
+        
+                if(lastElementIdx >= 0){
+                    UiUtils_DrawTextTheme(baseWidget->pos, &input->buffer[lastElementIdx], input->theme->inputText.formatFlags, input->theme->inputText.font, input->theme->inputText.color);
+                }
+                #ifdef DEBUG
+                else {
+                    printf("text cannot fit input\n");
+                }
+                #endif
+            }
         }
         else {
-            int lastElementIdx = strlen(input->buffer) - 1;
-    
-            while(UiUtils_TextFitsBox(&input->buffer[lastElementIdx], baseWidget->pos)){
-                lastElementIdx--;
-            }
-    
-            UiUtils_DrawTextTheme(baseWidget->pos, &input->buffer[lastElementIdx], currentWindowState.activeTheme.input.inputText.formatFlags, currentWindowState.activeTheme.input.inputText.font, currentWindowState.activeTheme.input.inputText.color);
-    
+            UiUtils_DrawTextTheme(baseWidget->pos, input->defaultText, input->theme->emptyText.formatFlags, input->theme->emptyText.font, input->theme->emptyText.color);
         }
     }
+    #ifdef DEBUG
     else {
-        UiUtils_DrawTextTheme(baseWidget->pos, input->defaultText, currentWindowState.activeTheme.input.emptyText.formatFlags, currentWindowState.activeTheme.input.emptyText.font, currentWindowState.activeTheme.input.emptyText.color);
+        printf("input missing theme\n");
     }
+    #endif
 
 }
 
-void onHoverInput(BaseWidget_t * base){
+static void onHoverInput(BaseWidget_t * base){
+    assert(base->type == WIDGET_TYPE_INPUT);
     inputWidget_t * input = (inputWidget_t *) base;
     
     if(!input->beingHovered){
@@ -46,26 +61,27 @@ void onHoverInput(BaseWidget_t * base){
 
 }
 
-void onHoverEndInput(BaseWidget_t * base){
+static void onHoverEndInput(BaseWidget_t * base){
+    assert(base->type == WIDGET_TYPE_INPUT);
     inputWidget_t * input = (inputWidget_t *) base;
     input->beingHovered = 0;
     InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
-LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+static LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
     if(activeInput){
 
         int buffLen = strlen(activeInput->buffer);
 
-
         if(wParam == VK_ESCAPE){
             activeInput = NULL;
+            InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
             return 1;
         }
 
         if(wParam == VK_DELETE || wParam  == VK_BACK){
-            if(buffLen){
+            if(buffLen >= 1){
                 activeInput->buffer[buffLen - 1] = '\0';
                 InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
             }
@@ -85,13 +101,10 @@ LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
     
 }
 
-void onClickInput(BaseWidget_t * baseWidget, int x, int y){
+static void onClickInput(BaseWidget_t * baseWidget, int x, int y){
+    assert(baseWidget->type == WIDGET_TYPE_INPUT);
     inputWidget_t * input = (inputWidget_t*) baseWidget;
     activeInput = input;
-}
-
-void costumInput_clearInput(inputWidget_t * input){
-    strcpy(input->buffer, "");
 }
 
 inputWidget_t * costumInput_initInput(CommonPos_t pos){
@@ -102,13 +115,22 @@ inputWidget_t * costumInput_initInput(CommonPos_t pos){
     }
 
     input->baseWidget.pos = pos;
-    input->baseWidget.drawHandler = &drawInput;
     input->baseWidget.initPos = pos;
+
+    input->baseWidget.type = WIDGET_TYPE_INPUT;
+
+    input->theme = &currentWindowState.activeTheme.input;
+
+    input->baseWidget.drawHandler = &drawInput;
     input->baseWidget.onClick = &onClickInput;
     input->baseWidget.onHover = &onHoverInput;
     input->baseWidget.onHoverEnd = &onHoverEndInput;
 
-    strcpy(input->defaultText, "Input ...");
+    strncpy(input->defaultText, "Input ...", INPUT_MAX_DEFAULT_STRING_SIZE);
 
     return input;
+}
+
+void costumInput_clearInput(inputWidget_t * input){
+    input->buffer[0] = '\0';
 }

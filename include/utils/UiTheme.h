@@ -30,9 +30,17 @@ typedef struct InputTheme {
     float borderWidth;
 } InputTheme_t;
 
+typedef struct CheckboxTheme {
+    ColorComponent_t inner;
+    ColorComponent_t outer;
+    float borderWidth;
+    float spacing;
+} CheckboxTheme_t;
+
 typedef struct UiTheme {
     ButtonTheme_t button;
     InputTheme_t input;
+    CheckboxTheme_t checkbox;
 } UiTheme_t;
 
 #define DEFAULT_THEME() ((UiTheme_t){ \
@@ -47,6 +55,12 @@ typedef struct UiTheme {
         .color = {RGB(55,55,55), RGB(24,24,24) , RGB(44,44,44)}, \
         .active = {RGB(0,120,212) ,RGB(55,55,55) , RGB(55,55,55)}, \
         .borderWidth = 3, \
+    }, \
+    .checkbox = { \
+        .inner = {RGB(0, 120, 212), RGB(0, 120, 212) , RGB(0, 153, 255)}, \
+        .outer = {RGB(55,55,55), RGB(24, 24, 24), RGB(55, 55, 55)}, \
+        .borderWidth = 1, \
+        .spacing = 0.15, \
     }, \
 })
 

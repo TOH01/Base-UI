@@ -12,6 +12,7 @@ typedef struct InputWidget {
     char buffer[INPUT_MAX_STRING_SIZE];
     bool beingHovered;
     char defaultText[INPUT_MAX_DEFAULT_STRING_SIZE];
+    InputTheme_t * theme;
 } inputWidget_t;
 
 
