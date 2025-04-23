@@ -37,10 +37,23 @@ typedef struct CheckboxTheme {
     float spacing;
 } CheckboxTheme_t;
 
+// the slider is contained in a rectangular space. It will always fit within the size of that Rectangle. With spacings the slider can be modified.
+typedef struct SliderTheme {
+    ColorComponent_t thumb; //thumb color
+    ColorComponent_t bar; //bar color
+    float thumbBorderWidth; //width of thumb border
+    float barBorderWidht; //width of bar border
+    float barSpacingTop;  //space from top of slider "recatangle" where bar begins
+    float barSpacingBottom;  //space from bottom of slider "recatangle" where bar ends
+    float thumbSpacingTop; //space from top of slider "recatangle" where thumb begins
+    float thumbSpacingBottom; //space from bottom of slider "recatangle" where thumb ends
+} SliderTheme_t;
+
 typedef struct UiTheme {
     ButtonTheme_t button;
     InputTheme_t input;
     CheckboxTheme_t checkbox;
+    SliderTheme_t slider;
 } UiTheme_t;
 
 #define DEFAULT_THEME() ((UiTheme_t){ \
@@ -61,6 +74,16 @@ typedef struct UiTheme {
         .outer = {RGB(55,55,55), RGB(24, 24, 24), RGB(55, 55, 55)}, \
         .borderWidth = 1, \
         .spacing = 0.15, \
+    }, \
+    .slider = { \
+        .thumb = { RGB(0, 120, 212), RGB(50, 50, 50), RGB(0, 153, 255) }, \
+        .bar = { RGB(70, 70, 70), RGB(30, 30, 30), RGB(80, 80, 80) }, \
+        .thumbBorderWidth = 2.0f, \
+        .barBorderWidht = 1.0f, \
+        .barSpacingTop = 0.42f, \
+        .barSpacingBottom = 0.42f, \
+        .thumbSpacingTop = 0.1f, \
+        .thumbSpacingBottom = 0.1f, \
     }, \
 })
 

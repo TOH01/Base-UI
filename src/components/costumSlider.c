@@ -1,24 +1,25 @@
+#include <stdio.h>
+#include <assert.h>
 #include "costumSlider.h"
 #include "common.h"
 #include "widget.h"
 #include "UiUtils.h"
-#include <stdio.h>
 
 sliderWidget_t *activeSlider = NULL;
 bool sliderHandlersRegistered = false;
 
-void drawSlider(BaseWidget_t * baseWidget){
-    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
-
+static void drawSlider(BaseWidget_t * baseWidget){
+    assert(baseWidget->type == WIDGET_TYPE_SLIDER);
     sliderWidget_t * slider = (sliderWidget_t *) baseWidget;
+    
     CommonPos_t pointPos = baseWidget->pos;
     CommonPos_t barPos = baseWidget->pos;
 
     float barWidth = baseWidget->pos.right - baseWidget->pos.left;
     float barHeight = baseWidget->pos.bottom - baseWidget->pos.top;
 
-    barPos.top = baseWidget->pos.top + (barHeight  * 0.4);
-    barPos.bottom = baseWidget->pos.top + (barHeight * 0.6);
+    barPos.top = baseWidget->pos.top + (barHeight  * slider->theme->barSpacingTop);
+    barPos.bottom = baseWidget->pos.top + (barHeight * (1 - slider->theme->barSpacingBottom));
 
     float pointWidth = barWidth / (float) (slider->range);
 
@@ -27,15 +28,16 @@ void drawSlider(BaseWidget_t * baseWidget){
     pointPos.left = pointX;
     pointPos.right = pointX + pointWidth;
     
-    pointPos.top = baseWidget->pos.top + (barHeight  * 0.2);
-    pointPos.bottom = baseWidget->pos.top + (barHeight * 0.8);
+    pointPos.top = baseWidget->pos.top + (barHeight  * slider->theme->thumbSpacingTop);
+    pointPos.bottom = baseWidget->pos.top + (barHeight * (1 - slider->theme->thumbSpacingBottom));
 
-    UiUtils_DrawRoundRectangleRelative(barPos);
-    UiUtils_DrawEllipseRelative(pointPos);
+    UiUtils_DrawColoredRectangle(barPos,slider->theme->bar.fill, slider->theme->bar.border, slider->theme->barBorderWidht);
+    UiUtils_DrawColoredRectangle(pointPos,slider->theme->thumb.fill, slider->theme->thumb.border, slider->theme->thumbBorderWidth);
 
 }
 
-void onClickSlider(BaseWidget_t * baseWidget, int x, int y){
+static void onClickSlider(BaseWidget_t * baseWidget, int x, int y){
+    assert(baseWidget->type == WIDGET_TYPE_SLIDER);
     sliderWidget_t * slider = (sliderWidget_t *) baseWidget;
 
     float width = (slider->baseWidget.pos.right - slider->baseWidget.pos.left);
@@ -87,13 +89,19 @@ LRESULT mouseReleaseSlider(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
 sliderWidget_t * costumSlider_initSlider(CommonPos_t pos, int * value, int range){
     sliderWidget_t * slider = (sliderWidget_t *) calloc(1, sizeof(sliderWidget_t));
+    
     slider->baseWidget.pos = pos;
     slider->baseWidget.initPos = pos;
+    
     slider->baseWidget.drawHandler = &drawSlider;
     slider->baseWidget.onClick = &onClickSlider;
 
     slider->range = range;
     slider->value = value;
+
+    slider->baseWidget.type = WIDGET_TYPE_SLIDER;
+
+    slider->theme = &currentWindowState.activeTheme.slider;
 
     if(!sliderHandlersRegistered){
         WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, (void *)&mouseMoveSlider);

@@ -8,7 +8,8 @@ typedef struct BaseWidget BaseWidget_t;
 typedef enum {
     WIDGET_TYPE_BUTTON,
     WIDGET_TYPE_INPUT,
-    WIDGET_TYPE_CHECKBOX
+    WIDGET_TYPE_CHECKBOX,
+    WIDGET_TYPE_SLIDER,
 } WidgetType_t;
 
 typedef struct BaseWidget {
