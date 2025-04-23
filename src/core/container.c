@@ -20,7 +20,7 @@ DWORD hoverStartTime = 0;
 
 void redrawContainer(container_t * container){
    SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
-   UiUtils_DrawRectangleRelative(container->pos);
+   UiUtils_DrawColoredRectangle(container->pos ,container->theme->color.fill, container->theme->color.border, container->theme->borderWidth);
 }
 
 void redrawContainerList(container_t * containers[], int num){
@@ -307,6 +307,8 @@ container_t * initContainer(containerPos_t pos, WmParamHandlerTable_t * handlerT
    container->borderWitdh = 2; //TODO: make container drawable with different borderWidths
 
    container->widgetList = initWidgetList();
+
+   container->theme = &currentWindowState.activeTheme.container;
 
    return container;
 

@@ -18,13 +18,13 @@ static void drawInput(BaseWidget_t * baseWidget){
         UiUtils_DrawColoredRectangle(baseWidget->pos, fill, border, input->theme->borderWidth);
 
         if (strlen(input->buffer) >= 1){
-            if(UiUtils_TextFitsBox(input->buffer, baseWidget->pos)){
+            if(UiUtils_TextFitsBoxTheme(input->buffer, baseWidget->pos, input->theme->inputText.font)){
                 UiUtils_DrawTextTheme(baseWidget->pos, input->buffer, input->theme->inputText.formatFlags, input->theme->inputText.font, input->theme->inputText.color);
             }
             else {
                 int lastElementIdx = strlen(input->buffer) - 1;
         
-                while(UiUtils_TextFitsBox(&input->buffer[lastElementIdx], baseWidget->pos)){
+                while(UiUtils_TextFitsBoxTheme(&input->buffer[lastElementIdx], baseWidget->pos, input->theme->inputText.font)){
                     lastElementIdx--;
                 }
         
@@ -76,7 +76,7 @@ static LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         if(wParam == VK_ESCAPE){
             activeInput = NULL;
-            InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+            
             return 1;
         }
 

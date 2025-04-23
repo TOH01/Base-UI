@@ -14,7 +14,7 @@ int menu1_key;
 int menu2_key;
 
 bool checkbox1value = 0;
-int sliderValue = 2;
+int sliderValue = 1;
 
 inputWidget_t * input;
 textDumpWidget_t * textDump;
@@ -30,6 +30,23 @@ void button1Handler(int id){
 void button2Handler(int id){
     costumTextDump_AddLine(textDump, input->buffer);
     costumInput_clearInput(input);
+}
+
+void magicButton(int id){
+    switch (sliderValue)
+    {
+    case 0:
+        currentWindowState.activeTheme = OCEAN_BREEZE_THEME();
+        break;
+    case 1:
+        currentWindowState.activeTheme = DARKMODE_THEME();
+        break;
+    case 2:
+        currentWindowState.activeTheme = LIGHTMODE_THEME();
+        break;
+    default:
+        break;
+    }
 }
 
 void MenuUi_SubmenuInitAll(void){
@@ -59,6 +76,7 @@ void MenuUi_SubmenuInitAll(void){
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
     CommonPos_t posCheckbox = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(60), UI_UTILS_PERCENT(60)};
     CommonPos_t posSlider = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(20)};
+    CommonPos_t posSliderButton = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(70), UI_UTILS_PERCENT(70)};
     CommonPos_t posInput = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(90), UI_UTILS_PERCENT(25)};
     
     CommonPos_t posButton2 = {UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(66), UI_UTILS_PERCENT(45)};
@@ -70,11 +88,15 @@ void MenuUi_SubmenuInitAll(void){
     customButton_SetButtonText(button2, "ADD");
 
     checkboxWidget_t * checkbox = costumCheckbox_initCheckbox(posCheckbox, &checkbox1value);
-    sliderWidget_t * slider = costumSlider_initSlider(posSlider, &sliderValue, 5);
+    sliderWidget_t * slider = costumSlider_initSlider(posSlider, &sliderValue, 3);
+    buttonWidget_t * buttonSlider = customButton_initButton(posSliderButton, &magicButton, 69);
+
+    customButton_SetButtonText(buttonSlider, "Change Theme");
 
     input = costumInput_initInput(posInput);
 
     containerAddWidget(container1, (BaseWidget_t *) slider);
+    containerAddWidget(container1, (BaseWidget_t *) buttonSlider);
     containerAddWidget(container2, (BaseWidget_t *) button);
     containerAddWidget(container2, (BaseWidget_t *) checkbox);
     containerAddWidget(sharedContainer, (BaseWidget_t *) input);

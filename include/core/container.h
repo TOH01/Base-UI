@@ -12,6 +12,7 @@ typedef struct container_t {
     containerPos_t pos;
     int borderWitdh;
     WidgetList_t * widgetList;
+    containerTheme_t * theme;
 } container_t;
 
 typedef struct movingContainer_t {

@@ -8,7 +8,7 @@ WindowState_t currentWindowState = {
     .hPen = NULL,
     .ps = NULL,
     .hdc = NULL,
-    .activeTheme = DEFAULT_THEME(),
+    .activeTheme = OCEAN_BREEZE_THEME(),
 };
 
 LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
