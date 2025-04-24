@@ -47,6 +47,9 @@ void magicButton(int id){
     default:
         break;
     }
+
+    // since fonts will be overwritten need to reinitalize them
+    UiTheme_initFonts();
 }
 
 void MenuUi_SubmenuInitAll(void){
@@ -76,10 +79,10 @@ void MenuUi_SubmenuInitAll(void){
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
     CommonPos_t posCheckbox = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(60), UI_UTILS_PERCENT(60)};
     CommonPos_t posSlider = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(20)};
-    CommonPos_t posSliderButton = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(70), UI_UTILS_PERCENT(70)};
     CommonPos_t posInput = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(90), UI_UTILS_PERCENT(25)};
     
     CommonPos_t posButton2 = {UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(66), UI_UTILS_PERCENT(45)};
+    CommonPos_t posSliderButton = {UI_UTILS_PERCENT(30), UI_UTILS_PERCENT(30), UI_UTILS_PERCENT(90), UI_UTILS_PERCENT(45)};
     
     buttonWidget_t * button = customButton_initButton(posButton, &button1Handler, 1);
     customButton_SetButtonText(button, "Test");

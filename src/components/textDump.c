@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <assert.h>
 #include "textDump.h"
 #include "UiUtils.h"
 
@@ -6,11 +8,10 @@ textDumpWidget_t * activeTextDump = NULL;
 bool scrollCallbackRegisters = false;
 
 void drawTextDump(BaseWidget_t * baseWidget){
+    assert(baseWidget->type == WIDGET_TYPE_TEXT_DUMP);
     textDumpWidget_t *  textDump = (textDumpWidget_t*) baseWidget;
 
-    TEXTMETRIC tm;
-    GetTextMetrics(currentWindowState.hdc, &tm);
-    int lineHeight = tm.tmHeight;
+    int lineHeight = UiUtils_getLineHeight(textDump->theme->text.font);
 
     RECT containerRect = UiUtils_CommonPosToRect(baseWidget->pos);
 
@@ -20,19 +21,25 @@ void drawTextDump(BaseWidget_t * baseWidget){
 
     textLineNode_t * currentLine = textDump->currentLine;
 
-    if(currentLine == NULL){
-        UiUtils_DrawText(baseWidget->pos, "EMPTY TEXT DUMP ERROR", DT_LEFT | DT_SINGLELINE | DT_NOCLIP);
-        return;
-    }
+    
 
-    for (int i = 0; (i < visibleLines) && (currentLine != NULL); i++) {
+    if(currentLine == NULL){
         
         RECT textRect = {containerRect.left, y, containerRect.right, y + lineHeight};
-        UiUtils_DrawText(UiUtils_RectToCommonsPos(textRect), currentLine->line, DT_LEFT | DT_SINGLELINE | DT_NOCLIP);
-        y += lineHeight;
-        currentLine = currentLine->nextNode;
+        
+        UiUtils_DrawTextTheme(UiUtils_RectToCommonsPos(textRect), "EMPTY TEXT DUMP ERROR", textDump->theme->text.formatFlags, textDump->theme->text.font, textDump->theme->text.color);
     }
+    else {
+        for (int i = 0; (i < visibleLines) && (currentLine != NULL); i++) {
+        
+            RECT textRect = {containerRect.left, y, containerRect.right, y + lineHeight};
     
+            UiUtils_DrawTextTheme(UiUtils_RectToCommonsPos(textRect), currentLine->line, textDump->theme->text.formatFlags, textDump->theme->text.font, textDump->theme->text.color);
+            y += lineHeight;
+            currentLine = currentLine->nextNode;
+        }
+    }
+
 }
 
 void onClickTextDump(BaseWidget_t * base, int x, int y){
@@ -102,6 +109,8 @@ textDumpWidget_t * costumTextDump_initTextDump(CommonPos_t pos){
     textDump->baseWidget.initPos = pos;
     textDump->baseWidget.onClick = &onClickTextDump;
     textDump->baseWidget.drawHandler = &drawTextDump;
+    textDump->baseWidget.type = WIDGET_TYPE_TEXT_DUMP;
+    textDump->theme = &currentWindowState.activeTheme.textDump;
 
     if(!scrollCallbackRegisters){
         WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEWHEEL, &scrollCallback);

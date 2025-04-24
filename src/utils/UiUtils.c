@@ -128,6 +128,20 @@ bool UiUtils_TextFitsBox(char text[], CommonPos_t pos){
     return true;
 }
 
+int UiUtils_getLineHeight(HFONT font){
+
+    TEXTMETRIC tm;
+    HFONT oldFont = SelectObject(currentWindowState.hdc, font);
+
+    GetTextMetrics(currentWindowState.hdc, &tm);
+
+    // Restore the old font
+    SelectObject(currentWindowState.hdc, oldFont);
+
+    return tm.tmHeight;
+
+}
+
 bool UiUtils_TextFitsBoxTheme(char text[], CommonPos_t pos, HFONT font) {
     SIZE textSize;
 

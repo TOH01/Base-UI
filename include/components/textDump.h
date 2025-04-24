@@ -17,6 +17,7 @@ typedef struct textDumpWidget {
     textLineNode_t * firstLine;
     textLineNode_t * lastLine;
     textLineNode_t * currentLine;
+    textDumpTheme_t * theme;
 } textDumpWidget_t;
 
 textDumpWidget_t * costumTextDump_initTextDump(CommonPos_t pos);

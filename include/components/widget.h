@@ -10,6 +10,7 @@ typedef enum {
     WIDGET_TYPE_INPUT,
     WIDGET_TYPE_CHECKBOX,
     WIDGET_TYPE_SLIDER,
+    WIDGET_TYPE_TEXT_DUMP,
 } WidgetType_t;
 
 typedef struct BaseWidget {
