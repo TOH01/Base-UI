@@ -1,66 +1,62 @@
-#include "Common.h"
 #include "coreWndProc.h"
+#include "Common.h"
 #include "WmParamHashTable.h"
-#include "MenuUi.h"
+#include "menu.h"
 #include <stdio.h>
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
-    switch (msg)
-    {
-    case WM_CLOSE:
-        DestroyWindow(hwnd);
-        break;
-    case WM_DESTROY:
-        WmParamHandlerTable_Destroy(currentWindowState.handlerTable);
-        PostQuitMessage(0);
-        break;
-    case WM_PAINT:
-    
-    int mapMode = GetMapMode(currentWindowState.hdc);
+	switch (msg) {
+	case WM_CLOSE:
+		DestroyWindow(hwnd);
+		break;
+	case WM_DESTROY:
+		WmParamHandlerTable_Destroy(currentWindowState.handlerTable);
+		PostQuitMessage(0);
+		break;
+	case WM_PAINT:
 
-        currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
+		int mapMode = GetMapMode(currentWindowState.hdc);
 
-        // Create and select the memory device context
-        currentWindowState.memHDC = CreateCompatibleDC(currentWindowState.hdc);
-        currentWindowState.memBitmap = CreateCompatibleBitmap(currentWindowState.hdc, currentWindowState.width, currentWindowState.height);
-        HBITMAP hbmOld = SelectObject(currentWindowState.memHDC, currentWindowState.memBitmap);
+		currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
 
-        // call draw handlers (draw to memDC)
-        #ifndef DISABLE_MENU
-        WmParamHandlerTable_CallHandlersOfId(MenuUi_GetCurrentSubmenu()->WmParamHashTable, hwnd, msg, wParam, lParam);
-        #endif
+		// Create and select the memory device context
+		currentWindowState.memHDC = CreateCompatibleDC(currentWindowState.hdc);
+		currentWindowState.memBitmap = CreateCompatibleBitmap(currentWindowState.hdc, currentWindowState.width, currentWindowState.height);
+		HBITMAP hbmOld = SelectObject(currentWindowState.memHDC, currentWindowState.memBitmap);
 
-        WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
+// call draw handlers (draw to memDC)
+#ifndef DISABLE_MENU
+		WmParamHandlerTable_CallHandlersOfId(MenuUi_GetCurrentSubmenu()->WmParamHashTable, hwnd, msg, wParam, lParam);
+#endif
 
-        // Blit to the screen
-        BitBlt(currentWindowState.hdc, 0, 0, currentWindowState.width, currentWindowState.height, currentWindowState.memHDC, 0, 0, SRCCOPY);
+		WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
 
-        // Clean up memory DC and bitmap
-        SelectObject(currentWindowState.memHDC, hbmOld);
-        DeleteObject(currentWindowState.memBitmap);
-        DeleteDC(currentWindowState.memHDC);
+		// Blit to the screen
+		BitBlt(currentWindowState.hdc, 0, 0, currentWindowState.width, currentWindowState.height, currentWindowState.memHDC, 0, 0, SRCCOPY);
 
-        // End the paint process
-        EndPaint(hwnd, &currentWindowState.ps);
+		// Clean up memory DC and bitmap
+		SelectObject(currentWindowState.memHDC, hbmOld);
+		DeleteObject(currentWindowState.memBitmap);
+		DeleteDC(currentWindowState.memHDC);
 
-        break;
-    default:
-        
-        #ifndef DISABLE_MENU
-        MenuUi_SubmenuCommandHandler(hwnd, msg, wParam, lParam);
-        #endif
+		// End the paint process
+		EndPaint(hwnd, &currentWindowState.ps);
 
-        if (WmParamHandlerTable_IdHasHandler(currentWindowState.handlerTable, msg)){
-            
-            WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
-            
-        }
-        else {
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-        }
-        
-    }
-    return 0;
+		break;
+	default:
+
+#ifndef DISABLE_MENU
+		MenuUi_SubmenuCommandHandler(hwnd, msg, wParam, lParam);
+#endif
+
+		if (WmParamHandlerTable_IdHasHandler(currentWindowState.handlerTable, msg)) {
+
+			WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
+
+		} else {
+			return DefWindowProc(hwnd, msg, wParam, lParam);
+		}
+	}
+	return 0;
 }

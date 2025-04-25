@@ -1,12 +1,12 @@
 #ifndef MENU_UI_H
 #define MENU_UI_H
 
-#include <stdbool.h>
 #include "UiUtils.h"
-#include "windows.h"
 #include "WmParamHashTable.h"
-#include "coreWndProc.h"
 #include "container.h"
+#include "coreWndProc.h"
+#include "windows.h"
+#include <stdbool.h>
 
 #define MENU_UI_CUSTOM_MESSAGE_ID 0x10000
 #define MENU_UI_SUBMENU_LOAD_ID (MENU_UI_CUSTOM_MESSAGE_ID + 1)
@@ -27,16 +27,16 @@
 typedef struct container_t container_t;
 #define containerPos_t CommonPos_t
 
-extern container_t * topContainer;
+extern container_t *topContainer;
 
 typedef struct {
-    
-    int SubmenuID;                                          // unique submenu id
-    WmParamHandlerTable_t * WmParamHashTable;               // hashtable of callbacks
-    container_t * containers[MENU_UI_MAX_CONTAINER];
-    int containerIdx;
-    char name[MENU_UI_MAX_NAME_LENGTH];
-    
+
+	int SubmenuID;                           // unique submenu id
+	WmParamHandlerTable_t *WmParamHashTable; // hashtable of callbacks
+	container_t *containers[MENU_UI_MAX_CONTAINER];
+	int containerIdx;
+	char name[MENU_UI_MAX_NAME_LENGTH];
+
 } MenuUi_Submenu_t;
 
 int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]);
@@ -45,7 +45,7 @@ void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, int MenuId);
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id);
 void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, int id);
-MenuUi_Submenu_t * MenuUi_GetCurrentSubmenu(void);
-container_t * MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos);
+MenuUi_Submenu_t *MenuUi_GetCurrentSubmenu(void);
+container_t *MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos);
 
 #endif

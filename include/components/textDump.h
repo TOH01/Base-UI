@@ -7,20 +7,20 @@
 typedef struct textLineNode textLineNode_t;
 
 typedef struct textLineNode {
-    char * line;
-    textLineNode_t * nextNode;
-    textLineNode_t * prevNode;
+	char *line;
+	textLineNode_t *nextNode;
+	textLineNode_t *prevNode;
 } textLineNode_t;
 
 typedef struct textDumpWidget {
-    BaseWidget_t baseWidget;
-    textLineNode_t * firstLine;
-    textLineNode_t * lastLine;
-    textLineNode_t * currentLine;
-    textDumpTheme_t * theme;
+	BaseWidget_t baseWidget;
+	textLineNode_t *firstLine;
+	textLineNode_t *lastLine;
+	textLineNode_t *currentLine;
+	textDumpTheme_t *theme;
 } textDumpWidget_t;
 
-textDumpWidget_t * costumTextDump_initTextDump(CommonPos_t pos);
-void costumTextDump_AddLine(textDumpWidget_t * textDump, const char * newText);
+textDumpWidget_t *customTextDump_initTextDump(CommonPos_t pos);
+void customTextDump_AddLine(textDumpWidget_t *textDump, const char *newText);
 
 #endif
