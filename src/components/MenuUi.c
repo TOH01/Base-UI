@@ -78,7 +78,7 @@ int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]) {
 	memcpy(submenu->name, name, MENU_UI_MAX_NAME_LENGTH);
 
 	buttonWidget_t *sidebarButton = customButton_initButton(sidebarButtonPos, &MenuUi_SubmenuSwap, submenu->SubmenuID);
-	customButton_SetButtonText(sidebarButton, name);
+	customButton_setButtonText(sidebarButton, name);
 
 	containerAddWidget(sidebarContainer, (BaseWidget_t *)sidebarButton);
 	sidebarButtonPos.top += 0.1f;

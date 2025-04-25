@@ -1,7 +1,7 @@
 
 #ifdef DISABLE_MENU
 
-void InitializeHooks(void){
+void InitializeHooks(void) {
     SetWmCreateHook(NULL);
     SetWmPaintHook(NULL);
     SetWmSizeHook(NULL);

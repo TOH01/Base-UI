@@ -80,16 +80,16 @@ void MenuUi_SubmenuInitAll(void) {
     CommonPos_t posSliderButton = {UI_UTILS_PERCENT(30), UI_UTILS_PERCENT(30), UI_UTILS_PERCENT(90), UI_UTILS_PERCENT(45)};
 
     buttonWidget_t *button = customButton_initButton(posButton, &button1Handler, 1);
-    customButton_SetButtonText(button, "Test");
+    customButton_setButtonText(button, "Test");
 
     buttonWidget_t *button2 = customButton_initButton(posButton2, &button2Handler, 5);
-    customButton_SetButtonText(button2, "ADD");
+    customButton_setButtonText(button2, "ADD");
 
     checkboxWidget_t *checkbox = customCheckbox_initCheckbox(posCheckbox, &checkbox1value);
     sliderWidget_t *slider = customSlider_initSlider(posSlider, &sliderValue, 3);
     buttonWidget_t *buttonSlider = customButton_initButton(posSliderButton, &magicButton, 69);
 
-    customButton_SetButtonText(buttonSlider, "Change Theme");
+    customButton_setButtonText(buttonSlider, "Change Theme");
 
     input = customInput_initInput(posInput);
 
