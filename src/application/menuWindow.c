@@ -9,12 +9,15 @@
 #include "textDump.h"
 #include "widget.h"
 #include <stdio.h>
+#include "drawable.h"
 
 int menu1_key;
 int menu2_key;
 
 bool checkbox1value = 0;
 int sliderValue = 1;
+
+char label[30] = "Text Dump";
 
 inputWidget_t *input;
 textDumpWidget_t *textDump;
@@ -58,7 +61,13 @@ void MenuUi_SubmenuInitAll(void) {
     CommonPos_t pos = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(15), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50)};
     CommonPos_t pos2 = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(15), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(100)};
     CommonPos_t pos3 = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(100)};
-    CommonPos_t pos4 = {UI_UTILS_PERCENT(1), UI_UTILS_PERCENT(1), UI_UTILS_PERCENT(99), UI_UTILS_PERCENT(99)};
+    
+    CommonPos_t pos4 = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(100)};
+
+    CommonPos_t posHeaderTextDump = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(10)};
+
+    Drawable_t * rectangle = drawable_initRectangle(currentWindowState.activeTheme.container.color.border, currentWindowState.activeTheme.container.color.fill, posHeaderTextDump, currentWindowState.activeTheme.container.borderWidth);
+    Drawable_t * text = drawable_initLabel(currentWindowState.activeTheme.button.text.color, currentWindowState.activeTheme.button.text.formatFlags, label, posHeaderTextDump, UiUtils_CreateFont());
 
     container_t *container1 = MenuUi_SubmenuAddContainer(menu1_key, pos);
     container_t *container2 = MenuUi_SubmenuAddContainer(menu2_key, pos);
@@ -70,6 +79,8 @@ void MenuUi_SubmenuInitAll(void) {
     container_t *sharedContainer = windowAddContainer(pos2);
 
     containerAddWidget(textDumpContainer, (BaseWidget_t *)textDump);
+    containerAddDrawable(textDumpContainer, rectangle);
+    containerAddDrawable(textDumpContainer, text);
 
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
     CommonPos_t posCheckbox = {UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(60), UI_UTILS_PERCENT(60)};

@@ -19,7 +19,6 @@ DWORD hoverStartTime = 0;
 #define HOVER_DELAY_MS 5 // 300ms delay
 
 void redrawContainer(container_t *container) {
-	SelectObject(currentWindowState.memHDC, currentWindowState.hPen);
 	UiUtils_DrawColoredRectangle(container->pos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth);
 }
 
@@ -28,6 +27,7 @@ void redrawContainerList(container_t *containers[], int num) {
 		redrawContainer(containers[i]);
 		if (!(movingContainer.action && containers[i] == movingContainer.container)) {
 			renderWidgetList(containers[i]->widgetList);
+			drawable_drawAll(containers[i]->drawableList);
 		}
 	}
 }
@@ -139,6 +139,7 @@ LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (movingContainer.action) {
 
 		updatePosToContainerList(movingContainer.container->pos, movingContainer.container->widgetList);
+		drawable_updatePosToContainerList(movingContainer.container->pos, movingContainer.container->drawableList);
 
 		movingContainer.action = 0;
 	}
@@ -283,6 +284,7 @@ container_t *initContainer(containerPos_t pos, WmParamHandlerTable_t *handlerTab
 	container->borderWitdh = 2; // TODO: make container drawable with different borderWidths
 
 	container->widgetList = initWidgetList();
+	container->drawableList = initDrawableList();
 
 	container->theme = &currentWindowState.activeTheme.container;
 
@@ -292,6 +294,11 @@ container_t *initContainer(containerPos_t pos, WmParamHandlerTable_t *handlerTab
 void containerAddWidget(container_t *container, BaseWidget_t *widget) {
 	widget->pos = getPosToContainer(container->pos, widget->pos);
 	addWidget(container->widgetList, widget);
+}
+
+void containerAddDrawable(container_t * container, Drawable_t * drawable){
+	drawable->pos = getPosToContainer(container->pos, drawable->pos);
+	addDrawable(container->drawableList, drawable);
 }
 
 container_t *windowAddContainer(CommonPos_t pos) {

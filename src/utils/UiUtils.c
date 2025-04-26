@@ -189,3 +189,15 @@ UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth,
 
 	return false;
 }
+
+CommonPos_t getPosToContainer(CommonPos_t containerPos, CommonPos_t widgetPos) {
+	CommonPos_t pos;
+
+	pos.left = containerPos.left + ((containerPos.right - containerPos.left) * widgetPos.left);
+	pos.right = containerPos.left + ((containerPos.right - containerPos.left) * widgetPos.right);
+
+	pos.top = containerPos.top + ((containerPos.bottom - containerPos.top) * widgetPos.top);
+	pos.bottom = containerPos.top + ((containerPos.bottom - containerPos.top) * widgetPos.bottom);
+
+	return pos;
+}

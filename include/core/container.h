@@ -4,6 +4,7 @@
 #include "common.h"
 #include "menu.h"
 #include "widget.h"
+#include "drawable.h"
 #include <stdbool.h>
 
 #define containerPos_t CommonPos_t
@@ -13,6 +14,7 @@ typedef struct container_t {
 	int borderWitdh;
 	WidgetList_t *widgetList;
 	containerTheme_t *theme;
+	DrawableList_t * drawableList;
 } container_t;
 
 typedef struct movingContainer_t {
@@ -28,5 +30,6 @@ typedef struct movingContainer_t {
 container_t *initContainer(containerPos_t pos, WmParamHandlerTable_t *handlerTable);
 void containerAddWidget(container_t *container, BaseWidget_t *widget);
 container_t *windowAddContainer(CommonPos_t pos);
+void containerAddDrawable(container_t * container, Drawable_t * drawable);
 
 #endif

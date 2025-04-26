@@ -55,7 +55,7 @@ typedef struct SliderTheme {
 
 typedef struct ContainerTheme {
     ColorComponent_t color;
-    float borderWidth;
+    int borderWidth;
 } containerTheme_t;
 
 typedef struct UiTheme {
