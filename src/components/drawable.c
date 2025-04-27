@@ -2,35 +2,36 @@
 #include "UiUtils.h"
 #include <stdio.h>
 
-Drawable_t *drawable_initRectangle(COLORREF border, COLORREF fill, CommonPos_t pos, int width) {
+Drawable_t *drawable_initRectangle(CommonPos_t pos, rectangleTheme_t *theme) {
 	Drawable_t *drawable = (Drawable_t *)calloc(1, sizeof(Drawable_t));
 	drawable->type = DRAWABLE_RECTANGLE;
-	drawable->color = fill;
-	drawable->rectangle.width = width;
-	drawable->rectangle.border = border;
+
+	drawable->rectangle.theme = theme;
+
 	drawable->pos = pos;
 	drawable->initPos = pos;
 
 	return drawable;
 }
 
-Drawable_t *drawable_initLabel(COLORREF color, UINT formatFlags, char * text, CommonPos_t pos, HFONT font) {
+Drawable_t *drawable_initLabel(CommonPos_t pos, char *text, labelTheme_t *theme) {
 	Drawable_t *drawable = (Drawable_t *)calloc(1, sizeof(Drawable_t));
 	drawable->type = DRAWABLE_LABEL;
-	drawable->color = color;
-    drawable->label.font = font;
-    drawable->label.text = text;
-    drawable->label.formatFlags = formatFlags;
+
+	drawable->label.theme = theme;
+
+	drawable->label.text = text;
+
 	drawable->pos = pos;
 	drawable->initPos = pos;
 
 	return drawable;
 }
 
-Drawable_t *drawable_initLine(COLORREF color, CommonPos_t pos, int width) {
+Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t *theme) {
 	Drawable_t *drawable = (Drawable_t *)calloc(1, sizeof(Drawable_t));
 	drawable->type = DRAWABLE_LINE;
-	drawable->type = width;
+	drawable->line.theme = theme;
 	drawable->pos = pos;
 	drawable->initPos = pos;
 
@@ -42,16 +43,26 @@ void drawable_draw(Drawable_t *drawable) {
 	switch (drawable->type) {
 	case DRAWABLE_LINE:
 
+		lineTheme_t *theme = drawable->line.theme;
+
+		UiUtils_DrawLineRelative(drawable->pos, theme->color.fill, theme->width);
+
 		break;
 	case DRAWABLE_RECTANGLE:
-		UiUtils_DrawColoredRectangle(drawable->pos, drawable->color, drawable->rectangle.border, drawable->rectangle.width);
+
+		rectangleTheme_t *themeRectangle = drawable->rectangle.theme;
+
+		UiUtils_DrawColoredRectangle(drawable->pos, themeRectangle->color.fill, themeRectangle->color.border, themeRectangle->borderWidth);
 		break;
 	case DRAWABLE_LABEL:
-		if (UiUtils_TextFitsBoxTheme(drawable->label.text, drawable->pos, drawable->label.font)) {
-			UiUtils_DrawTextTheme(drawable->pos, drawable->label.text, drawable->label.formatFlags, drawable->label.font, drawable->color);
+
+		labelTheme_t *themeLabel = drawable->label.theme;
+
+		if (UiUtils_TextFitsBoxTheme(drawable->label.text, drawable->pos, themeLabel->text.font)) {
+			UiUtils_DrawTextTheme(drawable->pos, drawable->label.text, themeLabel->text.formatFlags, themeLabel->text.font, themeLabel->text.color);
 		}
 #ifdef DEBUG
-		else{
+		else {
 			printf("Drawable text too large for label");
 		}
 #endif
@@ -90,7 +101,7 @@ void addDrawable(DrawableList_t *list, Drawable_t *drawable) {
 	currentNode->nextDrawableNode = newNode;
 }
 
-void drawable_drawAll(DrawableList_t * list){
+void drawable_drawAll(DrawableList_t *list) {
 	if (!list || !list->headDrawable) {
 		return;
 	}

@@ -58,6 +58,20 @@ typedef struct ContainerTheme {
     int borderWidth;
 } containerTheme_t;
 
+typedef struct labelTheme{
+    TextComponent_t text;
+} labelTheme_t;
+
+typedef struct rectangleTheme{
+    ColorComponent_t color;
+    int borderWidth;
+} rectangleTheme_t;
+
+typedef struct lineTheme{
+    ColorComponent_t color;
+    int width;
+} lineTheme_t;
+
 typedef struct UiTheme {
     ButtonTheme_t button;
     InputTheme_t input;
@@ -65,6 +79,9 @@ typedef struct UiTheme {
     SliderTheme_t slider;
     containerTheme_t container;
     textDumpTheme_t textDump;
+    labelTheme_t label;
+    rectangleTheme_t rectangel;
+    lineTheme_t line;
 } UiTheme_t;
 
 
@@ -102,7 +119,18 @@ typedef struct UiTheme {
         .borderWidth = 1.0f, \
     }, \
     .textDump = { \
-        .text  = {RGB(220, 220, 220), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
+        .text = {RGB(220, 220, 220), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
+    }, \
+    .label = { \
+        .text = {RGB(200, 200, 200), NULL, DT_LEFT | DT_VCENTER | DT_NOCLIP}, \
+    }, \
+    .rectangel = { \
+        .color = {RGB(80, 80, 80), RGB(37, 37, 38), RGB(90, 90, 90)}, \
+        .borderWidth = 1, \
+    }, \
+    .line = { \
+        .color = {RGB(100, 100, 100), RGB(100, 100, 100), RGB(120, 120, 120)}, \
+        .width = 1, \
     } \
 })
 
@@ -140,7 +168,18 @@ typedef struct UiTheme {
         .borderWidth = 1.0f, \
     }, \
     .textDump = { \
-        .text  = {RGB(30, 30, 30), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
+        .text = {RGB(30, 30, 30), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
+    }, \
+    .label = { \
+        .text = {RGB(50, 50, 50), NULL, DT_LEFT | DT_VCENTER | DT_NOCLIP}, \
+    }, \
+    .rectangel = { \
+        .color = {RGB(210, 210, 210), RGB(245, 245, 245), RGB(225, 225, 225)}, \
+        .borderWidth = 1, \
+    }, \
+    .line = { \
+        .color = {RGB(180, 180, 180), RGB(180, 180, 180), RGB(200, 200, 200)}, \
+        .width = 1, \
     } \
 })
 
@@ -178,7 +217,18 @@ typedef struct UiTheme {
         .borderWidth = 1.0f, \
     }, \
     .textDump = { \
-        .text  = {RGB(20, 20, 20), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
+        .text = {RGB(20, 20, 20), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
+    }, \
+    .label = { \
+        .text = {RGB(30, 30, 30), NULL, DT_LEFT | DT_VCENTER | DT_NOCLIP}, \
+    }, \
+    .rectangel = { \
+        .color = {RGB(160, 210, 230), RGB(245, 250, 255), RGB(180, 220, 235)}, \
+        .borderWidth = 1, \
+    }, \
+    .line = { \
+        .color = {RGB(140, 190, 210), RGB(140, 190, 210), RGB(160, 210, 230)}, \
+        .width = 1, \
     } \
 })
 

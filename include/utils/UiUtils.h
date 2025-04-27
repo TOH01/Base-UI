@@ -34,5 +34,6 @@ void UiUtils_DrawFilledRectangle(CommonPos_t pos, COLORREF color);
 void UiUtils_DrawColoredRectangle(CommonPos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize);
 int UiUtils_getLineHeight(HFONT font);
 CommonPos_t getPosToContainer(CommonPos_t containerPos, CommonPos_t widgetPos);
+void UiUtils_DrawLineRelative(CommonPos_t pos, COLORREF color, int width);
 
 #endif

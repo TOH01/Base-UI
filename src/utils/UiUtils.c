@@ -61,6 +61,20 @@ void UiUtils_DrawText(CommonPos_t pos, char *name, UINT format) {
 	DrawText(currentWindowState.memHDC, name, -1, &textRect, format);
 }
 
+void UiUtils_DrawLineRelative(CommonPos_t pos, COLORREF color, int width) {
+    HPEN pen = CreatePen(PS_SOLID, width, color);
+    HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
+
+    RECT r = UiUtils_CommonPosToRect(pos);
+
+    MoveToEx(currentWindowState.memHDC, r.left, r.top, NULL);
+    LineTo(currentWindowState.memHDC, r.right, r.bottom);
+
+    SelectObject(currentWindowState.memHDC, oldPen);
+    DeleteObject(pen);
+}
+
+
 void UiUtils_DrawTextTheme(CommonPos_t pos, char *name, UINT format, HFONT font, COLORREF color) {
 
 	SetTextColor(currentWindowState.memHDC, color);

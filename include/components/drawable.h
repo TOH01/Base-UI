@@ -12,21 +12,18 @@ typedef enum DrawableType {
 
 typedef struct Drawable {
 	DrawableType_t type;
-	COLORREF color;
     CommonPos_t pos;
     CommonPos_t initPos;
 	union {
 		struct {
-			int width;
-            COLORREF border;
+			rectangleTheme_t * theme;
 		} rectangle;
 		struct {
 			char * text;
-			HFONT font;
-            UINT formatFlags;
+			labelTheme_t * theme;
 		} label;
 		struct {
-			int width;
+			lineTheme_t * theme;
 		} line;
 	};
 
@@ -46,9 +43,9 @@ typedef struct drawableList {
 void drawable_drawAll(DrawableList_t * list);
 void addDrawable(DrawableList_t *list, Drawable_t *drawable);
 DrawableList_t *initDrawableList(void);
-Drawable_t *drawable_initRectangle(COLORREF border, COLORREF fill, CommonPos_t pos, int width);
-Drawable_t *drawable_initLabel(COLORREF color, UINT formatFlags, char * text, CommonPos_t pos, HFONT font);
-Drawable_t *drawable_initLine(COLORREF color, CommonPos_t pos, int width);
+Drawable_t *drawable_initRectangle(CommonPos_t pos, rectangleTheme_t * theme);
+Drawable_t *drawable_initLabel(CommonPos_t pos, char * text, labelTheme_t * theme);
+Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t * theme);
 void drawable_updatePosToContainerList(CommonPos_t containerPos, DrawableList_t *list);
 
 #endif

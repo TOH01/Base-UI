@@ -66,8 +66,9 @@ void MenuUi_SubmenuInitAll(void) {
 
     CommonPos_t posHeaderTextDump = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(10)};
 
-    Drawable_t * rectangle = drawable_initRectangle(currentWindowState.activeTheme.container.color.border, currentWindowState.activeTheme.container.color.fill, posHeaderTextDump, currentWindowState.activeTheme.container.borderWidth);
-    Drawable_t * text = drawable_initLabel(currentWindowState.activeTheme.button.text.color, currentWindowState.activeTheme.button.text.formatFlags, label, posHeaderTextDump, UiUtils_CreateFont());
+    Drawable_t * rectangle = drawable_initRectangle(posHeaderTextDump, &currentWindowState.activeTheme.rectangel);
+    Drawable_t * text = drawable_initLabel(posHeaderTextDump, label, &currentWindowState.activeTheme.label);
+    Drawable_t * line = drawable_initLine(posHeaderTextDump, &currentWindowState.activeTheme.line);
 
     container_t *container1 = MenuUi_SubmenuAddContainer(menu1_key, pos);
     container_t *container2 = MenuUi_SubmenuAddContainer(menu2_key, pos);
@@ -80,6 +81,7 @@ void MenuUi_SubmenuInitAll(void) {
 
     containerAddWidget(textDumpContainer, (BaseWidget_t *)textDump);
     containerAddDrawable(textDumpContainer, rectangle);
+    containerAddDrawable(textDumpContainer, line);
     containerAddDrawable(textDumpContainer, text);
 
     CommonPos_t posButton = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(25), UI_UTILS_PERCENT(25)};
