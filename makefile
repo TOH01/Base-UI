@@ -11,26 +11,24 @@ BUILDDIR = build
 OUT = $(BUILDDIR)/my_program.exe
 
 # Find all source files in the src directory and subdirectories, including main.c
-SRCS = $(wildcard $(SRCDIR)/**/*.c) $(wildcard $(SRCDIR)/*.c)
-
-# Object files will go into the build directory
-OBJS = $(SRCS:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
+SRCS = $(shell find $(SRCDIR) -name '*.c')
+OBJS = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SRCS))
 
 # Default target
 all: $(OUT)
 
 # Link object files into the final executable
 $(OUT): $(OBJS)
-	@if not exist "$(BUILDDIR)" mkdir "$(BUILDDIR)"
+	@mkdir -p $(BUILDDIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Compile source files into object files
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
-	@if not exist "$(dir $@)" mkdir "$(dir $@)"
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean build directory
 clean:
-	@if exist "$(BUILDDIR)" rmdir /s /q "$(BUILDDIR)"
+	rm -rf $(BUILDDIR)
 
 .PHONY: all clean

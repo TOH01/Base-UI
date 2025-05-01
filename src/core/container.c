@@ -284,7 +284,7 @@ container_t *initContainer(containerPos_t pos, WmParamHandlerTable_t *handlerTab
 	container->borderWitdh = 2; // TODO: make container drawable with different borderWidths
 
 	container->widgetList = initWidgetList();
-	container->drawableList = initDrawableList();
+	container->drawableList = DynamicArray_init(10); // TODO : better init size logic to increase performance
 
 	container->theme = &currentWindowState.activeTheme.container;
 

@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "coreWindowState.h"
+#include "DynamicArray.h"
 #include <windows.h>
 
 extern WindowState_t currentWindowState;

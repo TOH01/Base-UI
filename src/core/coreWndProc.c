@@ -17,7 +17,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_PAINT:
 
 		currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
-		
+
 		// Create and select the memory device context
 		currentWindowState.memHDC = CreateCompatibleDC(currentWindowState.hdc);
 		currentWindowState.memBitmap = CreateCompatibleBitmap(currentWindowState.hdc, currentWindowState.width, currentWindowState.height);

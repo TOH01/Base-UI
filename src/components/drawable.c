@@ -73,61 +73,45 @@ void drawable_draw(Drawable_t *drawable) {
 	}
 }
 
-DrawableList_t *initDrawableList(void) {
-	DrawableList_t *list = (DrawableList_t *)calloc(1, sizeof(DrawableList_t));
-	return list;
+void addDrawable(DynamicArray_t * array, Drawable_t *drawable) {
+	if (!array || !drawable) {
+		return;
+	}
+
+	DynamicArray_Add(array, drawable);
+	
 }
 
-void addDrawable(DrawableList_t *list, Drawable_t *drawable) {
-	if (!list) {
+void drawable_drawAll(DynamicArray_t *array) {
+	if (!array) {
 		return;
 	}
 
-	if (list->headDrawable == NULL) {
-		list->headDrawable = (DrawableNode_t *)calloc(1, sizeof(DrawableNode_t));
-		list->headDrawable->drawable = drawable;
-		return;
+	Drawable_t * drawable = NULL;
+
+	for (int i = 0; i < array->size; i++)
+	{
+		
+		drawable = (Drawable_t *) DynamicArray_get(array, i);
+
+		drawable_draw(drawable);
 	}
-
-	DrawableNode_t *currentNode = list->headDrawable;
-
-	while (currentNode->nextDrawableNode != NULL) {
-		currentNode = currentNode->nextDrawableNode;
-	}
-
-	DrawableNode_t *newNode = (DrawableNode_t *)calloc(1, sizeof(DrawableNode_t));
-	newNode->drawable = drawable;
-
-	currentNode->nextDrawableNode = newNode;
+	
 }
 
-void drawable_drawAll(DrawableList_t *list) {
-	if (!list || !list->headDrawable) {
+void drawable_updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array) {
+
+	if (!array) {
 		return;
 	}
 
-	DrawableNode_t *node = list->headDrawable;
+	Drawable_t * drawable = NULL;
 
-	drawable_draw(node->drawable);
+	for (int i = 0; i < array->size; i++)
+	{
+		drawable = (Drawable_t *) DynamicArray_get(array, i);
 
-	while (node->nextDrawableNode != NULL) {
-		node = node->nextDrawableNode;
-		drawable_draw(node->drawable);
+		getPosToContainer(containerPos, drawable->initPos);
 	}
-}
-
-void drawable_updatePosToContainerList(CommonPos_t containerPos, DrawableList_t *list) {
-
-	if (!list || !list->headDrawable) {
-		return;
-	}
-
-	DrawableNode_t *node = list->headDrawable;
-
-	node->drawable->pos = getPosToContainer(containerPos, node->drawable->initPos);
-
-	while (node->nextDrawableNode != NULL) {
-		node = node->nextDrawableNode;
-		node->drawable->pos = getPosToContainer(containerPos, node->drawable->initPos);
-	}
+	
 }

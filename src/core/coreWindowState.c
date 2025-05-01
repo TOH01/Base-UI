@@ -11,4 +11,6 @@ WindowState_t currentWindowState = {
     .activeTheme = OCEAN_BREEZE_THEME(),
 };
 
-LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { currentWindowState.hwnd = hwnd; }
+LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { 
+    currentWindowState.hwnd = hwnd; 
+}

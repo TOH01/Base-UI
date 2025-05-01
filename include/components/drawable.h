@@ -29,23 +29,11 @@ typedef struct Drawable {
 
 } Drawable_t;
 
-typedef struct DrawableNode DrawableNode_t;
-
-typedef struct DrawableNode {
-	Drawable_t *drawable;
-	DrawableNode_t *nextDrawableNode;
-} DrawableNode_t;
-
-typedef struct drawableList {
-	DrawableNode_t *headDrawable;
-} DrawableList_t;
-
-void drawable_drawAll(DrawableList_t * list);
-void addDrawable(DrawableList_t *list, Drawable_t *drawable);
-DrawableList_t *initDrawableList(void);
+void drawable_drawAll(DynamicArray_t * array);
+void addDrawable(DynamicArray_t * array, Drawable_t *drawable);
 Drawable_t *drawable_initRectangle(CommonPos_t pos, rectangleTheme_t * theme);
 Drawable_t *drawable_initLabel(CommonPos_t pos, char * text, labelTheme_t * theme);
 Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t * theme);
-void drawable_updatePosToContainerList(CommonPos_t containerPos, DrawableList_t *list);
+void drawable_updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array);
 
 #endif

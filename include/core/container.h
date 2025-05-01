@@ -14,7 +14,7 @@ typedef struct container_t {
 	int borderWitdh;
 	WidgetList_t *widgetList;
 	containerTheme_t *theme;
-	DrawableList_t * drawableList;
+	DynamicArray_t * drawableList;
 } container_t;
 
 typedef struct movingContainer_t {
