@@ -16,6 +16,8 @@ int MenuUi_currentSubmenuIdx = 0;
 int MenuUi_SubmenuIdCounter = MENU_UI_SUBMENU_START_ID;
 MenuUi_Submenu_t submenus[MENU_UI_SUBMENU_MAX];
 
+DynamicArray_t * subemenusArray = NULL;
+
 container_t *sidebarContainer = NULL;
 
 const CommonPos_t sidebarPos = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(15), UI_UTILS_PERCENT(100)};
@@ -24,11 +26,21 @@ CommonPos_t sidebarButtonPos = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(5), UI_UT
 container_t *MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos) {
 	MenuUi_Submenu_t *submenu = &submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)];
 
-	container_t *container = initContainer(pos, submenu->WmParamHashTable);
+	container_t *container = windowAddContainer(pos);
 
-	submenu->containers[submenu->containerIdx] = container;
+	// we want first initialized menu to be visibile
+	if(MenuId == MENU_UI_SUBMENU_START_ID){
+		container->visible = 1;
+	}
+	else{
+		container->visible = 0;
+	}
 
-	submenu->containerIdx++;
+	if(submenu->containers == NULL){
+		submenu->containers = DynamicArray_init(10);
+	}
+
+	DynamicArray_Add(submenu->containers, container);
 
 	return container;
 }
@@ -43,13 +55,35 @@ void MenuUi_SubmenuSwap(int menuId) {
 		return;
 	}
 
+	MenuUi_Submenu_t * submenu = &submenus[MenuUi_currentSubmenuIdx];
+	container_t * container = NULL;
+
+	for (int i = 0; i < submenu->containers->size; i++)
+	{
+		container = DynamicArray_get(submenu->containers, i);
+
+		if(container){
+			container->visible = 0;
+		}
+	}
+	
+
 	MenuUi_SubmenuCommandHandler(currentWindowState.hwnd, MENU_UI_SUBMENU_DESTROY_ID, 0, 0);
 
 	MenuUi_currentSubmenuIdx = MENU_UI_SUBMENU_GET_IDX(menuId);
 
-	MenuUi_SubmenuCommandHandler(currentWindowState.hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
+	submenu = &submenus[MenuUi_currentSubmenuIdx];
 
-	topContainer = NULL;
+	for (int i = 0; i < submenu->containers->size; i++)
+	{
+		container = DynamicArray_get(submenu->containers, i);
+
+		if(container){
+			container->visible = 1;
+		}
+	}
+
+	MenuUi_SubmenuCommandHandler(currentWindowState.hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
 
 	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }

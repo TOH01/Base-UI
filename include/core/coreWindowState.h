@@ -3,6 +3,7 @@
 
 #include "UiTheme.h"
 #include "WmParamHashTable.h"
+#include "DynamicArray.h"
 
 typedef struct WindowState {
 	int width;
@@ -15,6 +16,7 @@ typedef struct WindowState {
 	HBITMAP memBitmap;
 	HWND hwnd;
 	UiTheme_t activeTheme;
+	DynamicArray_t * containers;
 } WindowState_t;
 
 LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

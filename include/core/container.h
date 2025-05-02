@@ -16,7 +16,6 @@ typedef struct container_t {
 	DynamicArray_t * drawableList;
 	containerTheme_t *theme;
 	bool visible;
-	int z_index;
 } container_t;
 
 typedef struct movingContainer_t {
@@ -29,7 +28,7 @@ typedef struct movingContainer_t {
 
 #define CONTAINER_MOVE_ACTION 5
 
-container_t *initContainer(containerPos_t pos, WmParamHandlerTable_t *handlerTable);
+container_t *initContainer(containerPos_t pos);
 void containerAddWidget(container_t *container, BaseWidget_t *widget);
 container_t *windowAddContainer(CommonPos_t pos);
 void containerAddDrawable(container_t * container, Drawable_t * drawable);

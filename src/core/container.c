@@ -18,121 +18,96 @@ DWORD hoverStartTime = 0;
 #define HOVER_TIMER_ID 1
 #define HOVER_DELAY_MS 5 // 300ms delay
 
-void redrawContainer(container_t *container) {
-	UiUtils_DrawColoredRectangle(container->pos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth);
-}
+void redrawContainer(container_t *container) { UiUtils_DrawColoredRectangle(container->pos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth); }
 
-void redrawContainerList(container_t *containers[], int num) {
-	for (int i = 0; i < num; i++) {
-		redrawContainer(containers[i]);
-		if (!(movingContainer.action && containers[i] == movingContainer.container)) {
-			renderWidgetList(containers[i]->widgetList);
-			drawable_drawAll(containers[i]->drawableList);
+void redrawContainerList() {
+
+	container_t *container = NULL;
+
+	for (int i = 0; i < currentWindowState.containers->size ; i++) {
+
+		container = (container_t *) DynamicArray_get(currentWindowState.containers, i);
+
+		if (container && container->visible) {
+			redrawContainer(DynamicArray_get(currentWindowState.containers, i));
+			if (!(movingContainer.action && container == movingContainer.container)) {
+				renderWidgetList(container->widgetList);
+				drawable_drawAll(container->drawableList);
+			}
 		}
 	}
 }
 
-void moveContainerOnTop(container_t *containerArray[], int idx) {
+void moveContainerOnTop(int idx) {
 
-	if (topContainer != containerArray[idx]) {
+	if (topContainer != (container_t *) DynamicArray_get(currentWindowState.containers, idx)) {
 
-		if (topContainer) {
-			topContainerList[topContainerIdx] = topContainer;
+		container_t *temp = (container_t *) DynamicArray_get(currentWindowState.containers, idx);
+
+		for (int i = idx; i < currentWindowState.containers->size - 1; i++) {
+			container_t *next = (container_t *) DynamicArray_get(currentWindowState.containers, i + 1);
+			DynamicArray_Insert(currentWindowState.containers, next, i);
 		}
 
-		topContainer = containerArray[idx];
-		topContainerList = containerArray;
-		topContainerIdx = idx;
+		DynamicArray_Insert(currentWindowState.containers, temp, currentWindowState.containers->size - 1);
+		
 	}
 }
 
 /*
 return: true if click was inside of or on border of container from param containers[]
 */
-bool containerListLButtonDown(container_t *containers[], int num, int x, int y) {
+void containerListLButtonDown(int x, int y) {
 
 	// reset selected input, has to be done before widget callback
 	activeInput = NULL;
 	activeTextDump = NULL;
+	container_t *container = NULL;
 
-	for (int i = 0; i < num; i++) {
+	for (int i = currentWindowState.containers->size - 1; i >= 0; i--) {
 
-		if (UiUtils_CoordinateIsOnBorderOf(x, y, containers[i]->borderWitdh, containers[i]->pos)) {
-			if (!movingContainer.action) {
-				movingContainer.startPos = containers[i]->pos;
-				movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, containers[i]->borderWitdh, containers[i]->pos);
-				movingContainer.container = containers[i];
+		container = (container_t *) DynamicArray_get(currentWindowState.containers, i);
+
+		if (container && container->visible) {
+			if (UiUtils_CoordinateIsOnBorderOf(x, y, container->borderWitdh, container->pos) && !movingContainer.action) {
+				movingContainer.startPos = container->pos;
+				movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, container->borderWitdh, container->pos);
+				movingContainer.container = container;
 				movingContainer.mouseStartX = x;
-				movingContainer.mouseStartY = y;
-				return 1;
-			}
-		}
-
-		if (UiUtils_CoordinateIsInsideOf(x, y, containers[i]->pos)) {
-
-			BaseWidget_t *widget = widgetClicked(x, y, containers[i]->widgetList);
-
-			if (widget) {
-				widget->onClick(widget, x, y);
-				InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
-				return 1;
+				break;
 			}
 
-			if (!movingContainer.action) {
-				movingContainer.startPos = containers[i]->pos;
-				movingContainer.action = CONTAINER_MOVE_ACTION;
-				movingContainer.container = containers[i];
-				movingContainer.mouseStartX = x;
-				movingContainer.mouseStartY = y;
-				moveContainerOnTop(containers, i);
-				return 1;
+			else if (UiUtils_CoordinateIsInsideOf(x, y, container->pos)) {
+
+				BaseWidget_t *widget = widgetClicked(x, y, container->widgetList);
+
+				if (widget) {
+					widget->onClick(widget, x, y);
+					InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
+					break;
+				} else if (!movingContainer.action) {
+					movingContainer.startPos = container->pos;
+					movingContainer.action = CONTAINER_MOVE_ACTION;
+					movingContainer.container = container;
+					movingContainer.mouseStartX = x;
+					movingContainer.mouseStartY = y;
+					moveContainerOnTop(i);
+					break;
+				}
 			}
 		}
 	}
-
-	return 0;
 }
 
-LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-
-#ifndef DISABLE_MENU
-
-	MenuUi_Submenu_t *submenu = MenuUi_GetCurrentSubmenu();
-
-	redrawContainerList(submenu->containers, submenu->containerIdx);
-
-#endif
-
-	redrawContainerList(containerList, currentWindowContainerIdx);
-
-	if (topContainer) {
-		redrawContainerList(&topContainer, 1);
-	}
-}
+LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { redrawContainerList(); }
 
 LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { InvalidateRect(hwnd, NULL, FALSE); }
 
 LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	int x = LOWORD(lParam); // Horizontal position in client area
-	int y = HIWORD(lParam); // Vertical position in client area
+	int x = LOWORD(lParam);
+	int y = HIWORD(lParam);
 
-	bool widgetClicked = 0;
-
-	if (topContainer) {
-		widgetClicked = widgetClicked | containerListLButtonDown(&topContainer, 1, x, y);
-	}
-
-	if (!widgetClicked) {
-		widgetClicked = widgetClicked | containerListLButtonDown(containerList, currentWindowContainerIdx, x, y);
-	}
-
-#ifndef DISABLE_MENU
-	if (!widgetClicked) {
-		MenuUi_Submenu_t *submenu = MenuUi_GetCurrentSubmenu();
-
-		widgetClicked = widgetClicked | containerListLButtonDown(submenu->containers, submenu->containerIdx, x, y);
-	}
-#endif
+	containerListLButtonDown(x, y);
 }
 
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -191,36 +166,19 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	else {
 
+		container_t *container = NULL;
 		hoverCandidate = NULL;
-		bool overlapFlag = false;
 
-		if (!hoverCandidate) {
+		for (int i = currentWindowState.containers->size - 1; i >= 0; i--) {
+			container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
-			if (topContainer) {
-				hoverCandidate = widgetClicked(x, y, topContainer->widgetList);
-				overlapFlag = UiUtils_CoordinateIsInsideOf(x, y, topContainer->pos);
-			}
-		}
-
-		if (!hoverCandidate) {
-			for (int i = 0; i < currentWindowContainerIdx; i++) {
-				if (!hoverCandidate && !overlapFlag) {
-					hoverCandidate = widgetClicked(x, y, containerList[i]->widgetList);
-					overlapFlag = UiUtils_CoordinateIsInsideOf(x, y, containerList[i]->pos);
+			if (container && container->visible) {
+				if (UiUtils_CoordinateIsInsideOf(x, y, container->pos)) {
+					hoverCandidate = widgetClicked(x, y, container->widgetList);
+					break;
 				}
 			}
 		}
-
-#ifndef DISABLE_MENU
-		if (!hoverCandidate) {
-			for (int i = 0; i < MenuUi_GetCurrentSubmenu()->containerIdx; i++) {
-				if (!hoverCandidate && !overlapFlag) {
-					hoverCandidate = widgetClicked(x, y, MenuUi_GetCurrentSubmenu()->containers[i]->widgetList);
-					overlapFlag = UiUtils_CoordinateIsInsideOf(x, y, MenuUi_GetCurrentSubmenu()->containers[i]->pos);
-				}
-			}
-		}
-#endif
 
 		if (hoverCandidate != lastHoverCandidate) {
 			if (hoverCandidate) {
@@ -264,26 +222,26 @@ LRESULT CALLBACK TimerCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	}
 }
 
-container_t *initContainer(containerPos_t pos, WmParamHandlerTable_t *handlerTable) {
+container_t *initContainer(containerPos_t pos) {
 
 	container_t *container = (container_t *)calloc(1, sizeof(container_t));
 
 	container->pos = pos;
 
-	if (!handlerTable->hasContainerHandlers) {
-		WmParamHanderTable_Insert(handlerTable, WM_PAINT, &redrawContainers);
-		WmParamHanderTable_Insert(handlerTable, WM_SIZE, &resizeContainers);
-		WmParamHanderTable_Insert(handlerTable, WM_LBUTTONDOWN, &LButtonDownCallback);
-		WmParamHanderTable_Insert(handlerTable, WM_LBUTTONUP, &LButtonUpCallback);
-		WmParamHanderTable_Insert(handlerTable, WM_MOUSEMOVE, &MouseMoveCallback);
-		WmParamHanderTable_Insert(handlerTable, WM_TIMER, &TimerCallback);
+	if (!currentWindowState.handlerTable->hasContainerHandlers) {
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_PAINT, &redrawContainers);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE, &resizeContainers);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONDOWN, &LButtonDownCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONUP, &LButtonUpCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &MouseMoveCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_TIMER, &TimerCallback);
 
-		handlerTable->hasContainerHandlers = true;
+		currentWindowState.handlerTable->hasContainerHandlers = true;
 	}
 
 	container->borderWitdh = 2; // TODO: make container drawable with different borderWidths
 
-	container->widgetList = DynamicArray_init(10); // TODO : better init size logic to increase performance
+	container->widgetList = DynamicArray_init(10);   // TODO : better init size logic to increase performance
 	container->drawableList = DynamicArray_init(10); // TODO : better init size logic to increase performance
 
 	container->theme = &currentWindowState.activeTheme.container;
@@ -296,25 +254,22 @@ void containerAddWidget(container_t *container, BaseWidget_t *widget) {
 	addWidget(container->widgetList, widget);
 }
 
-void containerAddDrawable(container_t * container, Drawable_t * drawable){
+void containerAddDrawable(container_t *container, Drawable_t *drawable) {
 	drawable->pos = getPosToContainer(container->pos, drawable->pos);
 	addDrawable(container->drawableList, drawable);
 }
 
 container_t *windowAddContainer(CommonPos_t pos) {
 
-#ifndef DISABLE_MENU
-	// each submenu has their own container handlers, which will automatically handle shared containers aswell
-	// setting hasContainerHandles to true, will prevent handlers being called twice
+	container_t *container = initContainer(pos);
 
-	currentWindowState.handlerTable->hasContainerHandlers = 1;
-#endif
+	container->visible = 1;
 
-	container_t *container = initContainer(pos, currentWindowState.handlerTable);
+	if(currentWindowState.containers == NULL){
+		currentWindowState.containers = DynamicArray_init(50);
+	}
 
-	containerList[currentWindowContainerIdx] = container;
-
-	currentWindowContainerIdx++;
+	DynamicArray_Add(currentWindowState.containers, container);
 
 	return container;
 }

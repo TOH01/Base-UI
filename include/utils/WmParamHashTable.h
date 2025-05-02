@@ -13,6 +13,7 @@ typedef struct HandlerNote HandlerNode_t;
 
 typedef struct HandlerNote {
 	MessageHandler_t handler;
+	bool active;
 	HandlerNode_t *nextHandlerNode;
 } HandlerNode_t;
 

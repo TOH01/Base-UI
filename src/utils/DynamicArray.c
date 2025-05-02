@@ -24,4 +24,11 @@ void * DynamicArray_get(DynamicArray_t * array, int idx){
 	if(idx < array->size){
 		return array->items[idx];
 	}
+	return NULL;
+}
+
+void DynamicArray_Insert(DynamicArray_t * array, void * data, int idx){
+	if(idx < array->size){
+		array->items[idx] = data;
+	}
 }
