@@ -2,83 +2,65 @@
 #include "UiUtils.h"
 #include "common.h"
 
-WidgetList_t *initWidgetList(void) {
-	WidgetList_t *list = (WidgetList_t *)calloc(1, sizeof(WidgetList_t));
-	return list;
-}
-
-void addWidget(WidgetList_t *list, BaseWidget_t *widget) {
-	if (!list) {
+void addWidget(DynamicArray_t * array, BaseWidget_t *widget) {
+	if (!array) {
 		return;
 	}
 
-	if (list->headWidget == NULL) {
-		list->headWidget = (WidgetNode_t *)calloc(1, sizeof(WidgetNode_t));
-		list->headWidget->widget = widget;
+	DynamicArray_Add(array, widget);
+}
+
+void renderWidgetList(DynamicArray_t * array) {
+
+	if (!array) {
 		return;
 	}
 
-	WidgetNode_t *currentNode = list->headWidget;
+	BaseWidget_t * widget = NULL;
 
-	while (currentNode->nextWidgetNode != NULL) {
-		currentNode = currentNode->nextWidgetNode;
+	for (int i = 0; i < array->size; i++)
+	{
+		widget = DynamicArray_get(array, i);
+		
+		if(widget != NULL){
+			widget->drawHandler(widget);
+		}
 	}
-
-	WidgetNode_t *newNode = (WidgetNode_t *)calloc(1, sizeof(WidgetNode_t));
-	newNode->widget = widget;
-
-	currentNode->nextWidgetNode = newNode;
 }
 
-void renderWidgetList(WidgetList_t *list) {
+void updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array) {
 
-	if (!list || !list->headWidget) {
+	if (!array) {
 		return;
 	}
 
-	WidgetNode_t *node = list->headWidget;
+	BaseWidget_t * widget = NULL;
 
-	node->widget->drawHandler(node->widget);
-
-	while (node->nextWidgetNode != NULL) {
-		node = node->nextWidgetNode;
-		node->widget->drawHandler(node->widget);
+	for (int i = 0; i < array->size; i++)
+	{
+		widget = DynamicArray_get(array, i);
+		
+		if(widget != NULL){
+			widget->pos = getPosToContainer(containerPos, widget->initPos);
+		}
 	}
+
 }
 
-void updatePosToContainerList(CommonPos_t containerPos, WidgetList_t *list) {
+BaseWidget_t *widgetClicked(int x, int y, DynamicArray_t * array) {
 
-	if (!list || !list->headWidget) {
-		return;
-	}
-
-	WidgetNode_t *node = list->headWidget;
-
-	node->widget->pos = getPosToContainer(containerPos, node->widget->initPos);
-
-	while (node->nextWidgetNode != NULL) {
-		node = node->nextWidgetNode;
-		node->widget->pos = getPosToContainer(containerPos, node->widget->initPos);
-	}
-}
-
-BaseWidget_t *widgetClicked(int x, int y, WidgetList_t *list) {
-
-	if (!list || !list->headWidget) {
+	if (!array) {
 		return NULL;
 	}
 
-	WidgetNode_t *node = list->headWidget;
+	BaseWidget_t * widget = NULL;
 
-	if (UiUtils_CoordinateIsInsideOf(x, y, node->widget->pos)) {
-		return node->widget;
-	}
-
-	while (node->nextWidgetNode != NULL) {
-		node = node->nextWidgetNode;
-
-		if (UiUtils_CoordinateIsInsideOf(x, y, node->widget->pos)) {
-			return node->widget;
+	for (int i = 0; i < array->size; i++)
+	{
+		widget = DynamicArray_get(array, i);
+		
+		if (widget != NULL && UiUtils_CoordinateIsInsideOf(x, y, widget->pos)) {
+			return widget;
 		}
 	}
 

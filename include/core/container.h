@@ -12,9 +12,11 @@
 typedef struct container_t {
 	containerPos_t pos;
 	int borderWitdh;
-	WidgetList_t *widgetList;
-	containerTheme_t *theme;
+	DynamicArray_t * widgetList;
 	DynamicArray_t * drawableList;
+	containerTheme_t *theme;
+	bool visible;
+	int z_index;
 } container_t;
 
 typedef struct movingContainer_t {

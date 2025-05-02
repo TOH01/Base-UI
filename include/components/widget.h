@@ -34,11 +34,10 @@ typedef struct WidgetList {
 	WidgetNode_t *headWidget;
 } WidgetList_t;
 
-void addWidget(WidgetList_t *list, BaseWidget_t *widget);
-WidgetList_t *initWidgetList(void);
-void renderWidgetList(WidgetList_t *list);
+void addWidget(DynamicArray_t * array, BaseWidget_t *widget);
+void renderWidgetList(DynamicArray_t * array);
 CommonPos_t getPosToContainer(CommonPos_t containerPos, CommonPos_t widgetPos);
-void updatePosToContainerList(CommonPos_t containerPos, WidgetList_t *list);
-BaseWidget_t *widgetClicked(int x, int y, WidgetList_t *list);
+void updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array);
+BaseWidget_t *widgetClicked(int x, int y, DynamicArray_t * array);
 
 #endif
