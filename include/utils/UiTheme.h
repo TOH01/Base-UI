@@ -153,17 +153,17 @@ typedef struct UiTheme {
     /* Note: no comma here, avoid trailing comma before #endif */ \
     \
     /* Titlebar customization below */ \
-    IFDEF_TITLEBAR \
+    IFDEF_TITLEBAR_DARKMODE \
 })
 
 #ifdef CUSTOM_TITLE_BAR
-#define IFDEF_TITLEBAR \
+#define IFDEF_TITLEBAR_DARKMODE \
     , .titlebar = { RGB(37, 37, 38) }, \
     .close = { RGB(232, 17, 35), RGB(255, 255, 255) }, \
     .restore = { RGB(70, 70, 70), RGB(255, 255, 255) }, \
     .minimize = { RGB(70, 70, 70), RGB(255, 255, 255) }
 #else
-#define IFDEF_TITLEBAR
+#define IFDEF_TITLEBAR_DARKMODE
 #endif
 
 #define LIGHTMODE_THEME() ((UiTheme_t){ \
@@ -213,7 +213,21 @@ typedef struct UiTheme {
         .color = {RGB(180, 180, 180), RGB(180, 180, 180), RGB(200, 200, 200)}, \
         .width = 1, \
     } \
+    /* Note: no comma here, avoid trailing comma before #endif */ \
+    \
+    /* Titlebar customization below */ \
+    IFDEF_TITLEBAR_LIGHTMODE \
 })
+
+#ifdef CUSTOM_TITLE_BAR
+#define IFDEF_TITLEBAR_LIGHTMODE \
+    , .titlebar = { RGB(255, 255, 255) }, \
+    .close = { RGB(232, 17, 35), RGB(0, 0, 0) }, \
+    .restore = { RGB(200, 200, 200), RGB(0, 0, 0) }, \
+    .minimize = { RGB(200, 200, 200), RGB(0, 0, 0) }
+#else
+#define IFDEF_TITLEBAR_LIGHTMODE
+#endif
 
 #define OCEAN_BREEZE_THEME() ((UiTheme_t){ \
     .button = { \
@@ -262,7 +276,21 @@ typedef struct UiTheme {
         .color = {RGB(140, 190, 210), RGB(140, 190, 210), RGB(160, 210, 230)}, \
         .width = 1, \
     } \
+        /* Note: no comma here, avoid trailing comma before #endif */ \
+        \
+        /* Titlebar customization below */ \
+        IFDEF_TITLEBAR_OCEAN \
 })
+
+#ifdef CUSTOM_TITLE_BAR
+#define IFDEF_TITLEBAR_OCEAN \
+    , .titlebar = { RGB(230, 245, 250) }, \
+    .close = { RGB(232, 17, 35), RGB(15, 32, 39) }, \
+    .restore = { RGB(100, 180, 210), RGB(15, 32, 39) }, \
+    .minimize = { RGB(100, 180, 210), RGB(15, 32, 39) }
+#else
+#define IFDEF_TITLEBAR_OCEAN
+#endif
 
 void UiTheme_initFonts();
 

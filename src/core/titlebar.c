@@ -93,7 +93,7 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 	LineTo(currentWindowState.memHDC, closeRect.left + pad, closeRect.bottom - pad);
 
 	// draw restore
-	iconPen = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.close.ICON);
+	iconPen = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.restore.ICON);
 	SelectObject(currentWindowState.memHDC, iconPen);
 	HBRUSH backgroundBrush = CreateSolidBrush(currentWindowState.activeTheme.titlebar.color);
 	SelectObject(currentWindowState.memHDC, backgroundBrush);
