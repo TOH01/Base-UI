@@ -13,4 +13,9 @@ WindowState_t currentWindowState = {
 
 LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { 
     currentWindowState.hwnd = hwnd; 
+    SetWindowPos(
+        hwnd, NULL,
+        0, 0, 0, 0,
+        SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER
+      );
 }

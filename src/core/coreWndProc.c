@@ -1,8 +1,11 @@
+#define _WIN32_WINNT 0x0A00
+
 #include "coreWndProc.h"
-#include "Common.h"
 #include "WmParamHashTable.h"
 #include "menu.h"
 #include <stdio.h>
+#include "Common.h"
+#include "titlbar.h"
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
@@ -14,6 +17,66 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		WmParamHandlerTable_Destroy(currentWindowState.handlerTable);
 		PostQuitMessage(0);
 		break;
+	case WM_NCCALCSIZE: {
+		if (!wParam)
+			return DefWindowProc(hwnd, msg, wParam, lParam);
+		UINT dpi = GetDpiForWindow(hwnd);
+
+		int frame_x = GetSystemMetricsForDpi(SM_CXFRAME, dpi);
+		int frame_y = GetSystemMetricsForDpi(SM_CYFRAME, dpi);
+		int padding = GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
+
+		NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
+		RECT *requested_client_rect = params->rgrc;
+
+		requested_client_rect->right -= frame_x + padding;
+		requested_client_rect->left += frame_x + padding;
+		requested_client_rect->bottom -= frame_y + padding;
+
+		if (win32_window_is_maximized(hwnd)) {
+			requested_client_rect->top += padding;
+		}
+
+		return 0;
+	}
+	case WM_NCHITTEST: {
+		// Let the default procedure handle resizing areas
+		LRESULT hit = DefWindowProc(hwnd, msg, wParam, lParam);
+		switch (hit) {
+		case HTNOWHERE:
+		case HTRIGHT:
+		case HTLEFT:
+		case HTTOPLEFT:
+		case HTTOP:
+		case HTTOPRIGHT:
+		case HTBOTTOMRIGHT:
+		case HTBOTTOM:
+		case HTBOTTOMLEFT: {
+			return hit;
+		}
+		}
+
+		// Looks like adjustment happening in NCCALCSIZE is messing with the detection
+		// of the top hit area so manually fixing that.
+		UINT dpi = GetDpiForWindow(hwnd);
+		int frame_y = GetSystemMetricsForDpi(SM_CYFRAME, dpi);
+		int padding = GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
+		POINT cursor_point = {0};
+		cursor_point.x = GET_X_PARAM(lParam);
+		cursor_point.y = GET_Y_PARAM(lParam);
+		ScreenToClient(hwnd, &cursor_point);
+		if (cursor_point.y > 0 && cursor_point.y < frame_y + padding) {
+			return HTTOP;
+		}
+
+		// Since we are drawing our own caption, this needs to be a custom test
+		if (cursor_point.y < win32_titlebar_rect(hwnd).bottom) {
+			return HTCAPTION;
+		}
+
+		return HTCLIENT;
+	}
+
 	case WM_PAINT:
 
 		currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
@@ -29,6 +92,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 #endif
 
 		WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
+
+		drawTitlebar(currentWindowState.memHDC, currentWindowState.ps);
 
 		// Blit to the screen
 		BitBlt(currentWindowState.hdc, 0, 0, currentWindowState.width, currentWindowState.height, currentWindowState.memHDC, 0, 0, SRCCOPY);
