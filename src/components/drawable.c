@@ -111,7 +111,7 @@ void drawable_updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t 
 	{
 		drawable = (Drawable_t *) DynamicArray_get(array, i);
 
-		getPosToContainer(containerPos, drawable->initPos);
+		drawable->pos = getPosToContainer(containerPos, drawable->initPos);
 	}
 	
 }

@@ -3,20 +3,13 @@
 #include "menu.h"
 #include <stdio.h>
 
-container_t *containerList[50];
-int currentWindowContainerIdx = 0;
-
-container_t *topContainer = NULL;
-container_t **topContainerList;
-int topContainerIdx;
-
 movingContainer_t movingContainer;
 
 BaseWidget_t *hoverCandidate = NULL;
 BaseWidget_t *lastHoverCandidate = NULL;
 DWORD hoverStartTime = 0;
 #define HOVER_TIMER_ID 1
-#define HOVER_DELAY_MS 5 // 300ms delay
+#define HOVER_DELAY_MS 5
 
 void redrawContainer(container_t *container) { UiUtils_DrawColoredRectangle(container->pos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth); }
 
@@ -24,9 +17,9 @@ void redrawContainerList() {
 
 	container_t *container = NULL;
 
-	for (int i = 0; i < currentWindowState.containers->size ; i++) {
+	for (int i = 0; i < currentWindowState.containers->size; i++) {
 
-		container = (container_t *) DynamicArray_get(currentWindowState.containers, i);
+		container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
 		if (container && container->visible) {
 			redrawContainer(DynamicArray_get(currentWindowState.containers, i));
@@ -40,17 +33,16 @@ void redrawContainerList() {
 
 void moveContainerOnTop(int idx) {
 
-	if (topContainer != (container_t *) DynamicArray_get(currentWindowState.containers, idx)) {
+	if (idx < currentWindowState.containers->size - 1) {
 
-		container_t *temp = (container_t *) DynamicArray_get(currentWindowState.containers, idx);
+		container_t *temp = (container_t *)DynamicArray_get(currentWindowState.containers, idx);
 
 		for (int i = idx; i < currentWindowState.containers->size - 1; i++) {
-			container_t *next = (container_t *) DynamicArray_get(currentWindowState.containers, i + 1);
+			container_t *next = (container_t *)DynamicArray_get(currentWindowState.containers, i + 1);
 			DynamicArray_Insert(currentWindowState.containers, next, i);
 		}
 
 		DynamicArray_Insert(currentWindowState.containers, temp, currentWindowState.containers->size - 1);
-		
 	}
 }
 
@@ -66,42 +58,48 @@ void containerListLButtonDown(int x, int y) {
 
 	for (int i = currentWindowState.containers->size - 1; i >= 0; i--) {
 
-		container = (container_t *) DynamicArray_get(currentWindowState.containers, i);
+		container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
-		if (container && container->visible) {
+		if (container && container->visible && container->resizable) {
 			if (UiUtils_CoordinateIsOnBorderOf(x, y, container->borderWitdh, container->pos) && !movingContainer.action) {
 				movingContainer.startPos = container->pos;
 				movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, container->borderWitdh, container->pos);
 				movingContainer.container = container;
 				movingContainer.mouseStartX = x;
+				movingContainer.mouseStartY = y;
 				break;
 			}
 
-			else if (UiUtils_CoordinateIsInsideOf(x, y, container->pos)) {
+		} else if (UiUtils_CoordinateIsInsideOf(x, y, container->pos) && container->visible) {
 
-				BaseWidget_t *widget = widgetClicked(x, y, container->widgetList);
+			BaseWidget_t *widget = widgetClicked(x, y, container->widgetList);
 
-				if (widget) {
-					widget->onClick(widget, x, y);
-					InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
-					break;
-				} else if (!movingContainer.action) {
-					movingContainer.startPos = container->pos;
-					movingContainer.action = CONTAINER_MOVE_ACTION;
-					movingContainer.container = container;
-					movingContainer.mouseStartX = x;
-					movingContainer.mouseStartY = y;
-					moveContainerOnTop(i);
-					break;
-				}
+			if (widget) {
+				widget->onClick(widget, x, y);
+				InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
+				break;
+			} else if (!movingContainer.action && container->movable) {
+				movingContainer.startPos = container->pos;
+				movingContainer.action = CONTAINER_MOVE_ACTION;
+				movingContainer.container = container;
+				movingContainer.mouseStartX = x;
+				movingContainer.mouseStartY = y;
+				moveContainerOnTop(i);
+				break;
 			}
 		}
 	}
 }
 
-LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { redrawContainerList(); }
+LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	redrawContainerList();
+	return 0;
+}
 
-LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { InvalidateRect(hwnd, NULL, FALSE); }
+LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	InvalidateRect(hwnd, NULL, FALSE);
+	return 0;
+}
 
 LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	int x = LOWORD(lParam);
@@ -265,7 +263,7 @@ container_t *windowAddContainer(CommonPos_t pos) {
 
 	container->visible = 1;
 
-	if(currentWindowState.containers == NULL){
+	if (currentWindowState.containers == NULL) {
 		currentWindowState.containers = DynamicArray_init(50);
 	}
 

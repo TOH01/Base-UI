@@ -16,6 +16,8 @@ typedef struct container_t {
 	DynamicArray_t * drawableList;
 	containerTheme_t *theme;
 	bool visible;
+	bool movable;
+	bool resizable;
 } container_t;
 
 typedef struct movingContainer_t {

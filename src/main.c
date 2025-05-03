@@ -53,7 +53,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	hwnd = CreateWindowEx(0, g_szClassName, "State Machine GUI", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CONFIG_INIT_WINDOW_WIDTH, CONFIG_INIT_WINDOW_HEIGTH, NULL, NULL, hInstance, NULL);
+	hwnd = CreateWindowEx(0, g_szClassName, NULL, WS_POPUP | WS_THICKFRAME, CW_USEDEFAULT, CW_USEDEFAULT, CONFIG_INIT_WINDOW_WIDTH, CONFIG_INIT_WINDOW_HEIGTH, NULL, NULL, hInstance, NULL);
 
 	if (hwnd == NULL) {
 		MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
