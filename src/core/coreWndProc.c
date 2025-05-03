@@ -1,11 +1,13 @@
 #define _WIN32_WINNT 0x0A00
 
 #include "coreWndProc.h"
+#include "Common.h"
 #include "WmParamHashTable.h"
 #include "menu.h"
-#include <stdio.h>
-#include "Common.h"
 #include "titlbar.h"
+#include <stdio.h>
+
+int layoutInitialzed = 0;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
@@ -17,6 +19,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		WmParamHandlerTable_Destroy(currentWindowState.handlerTable);
 		PostQuitMessage(0);
 		break;
+#ifdef CUSTOM_TITLE_BAR
 	case WM_NCCALCSIZE: {
 		if (!wParam)
 			return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -76,8 +79,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		return HTCLIENT;
 	}
+#endif
 
 	case WM_PAINT:
+
+		// sometimes layout wont initalized properly for the first time, for example content area expands into titlebar
+		if(!layoutInitialzed){
+			layoutInitialzed = 1;
+
+			RECT client;
+			GetClientRect(hwnd, &client);
+			SendMessage(hwnd, WM_SIZE, SIZE_RESTORED, MAKELPARAM(client.right, client.bottom));
+		}
 
 		currentWindowState.hdc = BeginPaint(hwnd, &currentWindowState.ps);
 
@@ -93,7 +106,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
 
+#ifdef CUSTOM_TITLE_BAR
 		drawTitlebar(currentWindowState.memHDC, currentWindowState.ps);
+#endif
 
 		// Blit to the screen
 		BitBlt(currentWindowState.hdc, 0, 0, currentWindowState.width, currentWindowState.height, currentWindowState.memHDC, 0, 0, SRCCOPY);

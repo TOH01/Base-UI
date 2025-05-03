@@ -19,5 +19,6 @@ int win32_dpi_scale(int value, UINT dpi);
 RECT win32_titlebar_rect(HWND handle);
 bool win32_window_is_maximized(HWND handle);
 void drawTitlebar(HDC hdc, PAINTSTRUCT ps);
+int getTitleBarHeight(HWND handle);
 
 #endif

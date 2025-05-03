@@ -5,7 +5,11 @@
 
 RECT UiUtils_CommonPosToRect(CommonPos_t pos) {
 
+#ifndef CUSTOM_TITLE_BAR
 	RECT rect = {UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom)};
+#elif defined(CUSTOM_TITLE_BAR)
+	RECT rect = {UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height - currentWindowState.titlbarHeight, pos.top) + currentWindowState.titlbarHeight, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height - currentWindowState.titlbarHeight , pos.bottom) + currentWindowState.titlbarHeight};
+#endif
 
 	return rect;
 }
@@ -18,7 +22,12 @@ CommonPos_t UiUtils_RectToCommonsPos(RECT rect) {
 
 void UiUtils_CreatePens(void) { currentWindowState.hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0)); }
 
-void UiUtils_DrawRectangleRelative(CommonPos_t pos) { Rectangle(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom)); }
+void UiUtils_DrawRectangleRelative(CommonPos_t pos) {
+
+	RECT rect = UiUtils_CommonPosToRect(pos);
+
+	Rectangle(currentWindowState.memHDC, rect.left, rect.top, rect.right, rect.bottom);
+}
 
 void UiUtils_DrawFilledRectangle(CommonPos_t pos, COLORREF color) {
 	HBRUSH fillBrush = CreateSolidBrush(color);
@@ -45,35 +54,25 @@ void UiUtils_DrawColoredRectangle(CommonPos_t pos, COLORREF colorBG, COLORREF co
 	DeleteObject(fillBrush);
 }
 
-void UiUtils_DrawRoundRectangleRelative(CommonPos_t pos) { RoundRect(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, 0.2 * ((pos.bottom - pos.top) + (pos.right - pos.left) / 2)), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, 0.2 * ((pos.bottom - pos.top) + (pos.right - pos.left) / 2))); }
-
-void UiUtils_DrawEllipseRelative(CommonPos_t pos) { Ellipse(currentWindowState.memHDC, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom)); }
-
 void UiUtils_DrawText(CommonPos_t pos, char *name, UINT format) {
 
-	RECT textRect = {
-	    UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left),
-	    UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top),
-	    UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right),
-	    UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom),
-	};
+	RECT textRect = UiUtils_CommonPosToRect(pos);
 
 	DrawText(currentWindowState.memHDC, name, -1, &textRect, format);
 }
 
 void UiUtils_DrawLineRelative(CommonPos_t pos, COLORREF color, int width) {
-    HPEN pen = CreatePen(PS_SOLID, width, color);
-    HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
+	HPEN pen = CreatePen(PS_SOLID, width, color);
+	HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
 
-    RECT r = UiUtils_CommonPosToRect(pos);
+	RECT r = UiUtils_CommonPosToRect(pos);
 
-    MoveToEx(currentWindowState.memHDC, r.left, r.top, NULL);
-    LineTo(currentWindowState.memHDC, r.right, r.bottom);
+	MoveToEx(currentWindowState.memHDC, r.left, r.top, NULL);
+	LineTo(currentWindowState.memHDC, r.right, r.bottom);
 
-    SelectObject(currentWindowState.memHDC, oldPen);
-    DeleteObject(pen);
+	SelectObject(currentWindowState.memHDC, oldPen);
+	DeleteObject(pen);
 }
-
 
 void UiUtils_DrawTextTheme(CommonPos_t pos, char *name, UINT format, HFONT font, COLORREF color) {
 
@@ -108,8 +107,11 @@ void UiUtils_FillRectangleRelative(CommonPos_t pos) {
 }
 
 bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos) {
-	if (x > pos.left * currentWindowState.width && x < pos.right * currentWindowState.width) {
-		if (y > pos.top * currentWindowState.height && y < pos.bottom * currentWindowState.height) {
+
+	RECT rect = UiUtils_CommonPosToRect(pos);
+
+	if (x > rect.left && x < rect.right) {
+		if (y > rect.top && y < rect.bottom) {
 			return true;
 		}
 	}
@@ -119,10 +121,11 @@ bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos) {
 bool UiUtils_TextFitsBox(char text[], CommonPos_t pos) {
 
 	SIZE textSize;
+	RECT rect = UiUtils_CommonPosToRect(pos);
 
 	GetTextExtentPoint32(currentWindowState.memHDC, text, strlen(text), &textSize);
 
-	if (textSize.cx > ((pos.right * currentWindowState.width) - (pos.left * currentWindowState.width))) {
+	if (textSize.cx > ((rect.right) - (rect.left))) {
 		return false;
 	}
 
@@ -156,13 +159,10 @@ bool UiUtils_TextFitsBoxTheme(char text[], CommonPos_t pos, HFONT font) {
 	// Restore the old font
 	SelectObject(hdc, oldFont);
 
-	int left = (int)(pos.left * currentWindowState.width);
-	int right = (int)(pos.right * currentWindowState.width);
-	int top = (int)(pos.top * currentWindowState.height);
-	int bottom = (int)(pos.bottom * currentWindowState.height);
+	Rect rect = UiUtils_CommonPosToRect(pos);
 
-	int boxWidth = right - left;
-	int boxHeight = bottom - top;
+	int boxWidth = rect.right - rect.left;
+	int boxHeight = rect.bottom - rect.top;
 
 	bool fitsWidth = textSize.cx <= boxWidth;
 	bool fitsHeight = textSize.cy <= boxHeight;
@@ -174,29 +174,32 @@ HFONT UiUtils_CreateFont() { return CreateFont(-MulDiv(10, GetDeviceCaps(current
 
 UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos) {
 	// check if on left border
-	if (x >= (pos.left - 0.005f) * currentWindowState.width && (x + borderWidth) <= (pos.left + 0.005f) * currentWindowState.width) {
-		if (y >= pos.top * currentWindowState.height && y <= pos.bottom * currentWindowState.height) {
+	
+	RECT rect = UiUtils_CommonPosToRect(pos);
+	
+	if (x >= rect.left && (x + borderWidth) <= rect.left) {
+		if (y >= rect.top && y <= rect.bottom) {
 			return LEFT;
 		}
 	}
 
 	// check if on right border
-	if (x >= (pos.right - 0.005f) * currentWindowState.width && (x + borderWidth) <= (pos.right + 0.005f) * currentWindowState.width) {
-		if (y >= pos.top * currentWindowState.height && y <= pos.bottom * currentWindowState.height) {
+	if (x >= rect.right && (x + borderWidth) <= rect.right) {
+		if (y >= rect.top && y <= rect.bottom) {
 			return RIGHT;
 		}
 	}
 
 	// check if on bottom border
-	if (y >= (pos.bottom - 0.005f) * currentWindowState.height && (y - borderWidth) <= (pos.bottom + 0.005f) * currentWindowState.height) {
-		if (x >= pos.left * currentWindowState.width && x <= pos.right * currentWindowState.width) {
+	if (y >= rect.bottom && (y - borderWidth) <= rect.bottom) {
+		if (x >= rect.left && x <= rect.right) {
 			return BOTTOM;
 		}
 	}
 
 	// check if on top border
-	if (y >= (pos.top - 0.005f) * currentWindowState.height && (y - borderWidth) <= (pos.top + 0.005f) * currentWindowState.height) {
-		if (x >= pos.left * currentWindowState.width && x <= pos.right * currentWindowState.width) {
+	if (y >= rect.height && (y - borderWidth) <= rect.height) {
+		if (x >= rect.left && x <= rect.right) {
 			return TOP;
 		}
 	}

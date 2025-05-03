@@ -1,4 +1,5 @@
 #include "titlbar.h"
+#include "UiUtils.h"
 #include <stdbool.h>
 
 int win32_dpi_scale(int value, UINT dpi) { return (int)((float)value * dpi / 96); }
@@ -35,4 +36,12 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 	RECT title_bar_rect = win32_titlebar_rect(currentWindowState.hwnd);
 
 	FillRect(hdc, &title_bar_rect, title_bar_brush);
+}
+
+int getTitleBarHeight(HWND handle){
+
+	RECT titlebar = win32_titlebar_rect(handle);
+
+	return (titlebar.bottom);
+
 }

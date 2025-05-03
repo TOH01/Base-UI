@@ -4,6 +4,7 @@
 #include "UiTheme.h"
 #include "WmParamHashTable.h"
 #include "DynamicArray.h"
+#include "config.h"
 
 typedef struct WindowState {
 	int width;
@@ -17,6 +18,9 @@ typedef struct WindowState {
 	HWND hwnd;
 	UiTheme_t activeTheme;
 	DynamicArray_t * containers;
+	#ifdef CUSTOM_TITLE_BAR
+	int titlbarHeight;
+	#endif
 } WindowState_t;
 
 LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

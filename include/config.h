@@ -7,6 +7,7 @@
 #define CONFIG_MIN_WINDOW_WIDTH 700
 #define CONFIG_MIN_WINDOW_Height 400
 
-#define DEBUG
+#define DEBUG // for print debug output
+#define CUSTOM_TITLE_BAR // for custom titlebar
 
 #endif

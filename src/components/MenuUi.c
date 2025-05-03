@@ -5,6 +5,7 @@
 #include "menu.h"
 #include <stdio.h>
 #include <windows.h>
+#include "titlbar.h"
 
 #define MENU_UI_SUBMENU_MAX 10
 #define MENU_UI_SUBMENU_START_ID 15100
@@ -151,10 +152,15 @@ LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	if (LOWORD(lParam) > CONFIG_MIN_WINDOW_WIDTH) {
 		currentWindowState.width = LOWORD(lParam);
-		;
 	}
 	if (HIWORD(lParam) > CONFIG_MIN_WINDOW_Height) {
 		currentWindowState.height = HIWORD(lParam);
+
+		#ifdef CUSTOM_TITLE_BAR
+
+		currentWindowState.titlbarHeight = getTitleBarHeight(hwnd);
+
+		#endif
 	}
 }
 
