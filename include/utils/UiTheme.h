@@ -2,6 +2,7 @@
 #define UI_THEME_H
 
 #include "windows.h"
+#include "config.h"
 
 typedef struct ColorComponent {
     COLORREF border;
@@ -72,6 +73,17 @@ typedef struct lineTheme{
     int width;
 } lineTheme_t;
 
+#ifdef CUSTOM_TITLE_BAR
+typedef struct titleBarTheme{
+    COLORREF color;
+} titleBarTheme_t;
+
+typedef struct TitlerbarButtonTheme{
+    COLORREF hover;
+    COLORREF ICON;
+} TitlerbarButtonTheme_t;
+#endif
+
 typedef struct UiTheme {
     ButtonTheme_t button;
     InputTheme_t input;
@@ -82,6 +94,12 @@ typedef struct UiTheme {
     labelTheme_t label;
     rectangleTheme_t rectangel;
     lineTheme_t line;
+    #ifdef CUSTOM_TITLE_BAR
+    titleBarTheme_t titlebar;
+    TitlerbarButtonTheme_t close;
+    TitlerbarButtonTheme_t restore;
+    TitlerbarButtonTheme_t minimize;
+    #endif
 } UiTheme_t;
 
 
@@ -132,7 +150,21 @@ typedef struct UiTheme {
         .color = {RGB(100, 100, 100), RGB(100, 100, 100), RGB(120, 120, 120)}, \
         .width = 1, \
     } \
+    /* Note: no comma here, avoid trailing comma before #endif */ \
+    \
+    /* Titlebar customization below */ \
+    IFDEF_TITLEBAR \
 })
+
+#ifdef CUSTOM_TITLE_BAR
+#define IFDEF_TITLEBAR \
+    , .titlebar = { RGB(37, 37, 38) }, \
+    .close = { RGB(232, 17, 35), RGB(255, 255, 255) }, \
+    .restore = { RGB(70, 70, 70), RGB(255, 255, 255) }, \
+    .minimize = { RGB(70, 70, 70), RGB(255, 255, 255) }
+#else
+#define IFDEF_TITLEBAR
+#endif
 
 #define LIGHTMODE_THEME() ((UiTheme_t){ \
     .button = { \

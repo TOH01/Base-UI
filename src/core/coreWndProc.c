@@ -79,6 +79,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		return HTCLIENT;
 	}
+	case WM_NCLBUTTONDOWN:
+		return Titlebar_WmNCLButtonDown(hwnd, msg, wParam, lParam);
+	case WM_NCLBUTTONUP:
+		return MenuUi_WmNCLButtonUp(hwnd, msg, wParam, lParam);
+	case WM_NCMOUSEMOVE:
+		return Titlebar_WmNCMouseMove(hwnd, msg, wParam, lParam);	
 #endif
 
 	case WM_PAINT:

@@ -13,6 +13,9 @@
 #elif defined(DISABLE_MENU)
 #include "singleWindow.h"
 #endif
+#ifdef CUSTOM_TITLE_BAR
+#include "titlbar.h"
+#endif
 
 const char g_szClassName[] = "MyWindowClass";
 
@@ -28,6 +31,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	MenuUi_SubmenuInitAll();
 
+#endif
+
+#ifdef CUSTOM_TITLE_BAR
+	initTitlebar();
 #endif
 
 	UiUtils_CreatePens();
@@ -55,13 +62,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	int window_style
-    = WS_THICKFRAME   // required for a standard resizeable window
-    | WS_SYSMENU      // Explicitly ask for the titlebar to support snapping via Win + ← / Win + →
-    | WS_MAXIMIZEBOX  // Add maximize button to support maximizing via mouse dragging
-                      // to the top of the screen
-    | WS_MINIMIZEBOX  // Add minimize button to support minimizing by clicking on the taskbar icon
-    | WS_VISIBLE;     // Make window visible after it is created (not important)
+	int window_style = WS_THICKFRAME    // required for a standard resizeable window
+	                   | WS_SYSMENU     // Explicitly ask for the titlebar to support snapping via Win + ← / Win + →
+	                   | WS_MAXIMIZEBOX // Add maximize button to support maximizing via mouse dragging
+	                                    // to the top of the screen
+	                   | WS_MINIMIZEBOX // Add minimize button to support minimizing by clicking on the taskbar icon
+	                   | WS_VISIBLE;    // Make window visible after it is created (not important)
 
 	hwnd = CreateWindowEx(0, g_szClassName, NULL, window_style, CW_USEDEFAULT, CW_USEDEFAULT, CONFIG_INIT_WINDOW_WIDTH, CONFIG_INIT_WINDOW_HEIGTH, NULL, NULL, hInstance, NULL);
 

@@ -159,7 +159,7 @@ bool UiUtils_TextFitsBoxTheme(char text[], CommonPos_t pos, HFONT font) {
 	// Restore the old font
 	SelectObject(hdc, oldFont);
 
-	Rect rect = UiUtils_CommonPosToRect(pos);
+	RECT rect = UiUtils_CommonPosToRect(pos);
 
 	int boxWidth = rect.right - rect.left;
 	int boxHeight = rect.bottom - rect.top;
@@ -198,7 +198,7 @@ UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth,
 	}
 
 	// check if on top border
-	if (y >= rect.height && (y - borderWidth) <= rect.height) {
+	if (y >= rect.top && (y - borderWidth) <= rect.top) {
 		if (x >= rect.left && x <= rect.right) {
 			return TOP;
 		}
