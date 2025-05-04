@@ -75,6 +75,8 @@ void MenuUi_SubmenuInitAll(void) {
 
     container_t *textDumpContainer = windowAddContainer(pos3);
 
+    textDumpContainer->movable = 1;
+
     textDump = customTextDump_initTextDump(pos4);
 
     container_t *sharedContainer = windowAddContainer(pos2);

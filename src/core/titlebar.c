@@ -3,6 +3,9 @@
 #include "UiUtils.h"
 #include "titlbar.h"
 #include <stdbool.h>
+#include "config.h"
+
+#ifdef CUSTOM_TITLE_BAR
 
 activeHover active = NONE;
 
@@ -47,6 +50,8 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 
 	FillRect(hdc, &title_bar_rect, title_bar_brush);
 
+	DeleteObject(title_bar_brush);
+
 	RECT titlebar = win32_titlebar_rect(currentWindowState.hwnd);
 	int height = getTitleBarHeight(currentWindowState.hwnd);
 
@@ -78,8 +83,8 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 
 	// draw close
 	
-	HPEN iconPen = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.close.ICON);
-	SelectObject(currentWindowState.memHDC, iconPen);
+	HPEN iconPenClose = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.close.ICON);
+	SelectObject(currentWindowState.memHDC, iconPenClose);
 
 	RECT closeRect = {titlebar.right - (CLOSE * height), titlebar.top, titlebar.right - ((CLOSE - 1) * height), titlebar.bottom};
 	int closeWidth = closeRect.right - closeRect.left;
@@ -93,8 +98,8 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 	LineTo(currentWindowState.memHDC, closeRect.left + pad, closeRect.bottom - pad);
 
 	// draw restore
-	iconPen = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.restore.ICON);
-	SelectObject(currentWindowState.memHDC, iconPen);
+	HPEN iconPenRestore = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.restore.ICON);
+	SelectObject(currentWindowState.memHDC, iconPenRestore);
 	HBRUSH backgroundBrush = CreateSolidBrush(currentWindowState.activeTheme.titlebar.color);
 	SelectObject(currentWindowState.memHDC, backgroundBrush);
 
@@ -104,8 +109,8 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 	Rectangle(currentWindowState.memHDC, restoreRect.left + widthRestore * 0.2, restoreRect.top + heightRestore * 0.2, restoreRect.right - widthRestore * 0.2, restoreRect.bottom - heightRestore * 0.2);
 
 	// draw minimize
-	iconPen = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.minimize.ICON);
-	SelectObject(currentWindowState.memHDC, iconPen);
+	HPEN iconPenMinimize = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.minimize.ICON);
+	SelectObject(currentWindowState.memHDC, iconPenMinimize);
 	
 	RECT minimizeRect = {titlebar.right - (MINIMIZE * height), titlebar.top, titlebar.right - ((MINIMIZE - 1) * height), titlebar.bottom};
 	int minWidth = minimizeRect.right - minimizeRect.left;
@@ -115,7 +120,9 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 	MoveToEx(currentWindowState.memHDC, minimizeRect.left + minWidth * 0.25, yMid, NULL);
 	LineTo(currentWindowState.memHDC, minimizeRect.right - minWidth * 0.25, yMid);
 
-	DeleteObject(iconPen);
+	DeleteObject(iconPenClose);
+	DeleteObject(iconPenRestore);
+	DeleteObject(iconPenMinimize);
 	DeleteObject(backgroundBrush);
 }
 
@@ -189,3 +196,5 @@ LRESULT MenuUi_WmNCLButtonUp(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 void initTitlebar() {
 	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &Titlebar_WmMouseMove);
 }
+
+#endif

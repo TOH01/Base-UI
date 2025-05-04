@@ -12,7 +12,7 @@ static void drawCheckbox(BaseWidget_t *baseWidget) {
 	if (checkbox->theme) {
 		UiUtils_DrawColoredRectangle(baseWidget->pos, checkbox->theme->outer.fill, checkbox->theme->outer.border, checkbox->theme->borderWidth);
 
-		if (*(checkbox->value)) {
+		if (*(checkbox->value) || checkbox->beingHovered) {
 
 			CommonPos_t inner = baseWidget->pos;
 
@@ -24,7 +24,9 @@ static void drawCheckbox(BaseWidget_t *baseWidget) {
 			inner.right = inner.right - (width * checkbox->theme->spacing);
 			inner.left = inner.left + (width * checkbox->theme->spacing);
 
-			UiUtils_DrawColoredRectangle(inner, checkbox->theme->inner.fill, checkbox->theme->inner.border, checkbox->theme->borderWidth);
+			COLORREF fill = checkbox->beingHovered ? checkbox->theme->inner.hover : checkbox->theme->inner.fill;
+
+			UiUtils_DrawColoredRectangle(inner, fill, checkbox->theme->inner.border, checkbox->theme->borderWidth);
 		}
 	}
 #ifdef DEBUG
@@ -32,6 +34,23 @@ static void drawCheckbox(BaseWidget_t *baseWidget) {
 		printf("checkbox missing theme\n");
 	}
 #endif
+}
+
+static void onHoverCheckbox(BaseWidget_t *base) {
+	assert(base->type == WIDGET_TYPE_CHECKBOX);
+	checkboxWidget_t * checkbox = (checkboxWidget_t *)base;
+
+	if (!checkbox->beingHovered) {
+		checkbox->beingHovered = 1;
+		InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+	}
+}
+
+static void onHoverEndCheckbox(BaseWidget_t *base) {
+	assert(base->type == WIDGET_TYPE_CHECKBOX);
+	checkboxWidget_t * checkbox = (checkboxWidget_t *)base;
+	checkbox->beingHovered = 0;
+	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
 static void onClickCheckbox(BaseWidget_t *baseWidget, int x, int y) {
@@ -50,6 +69,8 @@ checkboxWidget_t *customCheckbox_initCheckbox(CommonPos_t pos, bool *value) {
 
 	checkbox->baseWidget.drawHandler = &drawCheckbox;
 	checkbox->baseWidget.onClick = &onClickCheckbox;
+	checkbox->baseWidget.onHover = &onHoverCheckbox;
+	checkbox->baseWidget.onHoverEnd = &onHoverEndCheckbox;
 
 	checkbox->theme = &currentWindowState.activeTheme.checkbox;
 

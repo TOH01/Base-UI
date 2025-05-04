@@ -2,6 +2,9 @@
 #include "UiUtils.h"
 #include <assert.h>
 #include <stdio.h>
+#ifdef CUSTOM_TITLE_BAR
+#include "titlbar.h"
+#endif
 
 textDumpWidget_t *activeTextDump = NULL;
 bool scrollCallbackRegisters = false;
@@ -16,7 +19,12 @@ void drawTextDump(BaseWidget_t *baseWidget) {
 
 	int visibleLines = (containerRect.bottom - containerRect.top) / lineHeight;
 
+	#ifdef CUSTOM_TITLE_BAR
+	// since we do UiUtils_CommonPosToRect, here and while drawing, the title bar height will be added twice, so we substract it here
+	int y = containerRect.top - getTitleBarHeight(currentWindowState.hwnd);
+	#else
 	int y = containerRect.top;
+	#endif
 
 	textLineNode_t *currentLine = textDump->currentLine;
 

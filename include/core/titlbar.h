@@ -7,6 +7,8 @@
 #include <uxtheme.h>
 #include <vssym32.h>
 
+#ifdef CUSTOM_TITLE_BAR
+
 #ifndef GET_X_PARAM
 #define GET_X_PARAM(lp) ((int)(short)LOWORD(lp))
 #endif
@@ -31,5 +33,7 @@ LRESULT Titlebar_WmNCLButtonDown(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 LRESULT MenuUi_WmNCLButtonUp(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT Titlebar_WmNCMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void initTitlebar();
+
+#endif
 
 #endif

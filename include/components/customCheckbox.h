@@ -8,6 +8,7 @@ typedef struct CheckboxWidget {
 	BaseWidget_t baseWidget;
 	bool *value;
 	CheckboxTheme_t *theme;
+	int beingHovered;
 } checkboxWidget_t;
 
 checkboxWidget_t *customCheckbox_initCheckbox(CommonPos_t pos, bool *value);
