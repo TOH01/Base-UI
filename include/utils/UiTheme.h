@@ -100,10 +100,12 @@ typedef struct UiTheme {
     TitlerbarButtonTheme_t restore;
     TitlerbarButtonTheme_t minimize;
     #endif
+    COLORREF backgroundColor;
 } UiTheme_t;
 
 
 #define DARKMODE_THEME() ((UiTheme_t){ \
+    .backgroundColor = RGB(30, 30, 30),\
     .button = { \
         .color = {RGB(60, 60, 60), RGB(37, 37, 38), RGB(75, 75, 75)}, \
         .text = {RGB(220, 220, 220), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \
@@ -167,6 +169,7 @@ typedef struct UiTheme {
 #endif
 
 #define LIGHTMODE_THEME() ((UiTheme_t){ \
+    .backgroundColor = RGB(245, 245, 245),\
     .button = { \
         .color = {RGB(200, 200, 200), RGB(240, 240, 240), RGB(220, 220, 220)}, \
         .text = {RGB(30, 30, 30), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \
@@ -230,6 +233,7 @@ typedef struct UiTheme {
 #endif
 
 #define OCEAN_BREEZE_THEME() ((UiTheme_t){ \
+    .backgroundColor = RGB(245, 250, 255),\
     .button = { \
         .color = {RGB(45, 156, 219), RGB(230, 245, 250), RGB(60, 170, 230)}, \
         .text = {RGB(15, 32, 39), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \

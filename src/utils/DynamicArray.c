@@ -32,3 +32,10 @@ void DynamicArray_Insert(DynamicArray_t * array, void * data, int idx){
 		array->items[idx] = data;
 	}
 }
+
+void DynamicArray_Swap(DynamicArray_t * array, int idx1, int idx2){
+	void * temp = DynamicArray_get(array, idx2);
+	
+	DynamicArray_Insert(array, DynamicArray_get(array, idx1), idx2);
+	DynamicArray_Insert(array, temp, idx1);
+}

@@ -7,6 +7,7 @@
 #include "coreWndProc.h"
 #include <stdio.h>
 #include <windows.h>
+#include "container.h"
 
 #ifndef DISABLE_MENU
 #include "menuWindow.h"
@@ -27,7 +28,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	InitialzeHandlers();
 
-#ifndef DISABLE_MENU
+	initRootContainer();
+
+	#ifndef DISABLE_MENU
 
 	MenuUi_SubmenuInitAll();
 
@@ -36,9 +39,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #ifdef CUSTOM_TITLE_BAR
 	initTitlebar();
 #endif
-
-	UiUtils_CreatePens();
-	UiTheme_initFonts();
 
 	WNDCLASSEX wc;
 	HWND hwnd;

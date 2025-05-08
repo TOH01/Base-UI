@@ -1,10 +1,10 @@
 #include "container.h"
 #include "WmParamHashTable.h"
 #include "menu.h"
+#include <assert.h>
 #include <stdio.h>
 
 movingContainer_t movingContainer;
-
 BaseWidget_t *hoverCandidate = NULL;
 BaseWidget_t *lastHoverCandidate = NULL;
 DWORD hoverStartTime = 0;
@@ -33,22 +33,16 @@ void redrawContainerList() {
 
 void moveContainerOnTop(int idx) {
 
-	if (idx < currentWindowState.containers->size - 1) {
-
-		container_t *temp = (container_t *)DynamicArray_get(currentWindowState.containers, idx);
+	// root container has idx 0, if for whatever reason we get here, do not move it on top
+	if (idx && idx < currentWindowState.containers->size - 1) {
 
 		for (int i = idx; i < currentWindowState.containers->size - 1; i++) {
-			container_t *next = (container_t *)DynamicArray_get(currentWindowState.containers, i + 1);
-			DynamicArray_Insert(currentWindowState.containers, next, i);
+			DynamicArray_Swap(currentWindowState.containers, i, i + 1);
 		}
 
-		DynamicArray_Insert(currentWindowState.containers, temp, currentWindowState.containers->size - 1);
 	}
 }
 
-/*
-return: true if click was inside of or on border of container from param containers[]
-*/
 void containerListLButtonDown(int x, int y) {
 
 	// reset selected input, has to be done before widget callback
@@ -268,3 +262,22 @@ container_t *windowAddContainer(CommonPos_t pos) {
 
 	return container;
 }
+
+void initRootContainer() {
+
+	CommonPos_t rootPos = {0, 0, 100, 100};
+
+	container_t *rootContainer = windowAddContainer(rootPos);
+
+	container_t *check = (container_t *)DynamicArray_get(currentWindowState.containers, 0);
+
+	assert(check == rootContainer);
+
+	rootContainer->movable = 0;
+	rootContainer->resizable = 0;
+	rootContainer->theme->color.fill = currentWindowState.activeTheme.backgroundColor;
+}
+
+void rootContainerAddWidget(BaseWidget_t *widget) { containerAddWidget(DynamicArray_get(currentWindowState.containers, 0), widget); }
+
+void rootContainerAddDrawable(Drawable_t *drawable) { containerAddDrawable(DynamicArray_get(currentWindowState.containers, 0), drawable); }
