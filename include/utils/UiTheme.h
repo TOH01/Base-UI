@@ -134,7 +134,7 @@ typedef struct UiTheme {
     }, \
     .container = { \
         .color = {RGB(70, 70, 70), RGB(30, 30, 30), RGB(90, 90, 90)}, \
-        .borderWidth = 1.0f, \
+        .borderWidth = 2, \
     }, \
     .textDump = { \
         .text = {RGB(220, 220, 220), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
@@ -197,7 +197,7 @@ typedef struct UiTheme {
     }, \
     .container = { \
         .color = {RGB(200, 200, 200), RGB(245, 245, 245), RGB(220, 220, 220)}, \
-        .borderWidth = 1.0f, \
+        .borderWidth = 2, \
     }, \
     .textDump = { \
         .text = {RGB(30, 30, 30), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
@@ -260,7 +260,7 @@ typedef struct UiTheme {
     }, \
     .container = { \
         .color = {RGB(170, 210, 225), RGB(245, 250, 255), RGB(200, 230, 245)}, \
-        .borderWidth = 1.0f, \
+        .borderWidth = 2, \
     }, \
     .textDump = { \
         .text = {RGB(20, 20, 20), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \

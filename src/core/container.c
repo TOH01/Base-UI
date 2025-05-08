@@ -60,32 +60,31 @@ void containerListLButtonDown(int x, int y) {
 
 		container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
-		if (container && container->visible && container->resizable) {
-			if (UiUtils_CoordinateIsOnBorderOf(x, y, container->borderWitdh, container->pos) && !movingContainer.action) {
+		if (container && container->visible) {
+			if (UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->pos) && !movingContainer.action && container->resizable) {
 				movingContainer.startPos = container->pos;
-				movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, container->borderWitdh, container->pos);
+				movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->pos);
 				movingContainer.container = container;
 				movingContainer.mouseStartX = x;
 				movingContainer.mouseStartY = y;
 				break;
-			}
+			} else if (UiUtils_CoordinateIsInsideOf(x, y, container->pos) && container->visible) {
 
-		} else if (UiUtils_CoordinateIsInsideOf(x, y, container->pos) && container->visible) {
+				BaseWidget_t *widget = widgetClicked(x, y, container->widgetList);
 
-			BaseWidget_t *widget = widgetClicked(x, y, container->widgetList);
-
-			if (widget) {
-				widget->onClick(widget, x, y);
-				InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
-				break;
-			} else if (!movingContainer.action && container->movable) {
-				movingContainer.startPos = container->pos;
-				movingContainer.action = CONTAINER_MOVE_ACTION;
-				movingContainer.container = container;
-				movingContainer.mouseStartX = x;
-				movingContainer.mouseStartY = y;
-				moveContainerOnTop(i);
-				break;
+				if (widget) {
+					widget->onClick(widget, x, y);
+					InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
+					break;
+				} else if (!movingContainer.action && container->movable) {
+					movingContainer.startPos = container->pos;
+					movingContainer.action = CONTAINER_MOVE_ACTION;
+					movingContainer.container = container;
+					movingContainer.mouseStartX = x;
+					movingContainer.mouseStartY = y;
+					moveContainerOnTop(i);
+					break;
+				}
 			}
 		}
 	}
@@ -236,8 +235,6 @@ container_t *initContainer(containerPos_t pos) {
 
 		currentWindowState.handlerTable->hasContainerHandlers = true;
 	}
-
-	container->borderWitdh = 2; // TODO: make container drawable with different borderWidths
 
 	container->widgetList = DynamicArray_init(10);   // TODO : better init size logic to increase performance
 	container->drawableList = DynamicArray_init(10); // TODO : better init size logic to increase performance

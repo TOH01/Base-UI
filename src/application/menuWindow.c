@@ -72,7 +72,6 @@ void MenuUi_SubmenuInitAll(void) {
 
     container_t *container1 = MenuUi_SubmenuAddContainer(menu1_key, pos);
     container_t *container2 = MenuUi_SubmenuAddContainer(menu2_key, pos);
-
     container_t *textDumpContainer = windowAddContainer(pos3);
 
     textDumpContainer->movable = 1;
@@ -80,6 +79,9 @@ void MenuUi_SubmenuInitAll(void) {
     textDump = customTextDump_initTextDump(pos4);
 
     container_t *sharedContainer = windowAddContainer(pos2);
+
+    sharedContainer->movable = 1;
+    sharedContainer->resizable = 1;
 
     containerAddWidget(textDumpContainer, (BaseWidget_t *)textDump);
     containerAddDrawable(textDumpContainer, rectangle);

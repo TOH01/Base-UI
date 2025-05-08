@@ -32,8 +32,6 @@ extern container_t *topContainer;
 typedef struct {
 	int SubmenuID;                           // unique submenu id
 	WmParamHandlerTable_t *WmParamHashTable; // hashtable of callbacks
-	//container_t *containers[MENU_UI_MAX_CONTAINER];
-	int containerIdx;
 	char name[MENU_UI_MAX_NAME_LENGTH];
 	DynamicArray_t * containers;
 } MenuUi_Submenu_t;

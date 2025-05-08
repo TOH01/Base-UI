@@ -11,7 +11,6 @@
 
 typedef struct container_t {
 	containerPos_t pos;
-	int borderWitdh;
 	DynamicArray_t * widgetList;
 	DynamicArray_t * drawableList;
 	containerTheme_t *theme;

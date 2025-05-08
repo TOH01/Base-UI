@@ -177,28 +177,28 @@ UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth,
 	
 	RECT rect = UiUtils_CommonPosToRect(pos);
 	
-	if (x >= rect.left && (x + borderWidth) <= rect.left) {
+	if (abs(x - rect.left) <= borderWidth) {
 		if (y >= rect.top && y <= rect.bottom) {
 			return LEFT;
 		}
 	}
 
 	// check if on right border
-	if (x >= rect.right && (x + borderWidth) <= rect.right) {
+	if (abs(x - rect.right) <= borderWidth) {
 		if (y >= rect.top && y <= rect.bottom) {
 			return RIGHT;
 		}
 	}
 
 	// check if on bottom border
-	if (y >= rect.bottom && (y - borderWidth) <= rect.bottom) {
+	if (abs(y - rect.bottom) <= borderWidth) {
 		if (x >= rect.left && x <= rect.right) {
 			return BOTTOM;
 		}
 	}
 
 	// check if on top border
-	if (y >= rect.top && (y - borderWidth) <= rect.top) {
+	if (abs(y - rect.top) <= borderWidth) {
 		if (x >= rect.left && x <= rect.right) {
 			return TOP;
 		}

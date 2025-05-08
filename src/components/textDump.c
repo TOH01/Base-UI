@@ -17,29 +17,45 @@ void drawTextDump(BaseWidget_t *baseWidget) {
 
 	RECT containerRect = UiUtils_CommonPosToRect(baseWidget->pos);
 
+	if (!lineHeight) {
+#ifdef DEBUG
+		printf("Cant draw text dump ... likely font is missing");
+#endif
+
+		return;
+	}
+
 	int visibleLines = (containerRect.bottom - containerRect.top) / lineHeight;
 
-	#ifdef CUSTOM_TITLE_BAR
-	// since we do UiUtils_CommonPosToRect, here and while drawing, the title bar height will be added twice, so we substract it here
-	int y = containerRect.top - getTitleBarHeight(currentWindowState.hwnd);
-	#else
-	int y = containerRect.top;
-	#endif
+	float relativeHeight = baseWidget->pos.bottom - baseWidget->pos.top;
+
+	if (!visibleLines) {
+#ifdef DEBUG
+		printf("Cant draw text dump ... visibleLines is 0, causing 0 divison error");
+#endif
+
+		return;
+	}
+
+	float relativeLineHeight = relativeHeight / visibleLines;
 
 	textLineNode_t *currentLine = textDump->currentLine;
 
 	if (currentLine == NULL) {
 
-		RECT textRect = {containerRect.left, y, containerRect.right, y + lineHeight};
+		CommonPos_t text = baseWidget->pos;
+		text.bottom = text.top + relativeLineHeight;
 
-		UiUtils_DrawTextTheme(UiUtils_RectToCommonsPos(textRect), "EMPTY TEXT DUMP ERROR", textDump->theme->text.formatFlags, textDump->theme->text.font, textDump->theme->text.color);
+		UiUtils_DrawTextTheme(text, "EMPTY TEXT DUMP ERROR", textDump->theme->text.formatFlags, textDump->theme->text.font, textDump->theme->text.color);
 	} else {
+
+		CommonPos_t text = baseWidget->pos;
+		text.bottom = text.top + relativeLineHeight;
+
 		for (int i = 0; (i < visibleLines) && (currentLine != NULL); i++) {
-
-			RECT textRect = {containerRect.left, y, containerRect.right, y + lineHeight};
-
-			UiUtils_DrawTextTheme(UiUtils_RectToCommonsPos(textRect), currentLine->line, textDump->theme->text.formatFlags, textDump->theme->text.font, textDump->theme->text.color);
-			y += lineHeight;
+			UiUtils_DrawTextTheme(text, currentLine->line, textDump->theme->text.formatFlags, textDump->theme->text.font, textDump->theme->text.color);
+			text.top += relativeLineHeight;
+			text.bottom += relativeLineHeight;
 			currentLine = currentLine->nextNode;
 		}
 	}
