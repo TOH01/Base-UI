@@ -40,7 +40,7 @@ container_t *MenuUi_SubmenuAddContainer(MenuUi_Submenu_t *submenu, containerPos_
 	container_t *container = windowAddContainer(pos);
 
 	// we want first initialized menu to be visibile
-	if (submenu->SubmenuID == 0) {
+	if (MENU_ID_GET_SUBMENU(submenu->SubmenuID) == 0) {
 		container->visible = 1;
 	} else {
 		container->visible = 0;

@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <windows.h>
 
-#include "menuWindow.h"
+#include "demo.h"
 
 #ifdef CUSTOM_TITLE_BAR
 #include "titlbar.h"
@@ -24,9 +24,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_CREATE, &CoreWindowState_WmCreateHook); // init handler in core window state
 	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE, &CoreWindowState_WmSizeHook);     // resize handler in core window state
 
+	UiTheme_initFonts();
+
 	initRootContainer();
 
-	MenuUi_SubmenuInitAll();
+	Demo_InitAll();
 
 #ifdef CUSTOM_TITLE_BAR
 	initTitlebar();
