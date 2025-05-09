@@ -3,41 +3,50 @@
 #include "container.h"
 #include "customButton.h"
 #include "menu.h"
+#include "titlbar.h"
 #include <stdio.h>
 #include <windows.h>
-#include "titlbar.h"
 
-#define MENU_UI_SUBMENU_MAX 10
-#define MENU_UI_SUBMENU_START_ID 15100
+DynamicArray_t *submenuGroups = NULL;
 
-#define MENU_UI_SUBMENU_GET_IDX(Id) (Id - MENU_UI_SUBMENU_START_ID)
+MenuUi_Submenu_t *getActiveFromGroup(int groupID) {
+	submenuGroup_t *group = DynamicArray_get(submenuGroups, groupID);
+	MenuUi_Submenu_t *submenu = DynamicArray_get(group->submenus, group->activeSubmenuID);
+	return submenu;
+}
 
-int MenuUi_currentSubmenuIdx = 0;
+submenuGroup_t *initSubmenuGroup() {
+	submenuGroup_t *group = (submenuGroup_t *)calloc(1, sizeof(submenuGroup_t));
 
-int MenuUi_SubmenuIdCounter = MENU_UI_SUBMENU_START_ID;
-MenuUi_Submenu_t submenus[MENU_UI_SUBMENU_MAX];
+	if (submenuGroups == NULL) {
+		submenuGroups = DynamicArray_init(10);
+	}
 
-DynamicArray_t * subemenusArray = NULL;
+	if (submenuGroups->size >= MENU_UI_GROUP_MAX) {
+		return NULL;
+	}
 
-container_t *sidebarContainer = NULL;
+	group->submenus = DynamicArray_init(10);
+	group->activeSubmenuID = 0;
+	group->groupID = submenuGroups->size;
 
-const CommonPos_t sidebarPos = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(15), UI_UTILS_PERCENT(100)};
-CommonPos_t sidebarButtonPos = {UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(5), UI_UTILS_PERCENT(90), UI_UTILS_PERCENT(15)};
+	DynamicArray_Add(submenuGroups, group);
 
-container_t *MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos) {
-	MenuUi_Submenu_t *submenu = &submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)];
+	return group;
+}
+
+container_t *MenuUi_SubmenuAddContainer(MenuUi_Submenu_t *submenu, containerPos_t pos) {
 
 	container_t *container = windowAddContainer(pos);
 
 	// we want first initialized menu to be visibile
-	if(MenuId == MENU_UI_SUBMENU_START_ID){
+	if (submenu->SubmenuID == 0) {
 		container->visible = 1;
-	}
-	else{
+	} else {
 		container->visible = 0;
 	}
 
-	if(submenu->containers == NULL){
+	if (submenu->containers == NULL) {
 		submenu->containers = DynamicArray_init(10);
 	}
 
@@ -52,119 +61,98 @@ void MenuUi_SubmenuSwap(int menuId) {
 	activeInput = NULL;
 	activeTextDump = NULL;
 
-	if (MENU_UI_SUBMENU_GET_IDX(menuId) == MenuUi_currentSubmenuIdx) {
+	int groupID = MENU_ID_GET_GROUP(menuId);
+	int submenuID = MENU_ID_GET_SUBMENU(menuId);
+
+	submenuGroup_t *group = (submenuGroup_t *)DynamicArray_get(submenuGroups, groupID);
+
+	// if already selected return, do not do redundant calculations
+	if (group->activeSubmenuID == submenuID) {
 		return;
 	}
 
-	MenuUi_Submenu_t * submenu = &submenus[MenuUi_currentSubmenuIdx];
-	container_t * container = NULL;
+	// make the currently visible submenu invsible
+	MenuUi_Submenu_t *submenu = (MenuUi_Submenu_t *)DynamicArray_get(group->submenus, group->activeSubmenuID);
+	container_t *container = NULL;
 
-	for (int i = 0; i < submenu->containers->size; i++)
-	{
+	for (int i = 0; i < submenu->containers->size; i++) {
 		container = DynamicArray_get(submenu->containers, i);
 
-		if(container){
+		if (container) {
 			container->visible = 0;
 		}
 	}
-	
 
 	MenuUi_SubmenuCommandHandler(currentWindowState.hwnd, MENU_UI_SUBMENU_DESTROY_ID, 0, 0);
 
-	MenuUi_currentSubmenuIdx = MENU_UI_SUBMENU_GET_IDX(menuId);
+	submenu = (MenuUi_Submenu_t *)DynamicArray_get(group->submenus, submenuID);
 
-	submenu = &submenus[MenuUi_currentSubmenuIdx];
-
-	for (int i = 0; i < submenu->containers->size; i++)
-	{
+	for (int i = 0; i < submenu->containers->size; i++) {
 		container = DynamicArray_get(submenu->containers, i);
 
-		if(container){
+		if (container) {
 			container->visible = 1;
 		}
 	}
+
+	group->activeSubmenuID = submenuID;
 
 	MenuUi_SubmenuCommandHandler(currentWindowState.hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
 
 	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
-MenuUi_Submenu_t *MenuUi_GetCurrentSubmenu(void) { return &(submenus[MenuUi_currentSubmenuIdx]); }
+MenuUi_Submenu_t *MenuUi_CallAllActiveHandlers(HWND hwnd, int msg, WPARAM wparam, LPARAM lparam) {
 
-int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]) {
-
-	if ((MenuUi_SubmenuIdCounter - MENU_UI_SUBMENU_START_ID) >= MENU_UI_SUBMENU_MAX) {
-		return -1;
-	}
-
-	if (sidebarContainer == NULL) {
-		sidebarContainer = windowAddContainer(sidebarPos);
-	}
-
-	MenuUi_Submenu_t *submenu = (MenuUi_Submenu_t *)calloc(1, sizeof(MenuUi_Submenu_t));
-
-	submenu->SubmenuID = MenuUi_SubmenuIdCounter;
-	MenuUi_SubmenuIdCounter++;
-
-	submenu->WmParamHashTable = WmParamHandlerTable_Init();
-
-	submenus[MENU_UI_SUBMENU_GET_IDX(submenu->SubmenuID)] = *submenu;
-
-	memcpy(submenu->name, name, MENU_UI_MAX_NAME_LENGTH);
-
-	buttonWidget_t *sidebarButton = customButton_initButton(sidebarButtonPos, &MenuUi_SubmenuSwap, submenu->SubmenuID);
-	customButton_setButtonText(sidebarButton, name);
-
-	containerAddWidget(sidebarContainer, (BaseWidget_t *)sidebarButton);
-	sidebarButtonPos.top += 0.1f;
-	sidebarButtonPos.bottom += 0.1f;
-
-	return submenu->SubmenuID;
-}
-
-void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	if (submenus[MenuUi_currentSubmenuIdx].WmParamHashTable != NULL) {
-
-		if (WmParamHandlerTable_IdHasHandler(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, msg)) {
-			WmParamHandlerTable_CallHandlersOfId(submenus[MenuUi_currentSubmenuIdx].WmParamHashTable, hwnd, msg, wParam, lParam);
+	if (submenuGroups != NULL) {
+		for (size_t i = 0; i < submenuGroups->size; i++) {
+			WmParamHandlerTable_CallHandlersOfId(getActiveFromGroup(i)->WmParamHashTable, hwnd, msg, wparam, lparam);
 		}
 	}
 }
 
-void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, int MenuId) { WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(MenuId)].WmParamHashTable, WmParamKey, handler); }
+MenuUi_Submenu_t * MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH], buttonWidget_t *button, submenuGroup_t *group) {
 
-void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id) { WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_LOAD_ID, handler); }
-
-void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, int id) { WmParamHanderTable_Insert(submenus[MENU_UI_SUBMENU_GET_IDX(id)].WmParamHashTable, MENU_UI_SUBMENU_DESTROY_ID, handler); }
-
-LRESULT MenuUi_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-
-	// make sure that base submenu is loaded, when creating window
-
-	MenuUi_SubmenuCommandHandler(hwnd, MENU_UI_SUBMENU_LOAD_ID, 0, 0);
-
-	InvalidateRect(hwnd, NULL, FALSE);
-}
-
-LRESULT MenuUi_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-
-	InvalidateRect(hwnd, NULL, FALSE);
-
-	if (LOWORD(lParam) > CONFIG_MIN_WINDOW_WIDTH) {
-		currentWindowState.width = LOWORD(lParam);
+	if (group->submenus->size >= MENU_UI_SUBMENU_MAX) {
+		return NULL;
 	}
-	if (HIWORD(lParam) > CONFIG_MIN_WINDOW_Height) {
-		currentWindowState.height = HIWORD(lParam);
 
-		#ifdef CUSTOM_TITLE_BAR
+	MenuUi_Submenu_t *submenu = (MenuUi_Submenu_t *)calloc(1, sizeof(MenuUi_Submenu_t));
 
-		currentWindowState.titlbarHeight = getTitleBarHeight(hwnd);
+	submenu->SubmenuID = MENU_ID_ENCODE(group->groupID, group->submenus->size);
 
-		#endif
+	submenu->WmParamHashTable = WmParamHandlerTable_Init();
+
+	DynamicArray_Add(group->submenus, submenu);
+
+	memcpy(submenu->name, name, MENU_UI_MAX_NAME_LENGTH);
+
+	button->id = submenu->SubmenuID;
+	button->onClickUserCallback = &MenuUi_SubmenuSwap;
+
+	customButton_setButtonText(button, name);
+
+	return submenu;
+}
+
+void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+
+	if(submenuGroups == NULL){
+		return;
+	}
+	
+	for (size_t i = 0; i < submenuGroups->size; i++) {
+		if (getActiveFromGroup(i)->WmParamHashTable != NULL) {
+
+			if (WmParamHandlerTable_IdHasHandler(getActiveFromGroup(i)->WmParamHashTable, msg)) {
+				WmParamHandlerTable_CallHandlersOfId(getActiveFromGroup(i)->WmParamHashTable, hwnd, msg, wParam, lParam);
+			}
+		}
 	}
 }
 
-void MenuUi_InitBaseHandlers(void) {
-	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_CREATE, &MenuUi_WmCreateHook);
-	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE, &MenuUi_WmSizeHook);
-}
+void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, MenuUi_Submenu_t *submenu) { WmParamHanderTable_Insert(submenu->WmParamHashTable, WmParamKey, handler); }
+
+void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, MenuUi_Submenu_t *submenu) { WmParamHanderTable_Insert(submenu->WmParamHashTable, MENU_UI_SUBMENU_LOAD_ID, handler); }
+
+void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, MenuUi_Submenu_t *submenu) { WmParamHanderTable_Insert(submenu->WmParamHashTable, MENU_UI_SUBMENU_DESTROY_ID, handler); }

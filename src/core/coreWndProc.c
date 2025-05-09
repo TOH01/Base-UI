@@ -84,13 +84,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_NCLBUTTONUP:
 		return MenuUi_WmNCLButtonUp(hwnd, msg, wParam, lParam);
 	case WM_NCMOUSEMOVE:
-		return Titlebar_WmNCMouseMove(hwnd, msg, wParam, lParam);	
+		return Titlebar_WmNCMouseMove(hwnd, msg, wParam, lParam);
 #endif
 
 	case WM_PAINT:
 
 		// sometimes layout wont initalized properly for the first time, for example content area expands into titlebar
-		if(!layoutInitialzed){
+		if (!layoutInitialzed) {
 			layoutInitialzed = 1;
 
 			RECT client;
@@ -106,9 +106,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		HBITMAP hbmOld = SelectObject(currentWindowState.memHDC, currentWindowState.memBitmap);
 
 // call draw handlers (draw to memDC)
-#ifndef DISABLE_MENU
-		WmParamHandlerTable_CallHandlersOfId(MenuUi_GetCurrentSubmenu()->WmParamHashTable, hwnd, msg, wParam, lParam);
-#endif
+
+		MenuUi_CallAllActiveHandlers(hwnd, msg, wParam, lParam);
+
 
 		WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
 
@@ -130,9 +130,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		break;
 	default:
 
-#ifndef DISABLE_MENU
 		MenuUi_SubmenuCommandHandler(hwnd, msg, wParam, lParam);
-#endif
+
 
 		if (WmParamHandlerTable_IdHasHandler(currentWindowState.handlerTable, msg)) {
 

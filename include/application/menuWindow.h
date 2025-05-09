@@ -3,9 +3,6 @@
 
 #include <windows.h>
 
-#ifndef DISABLE_MENU
-void InitialzeHandlers(void);
 void MenuUi_SubmenuInitAll(void);
-#endif
 
 #endif

@@ -39,7 +39,6 @@ void moveContainerOnTop(int idx) {
 		for (int i = idx; i < currentWindowState.containers->size - 1; i++) {
 			DynamicArray_Swap(currentWindowState.containers, i, i + 1);
 		}
-
 	}
 }
 
@@ -265,7 +264,7 @@ container_t *windowAddContainer(CommonPos_t pos) {
 
 void initRootContainer() {
 
-	CommonPos_t rootPos = {0, 0, 100, 100};
+	CommonPos_t rootPos = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(100)};
 
 	container_t *rootContainer = windowAddContainer(rootPos);
 
@@ -278,6 +277,12 @@ void initRootContainer() {
 	rootContainer->theme->color.fill = currentWindowState.activeTheme.backgroundColor;
 }
 
-void rootContainerAddWidget(BaseWidget_t *widget) { containerAddWidget(DynamicArray_get(currentWindowState.containers, 0), widget); }
+void rootContainerAddWidget(BaseWidget_t *widget) {
+	container_t *rootContainer = (container_t *)DynamicArray_get(currentWindowState.containers, 0);
+	containerAddWidget(rootContainer, widget);
+}
 
-void rootContainerAddDrawable(Drawable_t *drawable) { containerAddDrawable(DynamicArray_get(currentWindowState.containers, 0), drawable); }
+void rootContainerAddDrawable(Drawable_t *drawable) {
+	container_t *rootContainer = (container_t *)DynamicArray_get(currentWindowState.containers, 0);
+	containerAddDrawable(rootContainer, drawable);
+}

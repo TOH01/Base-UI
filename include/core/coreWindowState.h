@@ -24,5 +24,6 @@ typedef struct WindowState {
 } WindowState_t;
 
 LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CoreWindowState_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #endif

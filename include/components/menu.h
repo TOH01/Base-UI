@@ -12,37 +12,39 @@
 #define MENU_UI_SUBMENU_LOAD_ID (MENU_UI_CUSTOM_MESSAGE_ID + 1)
 #define MENU_UI_SUBMENU_DESTROY_ID (MENU_UI_CUSTOM_MESSAGE_ID + 2)
 
-#define MENU_UI_MENU_WIDTH_PERCENTAGE UI_UTILS_PERCENT(20)
-#define MENU_UI_BUTTON_SPACING_LEFT UI_UTILS_PERCENT(5)
-#define MENU_UI_BUTTON_SPACING_RIGHT (MENU_UI_MENU_WIDTH_PERCENTAGE - 0.01f)
-#define MENU_UI_BUTTON_SPACING_TOP UI_UTILS_PERCENT(2)
-#define MENU_UI_BUTTON_HEIGHT UI_UTILS_PERCENT(4)
+#define MENU_ID_ENCODE(groupId, submenuId) ((groupId) * 100 + (submenuId))
+#define MENU_ID_GET_GROUP(menuId) ((menuId) / 100)
+#define MENU_ID_GET_SUBMENU(menuId) ((menuId) % 100)
 
-#define MENU_UI_BUTTON_WIDTH (MENU_UI_BUTTON_SPACING_RIGHT - MENU_UI_BUTTON_SPACING_LEFT)
-#define MENU_UI_BUTTON_GET_START_Y(num) ((((num) + 1) * MENU_UI_BUTTON_SPACING_TOP) + ((num) * (MENU_UI_BUTTON_HEIGHT)))
-
-#define MENU_UI_MAX_CONTAINER 5
 #define MENU_UI_MAX_NAME_LENGTH 30
+#define MENU_UI_SUBMENU_MAX 99
+#define MENU_UI_GROUP_MAX 10
 
 typedef struct container_t container_t;
+typedef struct ButtonWidget buttonWidget_t;
 #define containerPos_t CommonPos_t
-
-extern container_t *topContainer;
 
 typedef struct {
 	int SubmenuID;                           // unique submenu id
 	WmParamHandlerTable_t *WmParamHashTable; // hashtable of callbacks
 	char name[MENU_UI_MAX_NAME_LENGTH];
-	DynamicArray_t * containers;
+	DynamicArray_t *containers;
 } MenuUi_Submenu_t;
 
-int MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH]);
+typedef struct submenuGroup {
+	DynamicArray_t * submenus;
+	int groupID;
+	int activeSubmenuID;
+} submenuGroup_t;
+
+MenuUi_Submenu_t * MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH], buttonWidget_t *button, submenuGroup_t *group);
 void MenuUi_InitBaseHandlers(void);
 void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, int MenuId);
-void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, int id);
-void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, int id);
-MenuUi_Submenu_t *MenuUi_GetCurrentSubmenu(void);
-container_t *MenuUi_SubmenuAddContainer(int MenuId, containerPos_t pos);
+void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, MenuUi_Submenu_t * submenu);
+void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, MenuUi_Submenu_t * submenu);
+void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, MenuUi_Submenu_t * submenu);
+MenuUi_Submenu_t *MenuUi_CallAllActiveHandlers(HWND hwnd, int id, WPARAM wparam, LPARAM lparam);
+container_t *MenuUi_SubmenuAddContainer(MenuUi_Submenu_t * submenu, containerPos_t pos);
+submenuGroup_t *initSubmenuGroup();
 
 #endif

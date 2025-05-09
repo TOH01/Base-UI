@@ -4,16 +4,13 @@
 #include "UiUtils.h"
 #include "WmParamHashTable.h"
 #include "common.h"
+#include "container.h"
 #include "coreWndProc.h"
 #include <stdio.h>
 #include <windows.h>
-#include "container.h"
 
-#ifndef DISABLE_MENU
 #include "menuWindow.h"
-#elif defined(DISABLE_MENU)
-#include "singleWindow.h"
-#endif
+
 #ifdef CUSTOM_TITLE_BAR
 #include "titlbar.h"
 #endif
@@ -24,17 +21,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	currentWindowState.handlerTable = WmParamHandlerTable_Init();
 
-	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_CREATE, &CoreWindowState_WmCreateHook); // init handle in core window state
-
-	InitialzeHandlers();
+	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_CREATE, &CoreWindowState_WmCreateHook); // init handler in core window state
+	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE, &CoreWindowState_WmSizeHook);     // resize handler in core window state
 
 	initRootContainer();
 
-	#ifndef DISABLE_MENU
-
 	MenuUi_SubmenuInitAll();
-
-#endif
 
 #ifdef CUSTOM_TITLE_BAR
 	initTitlebar();
