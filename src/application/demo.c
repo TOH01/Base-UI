@@ -59,7 +59,7 @@ void Demo_InitAll(void) {
 
     buttonWidget_t *btnA2 = customButton_initButton((CommonPos_t){
         UI_UTILS_PERCENT(1), UI_UTILS_PERCENT(19),
-        UI_UTILS_PERCENT(31), UI_UTILS_PERCENT(7)}, NULL, 0);
+        UI_UTILS_PERCENT(33), UI_UTILS_PERCENT(7)}, NULL, 0);
 
 
     buttonWidget_t *btnB1 = customButton_initButton((CommonPos_t){
