@@ -108,7 +108,6 @@ inputWidget_t *customInput_initInput(CommonPos_t pos) {
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_KEYDOWN, &keystoreCallback);
 	}
 
-	input->baseWidget.pos = pos;
 	input->baseWidget.initPos = pos;
 
 	input->baseWidget.type = WIDGET_TYPE_INPUT;

@@ -7,10 +7,10 @@
 #include "drawable.h"
 #include <stdbool.h>
 
-#define containerPos_t CommonPos_t
+#define containerPos_t AbsolutePos_t
 
 typedef struct container_t {
-	containerPos_t pos;
+	AbsolutePos_t absPos;
 	DynamicArray_t * widgetList;
 	DynamicArray_t * drawableList;
 	containerTheme_t *theme;
@@ -22,7 +22,7 @@ typedef struct container_t {
 typedef struct movingContainer_t {
 	int action;
 	container_t *container;
-	CommonPos_t startPos;
+	AbsolutePos_t startPos;
 	int mouseStartX;
 	int mouseStartY;
 } movingContainer_t;
@@ -31,7 +31,7 @@ typedef struct movingContainer_t {
 
 container_t *initContainer(containerPos_t pos);
 void containerAddWidget(container_t *container, BaseWidget_t *widget);
-container_t *windowAddContainer(CommonPos_t pos);
+container_t *windowAddContainer(AbsolutePos_t pos);
 void containerAddDrawable(container_t * container, Drawable_t * drawable);
 void initRootContainer();
 void rootContainerAddDrawable(Drawable_t *drawable);

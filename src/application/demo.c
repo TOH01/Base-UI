@@ -84,18 +84,18 @@ void Demo_InitAll(void) {
     MenuUi_Submenu_t *menuB2 = MenuUi_SubmenuInit("Font", btnB2, groupB);
 
     // Submenu containers
-    container_t *contA1 = MenuUi_SubmenuAddContainer(menuA1, (CommonPos_t){
-        UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(5),
-        UI_UTILS_PERCENT(48), UI_UTILS_PERCENT(45)});
-    container_t *contA2 = MenuUi_SubmenuAddContainer(menuA2, (CommonPos_t){
-        UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(5),
-        UI_UTILS_PERCENT(48), UI_UTILS_PERCENT(90)});
-    container_t *contB1 = MenuUi_SubmenuAddContainer(menuB1, (CommonPos_t){
-        UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(52),
-        UI_UTILS_PERCENT(95), UI_UTILS_PERCENT(45)});
-    container_t *contB2 = MenuUi_SubmenuAddContainer(menuB2, (CommonPos_t){
-        UI_UTILS_PERCENT(50), UI_UTILS_PERCENT(52),
-        UI_UTILS_PERCENT(95), UI_UTILS_PERCENT(90)});
+    container_t *contA1 = MenuUi_SubmenuAddContainer(menuA1, (AbsolutePos_t){
+        100, 100,
+        200, 200});
+    container_t *contA2 = MenuUi_SubmenuAddContainer(menuA2, (AbsolutePos_t){
+        100, 100,
+        200, 200});
+    container_t *contB1 = MenuUi_SubmenuAddContainer(menuB1, (AbsolutePos_t){
+        100, 100,
+        200, 200});
+    container_t *contB2 = MenuUi_SubmenuAddContainer(menuB2, (AbsolutePos_t){
+        100, 100,
+        200, 200});
 
 	contA1->movable = 1;
 	contA2->movable = 1;
@@ -141,17 +141,22 @@ void Demo_InitAll(void) {
         UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(5),
         UI_UTILS_PERCENT(95), UI_UTILS_PERCENT(15)}, label, &currentWindowState.activeTheme.label));
 
+    /*  
     // === Group B1: Theme Selection ===
     sliderWidget_t *themeSlider = customSlider_initSlider((CommonPos_t){
         UI_UTILS_PERCENT(10), UI_UTILS_PERCENT(30),
         UI_UTILS_PERCENT(70), UI_UTILS_PERCENT(25)}, &sliderValue, 3);
+   */       
 
     buttonWidget_t *applyThemeBtn = customButton_initButton((CommonPos_t){
         UI_UTILS_PERCENT(30), UI_UTILS_PERCENT(10),
         UI_UTILS_PERCENT(90), UI_UTILS_PERCENT(50)}, &magicButton, 69);
     customButton_setButtonText(applyThemeBtn, "Apply Selected Theme");
 
+    /*
     containerAddWidget(contB1, (BaseWidget_t *)themeSlider);
+    */
+
     containerAddWidget(contB1, (BaseWidget_t *)applyThemeBtn);
 
     // === Group B2: Font Settings ===

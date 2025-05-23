@@ -7,7 +7,7 @@
 
 #ifdef CUSTOM_TITLE_BAR
 
-activeHover active = NONE;
+activeHover active = BORDER_NONE;
 
 int win32_dpi_scale(int value, UINT dpi) { return (int)((float)value * dpi / 96); }
 
@@ -139,7 +139,7 @@ LRESULT Titlebar_WmNCMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	RECT restoreRect = {titlebar.right - (RESTORE * height), titlebar.top, titlebar.right - ((RESTORE - 1) * height), titlebar.bottom};
 	RECT minimizeRect = {titlebar.right - (MINIMIZE * height), titlebar.top, titlebar.right - ((MINIMIZE - 1) * height), titlebar.bottom};
 
-	int newActive = NONE;
+	int newActive = BORDER_NONE;
 
 	if (PtInRect(&closeRect, cursor_point)) {
 		newActive = CLOSE;
@@ -159,8 +159,8 @@ LRESULT Titlebar_WmNCMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 LRESULT Titlebar_WmMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	
-	if(active != NONE){
-		active = NONE;
+	if(active != BORDER_NONE){
+		active = BORDER_NONE;
 		RECT titlebar = win32_titlebar_rect(hwnd);
 		InvalidateRect(currentWindowState.hwnd, &titlebar, FALSE);
 	}
@@ -169,7 +169,7 @@ LRESULT Titlebar_WmMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 }
 
 LRESULT Titlebar_WmNCLButtonDown(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	if (active != NONE) {
+	if (active != BORDER_NONE) {
 		return 0;
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);

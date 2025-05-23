@@ -28,7 +28,7 @@ void renderWidgetList(DynamicArray_t * array) {
 	}
 }
 
-void updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array) {
+void updatePosToContainerList(AbsolutePos_t containerPos, DynamicArray_t * array) {
 
 	if (!array) {
 		return;
@@ -41,7 +41,7 @@ void updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array) 
 		widget = DynamicArray_get(array, i);
 		
 		if(widget != NULL){
-			widget->pos = getPosToContainer(containerPos, widget->initPos);
+			widget->pos = getPosToContainer(widget->parentPos, widget->initPos);
 		}
 	}
 

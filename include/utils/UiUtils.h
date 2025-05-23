@@ -10,28 +10,26 @@
 #define buttonPos_t CommonPos_t
 
 typedef enum {
+	BORDER_NONE = 0,
 	TOP = 1,
 	RIGHT = 2,
 	BOTTOM = 3,
 	LEFT = 4,
 } UiUtils_BorderEnum;
 
-void UiUtils_CreatePens(void);
-void UiUtils_DrawRectangleRelative(CommonPos_t pos);
-bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos);
-UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos);
-void UiUtils_FillRectangleRelative(CommonPos_t pos);
-void UiUtils_DrawText(CommonPos_t pos, char *name, UINT format);
-bool UiUtils_TextFitsBox(char text[], CommonPos_t pos);
-RECT UiUtils_CommonPosToRect(CommonPos_t pos);
-CommonPos_t UiUtils_RectToCommonsPos(RECT rect);
+
+void UiUtils_DrawRectangleRelative(AbsolutePos_t pos);
+bool UiUtils_CoordinateIsInsideOf(int x, int y, AbsolutePos_t pos);
+UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, AbsolutePos_t pos);
+void UiUtils_FillRectangleRelative(AbsolutePos_t);
+void UiUtils_DrawText(AbsolutePos_t pos, char *name, UINT format);
 HFONT UiUtils_CreateFont();
-void UiUtils_DrawTextTheme(CommonPos_t pos, char *name, UINT format, HFONT font, COLORREF color);
-bool UiUtils_TextFitsBoxTheme(char text[], CommonPos_t pos, HFONT font);
-void UiUtils_DrawFilledRectangle(CommonPos_t pos, COLORREF color);
-void UiUtils_DrawColoredRectangle(CommonPos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize);
+void UiUtils_DrawTextTheme(AbsolutePos_t pos, char *name, UINT format, HFONT font, COLORREF color);
+bool UiUtils_TextFitsBoxTheme(char text[], AbsolutePos_t pos, HFONT font);
+void UiUtils_DrawColoredRectangle(AbsolutePos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize);
 int UiUtils_getLineHeight(HFONT font);
-CommonPos_t getPosToContainer(CommonPos_t containerPos, CommonPos_t widgetPos);
-void UiUtils_DrawLineRelative(CommonPos_t pos, COLORREF color, int width);
+AbsolutePos_t getPosToContainer(const AbsolutePos_t* parentAbsPos, CommonPos_t widgetRelPos);
+void UiUtils_DrawLineRelative(AbsolutePos_t pos, COLORREF color, int width);
+RECT UiUtils_absolutePosToRect(AbsolutePos_t pos);
 
 #endif

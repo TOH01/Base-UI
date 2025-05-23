@@ -21,4 +21,11 @@ typedef struct CommonPos {
     float bottom;  // distance from top to bottom edge (so: height = bottom - top)
 } CommonPos_t;
 
+typedef struct AbsolutePos {
+    int top;
+    int left;
+    int right;
+    int bottom;
+} AbsolutePos_t;
+
 #endif

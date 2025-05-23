@@ -60,7 +60,6 @@ buttonWidget_t *customButton_initButton(CommonPos_t pos, void (*onClickUserCallb
 	buttonWidget_t *button = (buttonWidget_t *)calloc(1, sizeof(buttonWidget_t));
 
 	button->baseWidget.initPos = pos;
-	button->baseWidget.pos = pos;
 
 	button->baseWidget.drawHandler = &drawButton;
 	button->baseWidget.onHover = &onHoverButton;

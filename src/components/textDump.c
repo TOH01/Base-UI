@@ -15,7 +15,7 @@ void drawTextDump(BaseWidget_t *baseWidget) {
 
 	int lineHeight = UiUtils_getLineHeight(textDump->theme->text.font);
 
-	RECT containerRect = UiUtils_CommonPosToRect(baseWidget->pos);
+	RECT containerRect = UiUtils_absolutePosToRect(baseWidget->pos);
 
 	if (!lineHeight) {
 #ifdef DEBUG
@@ -25,9 +25,9 @@ void drawTextDump(BaseWidget_t *baseWidget) {
 		return;
 	}
 
-	int visibleLines = (containerRect.bottom - containerRect.top) / lineHeight;
+	int visibleLines = (baseWidget->pos.bottom - baseWidget->pos.top) / lineHeight;
 
-	float relativeHeight = baseWidget->pos.bottom - baseWidget->pos.top;
+
 
 	if (!visibleLines) {
 #ifdef DEBUG
@@ -37,25 +37,23 @@ void drawTextDump(BaseWidget_t *baseWidget) {
 		return;
 	}
 
-	float relativeLineHeight = relativeHeight / visibleLines;
-
 	textLineNode_t *currentLine = textDump->currentLine;
 
 	if (currentLine == NULL) {
 
-		CommonPos_t text = baseWidget->pos;
-		text.bottom = text.top + relativeLineHeight;
+		AbsolutePos_t text = baseWidget->pos;
+		text.bottom = text.top + lineHeight;
 
 		UiUtils_DrawTextTheme(text, "EMPTY TEXT DUMP ERROR", textDump->theme->text.formatFlags, textDump->theme->text.font, textDump->theme->text.color);
 	} else {
 
-		CommonPos_t text = baseWidget->pos;
-		text.bottom = text.top + relativeLineHeight;
+		AbsolutePos_t text = baseWidget->pos;
+		text.bottom = text.top + lineHeight;
 
 		for (int i = 0; (i < visibleLines) && (currentLine != NULL); i++) {
 			UiUtils_DrawTextTheme(text, currentLine->line, textDump->theme->text.formatFlags, textDump->theme->text.font, textDump->theme->text.color);
-			text.top += relativeLineHeight;
-			text.bottom += relativeLineHeight;
+			text.top += lineHeight;
+			text.bottom += lineHeight;
 			currentLine = currentLine->nextNode;
 		}
 	}
@@ -116,7 +114,6 @@ LRESULT scrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 textDumpWidget_t *customTextDump_initTextDump(CommonPos_t pos) {
 	textDumpWidget_t *textDump = (textDumpWidget_t *)calloc(1, sizeof(textDumpWidget_t));
-	textDump->baseWidget.pos = pos;
 	textDump->baseWidget.initPos = pos;
 	textDump->baseWidget.onClick = &onClickTextDump;
 	textDump->baseWidget.drawHandler = &drawTextDump;

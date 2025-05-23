@@ -40,6 +40,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			requested_client_rect->top += padding;
 		}
 
+		if(currentWindowState.titlbarHeight != getTitleBarHeight(hwnd)){
+			for (int i = 1; i < currentWindowState.containers->size; i++)
+			{
+				container_t * container = (container_t * )DynamicArray_get(currentWindowState.containers, i);
+
+				container->absPos.top += (getTitleBarHeight(hwnd) - currentWindowState.titlbarHeight);
+				container->absPos.bottom += (getTitleBarHeight(hwnd) - currentWindowState.titlbarHeight);
+				
+				updatePosToContainerList(container->absPos, container->widgetList);
+				drawable_updatePosToContainerList(container->absPos, container->drawableList);
+
+			}
+			
+		}
+
+		currentWindowState.titlbarHeight = getTitleBarHeight(hwnd);
+
 		return 0;
 	}
 	case WM_NCHITTEST: {

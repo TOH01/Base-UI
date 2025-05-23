@@ -8,7 +8,7 @@ Drawable_t *drawable_initRectangle(CommonPos_t pos, rectangleTheme_t *theme) {
 
 	drawable->rectangle.theme = theme;
 
-	drawable->pos = pos;
+
 	drawable->initPos = pos;
 
 	return drawable;
@@ -22,7 +22,7 @@ Drawable_t *drawable_initLabel(CommonPos_t pos, char *text, labelTheme_t *theme)
 
 	drawable->label.text = text;
 
-	drawable->pos = pos;
+
 	drawable->initPos = pos;
 
 	return drawable;
@@ -32,7 +32,7 @@ Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t *theme) {
 	Drawable_t *drawable = (Drawable_t *)calloc(1, sizeof(Drawable_t));
 	drawable->type = DRAWABLE_LINE;
 	drawable->line.theme = theme;
-	drawable->pos = pos;
+
 	drawable->initPos = pos;
 
 	return drawable;
@@ -99,7 +99,7 @@ void drawable_drawAll(DynamicArray_t *array) {
 	
 }
 
-void drawable_updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array) {
+void drawable_updatePosToContainerList(AbsolutePos_t containerPos, DynamicArray_t * array) {
 
 	if (!array) {
 		return;
@@ -111,7 +111,7 @@ void drawable_updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t 
 	{
 		drawable = (Drawable_t *) DynamicArray_get(array, i);
 
-		drawable->pos = getPosToContainer(containerPos, drawable->initPos);
+		drawable->pos = getPosToContainer(drawable->parentPos, drawable->initPos);
 	}
 	
 }

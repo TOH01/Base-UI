@@ -20,7 +20,8 @@ typedef struct BaseWidget {
 	void (*onHover)(BaseWidget_t *);
 	void (*onHoverEnd)(BaseWidget_t *);
 	WidgetType_t type;
-	CommonPos_t pos;
+	AbsolutePos_t * parentPos;
+	AbsolutePos_t pos;
 } BaseWidget_t;
 
 typedef struct WidgetNode WidgetNode_t;
@@ -36,8 +37,7 @@ typedef struct WidgetList {
 
 void addWidget(DynamicArray_t * array, BaseWidget_t *widget);
 void renderWidgetList(DynamicArray_t * array);
-CommonPos_t getPosToContainer(CommonPos_t containerPos, CommonPos_t widgetPos);
-void updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array);
+void updatePosToContainerList(AbsolutePos_t containerPos, DynamicArray_t * array);
 BaseWidget_t *widgetClicked(int x, int y, DynamicArray_t * array);
 
 #endif

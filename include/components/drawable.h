@@ -12,7 +12,8 @@ typedef enum DrawableType {
 
 typedef struct Drawable {
 	DrawableType_t type;
-    CommonPos_t pos;
+    AbsolutePos_t * parentPos;
+	AbsolutePos_t pos;
     CommonPos_t initPos;
 	union {
 		struct {
@@ -34,6 +35,6 @@ void addDrawable(DynamicArray_t * array, Drawable_t *drawable);
 Drawable_t *drawable_initRectangle(CommonPos_t pos, rectangleTheme_t * theme);
 Drawable_t *drawable_initLabel(CommonPos_t pos, char * text, labelTheme_t * theme);
 Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t * theme);
-void drawable_updatePosToContainerList(CommonPos_t containerPos, DynamicArray_t * array);
+void drawable_updatePosToContainerList(AbsolutePos_t containerPos, DynamicArray_t * array);
 
 #endif

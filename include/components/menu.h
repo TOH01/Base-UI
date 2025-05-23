@@ -22,7 +22,7 @@
 
 typedef struct container_t container_t;
 typedef struct ButtonWidget buttonWidget_t;
-#define containerPos_t CommonPos_t
+#define containerPos_t AbsolutePos_t
 
 typedef struct {
 	int SubmenuID;                           // unique submenu id

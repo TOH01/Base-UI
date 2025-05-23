@@ -3,42 +3,20 @@
 #include "string.h"
 #include <windows.h>
 
-RECT UiUtils_CommonPosToRect(CommonPos_t pos) {
-
-#ifndef CUSTOM_TITLE_BAR
-	RECT rect = {UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.top), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height, pos.bottom)};
-#elif defined(CUSTOM_TITLE_BAR)
-	RECT rect = {UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.left), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height - currentWindowState.titlbarHeight, pos.top) + currentWindowState.titlbarHeight, UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.width, pos.right), UI_UTILS_CALCULATE_PERCENTAGE(currentWindowState.height - currentWindowState.titlbarHeight , pos.bottom) + currentWindowState.titlbarHeight};
-#endif
-
-	return rect;
+RECT UiUtils_absolutePosToRect(AbsolutePos_t pos) {
+    RECT rect;
+    rect.left   = pos.left;
+    rect.top    = pos.top;
+    rect.right  = pos.right;
+    rect.bottom = pos.bottom;
+    return rect;
 }
 
-CommonPos_t UiUtils_RectToCommonsPos(RECT rect) {
-	CommonPos_t pos = {(rect.top / (float)currentWindowState.height), (rect.left / (float)currentWindowState.width), (rect.right / (float)currentWindowState.width), (rect.bottom / (float)currentWindowState.height)};
-
-	return pos;
+void UiUtils_DrawRectangleRelative(AbsolutePos_t pos) {
+	Rectangle(currentWindowState.memHDC, pos.left, pos.top, pos.right, pos.bottom);
 }
 
-void UiUtils_CreatePens(void) { currentWindowState.hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0)); }
-
-void UiUtils_DrawRectangleRelative(CommonPos_t pos) {
-
-	RECT rect = UiUtils_CommonPosToRect(pos);
-
-	Rectangle(currentWindowState.memHDC, rect.left, rect.top, rect.right, rect.bottom);
-}
-
-void UiUtils_DrawFilledRectangle(CommonPos_t pos, COLORREF color) {
-	HBRUSH fillBrush = CreateSolidBrush(color);
-
-	RECT fillRect = UiUtils_CommonPosToRect(pos);
-
-	FillRect(currentWindowState.memHDC, &fillRect, fillBrush);
-	DeleteObject(fillBrush);
-}
-
-void UiUtils_DrawColoredRectangle(CommonPos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize) {
+void UiUtils_DrawColoredRectangle(AbsolutePos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize) {
 
 	HPEN pen = CreatePen(PS_SOLID, BorderSize, colorBorder);
 	HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
@@ -54,18 +32,18 @@ void UiUtils_DrawColoredRectangle(CommonPos_t pos, COLORREF colorBG, COLORREF co
 	DeleteObject(fillBrush);
 }
 
-void UiUtils_DrawText(CommonPos_t pos, char *name, UINT format) {
+void UiUtils_DrawText(AbsolutePos_t pos, char *name, UINT format) {
 
-	RECT textRect = UiUtils_CommonPosToRect(pos);
+	RECT textRect = UiUtils_absolutePosToRect(pos);
 
 	DrawText(currentWindowState.memHDC, name, -1, &textRect, format);
 }
 
-void UiUtils_DrawLineRelative(CommonPos_t pos, COLORREF color, int width) {
+void UiUtils_DrawLineRelative(AbsolutePos_t pos, COLORREF color, int width) {
 	HPEN pen = CreatePen(PS_SOLID, width, color);
 	HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
 
-	RECT r = UiUtils_CommonPosToRect(pos);
+	RECT r = UiUtils_absolutePosToRect(pos);
 
 	MoveToEx(currentWindowState.memHDC, r.left, r.top, NULL);
 	LineTo(currentWindowState.memHDC, r.right, r.bottom);
@@ -74,7 +52,7 @@ void UiUtils_DrawLineRelative(CommonPos_t pos, COLORREF color, int width) {
 	DeleteObject(pen);
 }
 
-void UiUtils_DrawTextTheme(CommonPos_t pos, char *name, UINT format, HFONT font, COLORREF color) {
+void UiUtils_DrawTextTheme(AbsolutePos_t pos, char *name, UINT format, HFONT font, COLORREF color) {
 
 	SetTextColor(currentWindowState.memHDC, color);
 	SetBkMode(currentWindowState.memHDC, TRANSPARENT);
@@ -84,52 +62,19 @@ void UiUtils_DrawTextTheme(CommonPos_t pos, char *name, UINT format, HFONT font,
 	SIZE textSize;
 	GetTextExtentPoint32A(currentWindowState.memHDC, name, strlen(name), &textSize);
 
-	float textHeightRel = (float)textSize.cy / currentWindowState.height;
+	int boxHeight = pos.bottom - pos.top;
+    int offsetY = (boxHeight - textSize.cy) / 2;
 
-	float boxHeightRel = pos.bottom - pos.top;
-	float offsetRel = (boxHeightRel - textHeightRel) / 2.0f;
+	pos.top += offsetY;
+	pos.bottom += pos.top + textSize.cy;
 
-	CommonPos_t adjustedPos = pos;
-	adjustedPos.top = pos.top + offsetRel;
-	adjustedPos.bottom = adjustedPos.top + textHeightRel;
-
-	UiUtils_DrawText(adjustedPos, name, format);
+	UiUtils_DrawText(pos, name, format);
 
 	SelectObject(currentWindowState.memHDC, oldFont);
 }
 
-void UiUtils_FillRectangleRelative(CommonPos_t pos) {
-	HBRUSH hBrush = CreateSolidBrush(RGB(0, 255, 0));
-
-	RECT rect = UiUtils_CommonPosToRect(pos);
-
-	FillRect(currentWindowState.memHDC, &rect, hBrush);
-}
-
-bool UiUtils_CoordinateIsInsideOf(int x, int y, CommonPos_t pos) {
-
-	RECT rect = UiUtils_CommonPosToRect(pos);
-
-	if (x > rect.left && x < rect.right) {
-		if (y > rect.top && y < rect.bottom) {
-			return true;
-		}
-	}
-	return false;
-}
-
-bool UiUtils_TextFitsBox(char text[], CommonPos_t pos) {
-
-	SIZE textSize;
-	RECT rect = UiUtils_CommonPosToRect(pos);
-
-	GetTextExtentPoint32(currentWindowState.memHDC, text, strlen(text), &textSize);
-
-	if (textSize.cx > ((rect.right) - (rect.left))) {
-		return false;
-	}
-
-	return true;
+bool UiUtils_CoordinateIsInsideOf(int x, int y, AbsolutePos_t pos) {
+    return (x > pos.left && x < pos.right && y > pos.top && y < pos.bottom);
 }
 
 int UiUtils_getLineHeight(HFONT font) {
@@ -139,13 +84,12 @@ int UiUtils_getLineHeight(HFONT font) {
 
 	GetTextMetrics(currentWindowState.hdc, &tm);
 
-	// Restore the old font
 	SelectObject(currentWindowState.hdc, oldFont);
 
 	return tm.tmHeight;
 }
 
-bool UiUtils_TextFitsBoxTheme(char text[], CommonPos_t pos, HFONT font) {
+bool UiUtils_TextFitsBoxTheme(char text[], AbsolutePos_t pos, HFONT font) {
 	SIZE textSize;
 
 	HDC hdc = currentWindowState.memHDC;
@@ -159,62 +103,59 @@ bool UiUtils_TextFitsBoxTheme(char text[], CommonPos_t pos, HFONT font) {
 	// Restore the old font
 	SelectObject(hdc, oldFont);
 
-	RECT rect = UiUtils_CommonPosToRect(pos);
+	int boxWidth = pos.right - pos.left;
+    int boxHeight = pos.bottom - pos.top;
 
-	int boxWidth = rect.right - rect.left;
-	int boxHeight = rect.bottom - rect.top;
+    bool fitsWidth = textSize.cx <= boxWidth;
+    bool fitsHeight = textSize.cy <= boxHeight;
 
-	bool fitsWidth = textSize.cx <= boxWidth;
-	bool fitsHeight = textSize.cy <= boxHeight;
-
-	return fitsWidth && fitsHeight;
+    return fitsWidth && fitsHeight;
 }
 
 HFONT UiUtils_CreateFont() { return CreateFont(-MulDiv(10, GetDeviceCaps(currentWindowState.memHDC, LOGPIXELSY), 72), 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Segoe UI")); }
 
-UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, CommonPos_t pos) {
-	// check if on left border
-	
-	RECT rect = UiUtils_CommonPosToRect(pos);
-	
-	if (abs(x - rect.left) <= borderWidth) {
-		if (y >= rect.top && y <= rect.bottom) {
-			return LEFT;
-		}
-	}
+UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, AbsolutePos_t pos) {
+    // Check if on left border
+    if (abs(x - pos.left) <= borderWidth) {
+        if (y >= pos.top && y <= pos.bottom) {
+            return LEFT;
+        }
+    }
 
-	// check if on right border
-	if (abs(x - rect.right) <= borderWidth) {
-		if (y >= rect.top && y <= rect.bottom) {
-			return RIGHT;
-		}
-	}
+    // Check if on right border
+    if (abs(x - pos.right) <= borderWidth) {
+        if (y >= pos.top && y <= pos.bottom) {
+            return RIGHT;
+        }
+    }
 
-	// check if on bottom border
-	if (abs(y - rect.bottom) <= borderWidth) {
-		if (x >= rect.left && x <= rect.right) {
-			return BOTTOM;
-		}
-	}
+    // Check if on bottom border
+    if (abs(y - pos.bottom) <= borderWidth) {
+        if (x >= pos.left && x <= pos.right) {
+            return BOTTOM;
+        }
+    }
 
-	// check if on top border
-	if (abs(y - rect.top) <= borderWidth) {
-		if (x >= rect.left && x <= rect.right) {
-			return TOP;
-		}
-	}
+    // Check if on top border
+    if (abs(y - pos.top) <= borderWidth) {
+        if (x >= pos.left && x <= pos.right) {
+            return TOP;
+        }
+    }
 
-	return false;
+    return BORDER_NONE;
 }
 
-CommonPos_t getPosToContainer(CommonPos_t containerPos, CommonPos_t widgetPos) {
-	CommonPos_t pos;
+AbsolutePos_t getPosToContainer(const AbsolutePos_t* parentAbsPos, CommonPos_t widgetRelPos) {
+    AbsolutePos_t absPos;
 
-	pos.left = containerPos.left + ((containerPos.right - containerPos.left) * widgetPos.left);
-	pos.right = containerPos.left + ((containerPos.right - containerPos.left) * widgetPos.right);
+    int parentWidth  = parentAbsPos->right  - parentAbsPos->left;
+    int parentHeight = parentAbsPos->bottom - parentAbsPos->top;
 
-	pos.top = containerPos.top + ((containerPos.bottom - containerPos.top) * widgetPos.top);
-	pos.bottom = containerPos.top + ((containerPos.bottom - containerPos.top) * widgetPos.bottom);
+    absPos.left   = parentAbsPos->left + (int)(widgetRelPos.left * parentWidth);
+    absPos.right  = parentAbsPos->left + (int)(widgetRelPos.right * parentWidth);
+    absPos.top    = parentAbsPos->top  + (int)(widgetRelPos.top * parentHeight);
+    absPos.bottom = parentAbsPos->top  + (int)(widgetRelPos.bottom * parentHeight);
 
-	return pos;
+    return absPos;
 }

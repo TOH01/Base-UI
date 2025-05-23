@@ -14,7 +14,7 @@ static void drawCheckbox(BaseWidget_t *baseWidget) {
 
 		if (*(checkbox->value) || checkbox->beingHovered) {
 
-			CommonPos_t inner = baseWidget->pos;
+			AbsolutePos_t inner = baseWidget->pos;
 
 			float height = inner.bottom - inner.top;
 			float width = inner.right - inner.left;
@@ -61,8 +61,7 @@ static void onClickCheckbox(BaseWidget_t *baseWidget, int x, int y) {
 
 checkboxWidget_t *customCheckbox_initCheckbox(CommonPos_t pos, bool *value) {
 	checkboxWidget_t *checkbox = (checkboxWidget_t *)calloc(1, sizeof(checkboxWidget_t));
-
-	checkbox->baseWidget.pos = pos;
+	
 	checkbox->baseWidget.initPos = pos;
 
 	checkbox->baseWidget.type = WIDGET_TYPE_CHECKBOX;

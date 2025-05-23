@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#ifdef ENABLE_SLIDER
 sliderWidget_t *activeSlider = NULL;
 bool sliderHandlersRegistered = false;
 
@@ -93,7 +94,7 @@ static void onHoverSlider(BaseWidget_t *base) {
 			slider->selected = BAR;
 			InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 		} else {
-			slider->selected = NONE;
+			slider->selected = BORDER_NONE;
 		}
 	}
 }
@@ -102,7 +103,7 @@ static void onHoverEndSlider(BaseWidget_t *base) {
 	assert(base->type == WIDGET_TYPE_SLIDER);
 	sliderWidget_t *slider = (sliderWidget_t *)base;
 	slider->beingHovered = 0;
-	slider->selected = NONE;
+	slider->selected = BORDER_NONE;
 	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
@@ -126,7 +127,7 @@ LRESULT mouseMoveSlider(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				}
 			}
 
-			RECT sliderRect = UiUtils_CommonPosToRect(activeSlider->baseWidget.pos);
+			RECT sliderRect = UiUtils_absolutePosToRect(activeSlider->baseWidget.pos);
 
 			InvalidateRect(currentWindowState.hwnd, &sliderRect, FALSE);
 		}
@@ -165,3 +166,4 @@ sliderWidget_t *customSlider_initSlider(CommonPos_t pos, int *value, int range) 
 
 	return slider;
 }
+#endif

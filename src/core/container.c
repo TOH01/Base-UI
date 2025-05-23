@@ -11,7 +11,7 @@ DWORD hoverStartTime = 0;
 #define HOVER_TIMER_ID 1
 #define HOVER_DELAY_MS 5
 
-void redrawContainer(container_t *container) { UiUtils_DrawColoredRectangle(container->pos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth); }
+void redrawContainer(container_t *container) { UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth); }
 
 void redrawContainerList() {
 
@@ -54,14 +54,14 @@ void containerListLButtonDown(int x, int y) {
 		container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
 		if (container && container->visible) {
-			if (UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->pos) && !movingContainer.action && container->resizable) {
-				movingContainer.startPos = container->pos;
-				movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->pos);
+			if (UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->absPos) && !movingContainer.action && container->resizable) {
+				movingContainer.startPos = container->absPos;
+				movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->absPos);
 				movingContainer.container = container;
 				movingContainer.mouseStartX = x;
 				movingContainer.mouseStartY = y;
 				break;
-			} else if (UiUtils_CoordinateIsInsideOf(x, y, container->pos) && container->visible) {
+			} else if (UiUtils_CoordinateIsInsideOf(x, y, container->absPos) && container->visible) {
 
 				BaseWidget_t *widget = widgetClicked(x, y, container->widgetList);
 
@@ -70,7 +70,7 @@ void containerListLButtonDown(int x, int y) {
 					InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
 					break;
 				} else if (!movingContainer.action && container->movable) {
-					movingContainer.startPos = container->pos;
+					movingContainer.startPos = container->absPos;
 					movingContainer.action = CONTAINER_MOVE_ACTION;
 					movingContainer.container = container;
 					movingContainer.mouseStartX = x;
@@ -103,8 +103,8 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (movingContainer.action) {
 
-		updatePosToContainerList(movingContainer.container->pos, movingContainer.container->widgetList);
-		drawable_updatePosToContainerList(movingContainer.container->pos, movingContainer.container->drawableList);
+		updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->widgetList);
+		drawable_updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->drawableList);
 
 		movingContainer.action = 0;
 	}
@@ -118,35 +118,30 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	if (movingContainer.action) {
 
-		float x_relative = (float)x / (float)currentWindowState.width;
-		float y_relative = (float)y / (float)currentWindowState.height;
-
-		float start_x_relative = (float)movingContainer.mouseStartX / (float)currentWindowState.width;
-		float start_y_relative = (float)movingContainer.mouseStartY / (float)currentWindowState.height;
+		int deltaX = x - movingContainer.mouseStartX;
+		int deltaY = y - movingContainer.mouseStartY;
 
 		if (movingContainer.action == CONTAINER_MOVE_ACTION) {
-			movingContainer.container->pos.left = movingContainer.startPos.left + (x_relative - start_x_relative);
-			movingContainer.container->pos.top = movingContainer.startPos.top + (y_relative - start_y_relative);
-			movingContainer.container->pos.right = movingContainer.startPos.right + (x_relative - start_x_relative);
-			movingContainer.container->pos.bottom = movingContainer.startPos.bottom + (y_relative - start_y_relative);
-		}
-
-		else {
+			movingContainer.container->absPos.left   = movingContainer.startPos.left + deltaX;
+			movingContainer.container->absPos.right  = movingContainer.startPos.right + deltaX;
+			movingContainer.container->absPos.top    = movingContainer.startPos.top + deltaY;
+			movingContainer.container->absPos.bottom = movingContainer.startPos.bottom + deltaY;
+		} else {
 			switch (movingContainer.action) {
-			case TOP:
-				movingContainer.container->pos.top = movingContainer.startPos.top + (y_relative - start_y_relative);
-				break;
-			case BOTTOM:
-				movingContainer.container->pos.bottom = movingContainer.startPos.bottom + (y_relative - start_y_relative);
-				break;
-			case LEFT:
-				movingContainer.container->pos.left = movingContainer.startPos.left + (x_relative - start_x_relative);
-				break;
-			case RIGHT:
-				movingContainer.container->pos.right = movingContainer.startPos.right + (x_relative - start_x_relative);
-				break;
-			default:
-				break;
+				case TOP:
+					movingContainer.container->absPos.top = movingContainer.startPos.top + deltaY;
+					break;
+				case BOTTOM:
+					movingContainer.container->absPos.bottom = movingContainer.startPos.bottom + deltaY;
+					break;
+				case LEFT:
+					movingContainer.container->absPos.left = movingContainer.startPos.left + deltaX;
+					break;
+				case RIGHT:
+					movingContainer.container->absPos.right = movingContainer.startPos.right + deltaX;
+					break;
+				default:
+					break;
 			}
 		}
 
@@ -163,7 +158,7 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
 			if (container && container->visible) {
-				if (UiUtils_CoordinateIsInsideOf(x, y, container->pos)) {
+				if (UiUtils_CoordinateIsInsideOf(x, y, container->absPos)) {
 					hoverCandidate = widgetClicked(x, y, container->widgetList);
 					break;
 				}
@@ -216,8 +211,6 @@ container_t *initContainer(containerPos_t pos) {
 
 	container_t *container = (container_t *)calloc(1, sizeof(container_t));
 
-	container->pos = pos;
-
 	if (!currentWindowState.handlerTable->hasContainerHandlers) {
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_PAINT, &redrawContainers);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE, &resizeContainers);
@@ -232,22 +225,26 @@ container_t *initContainer(containerPos_t pos) {
 	container->widgetList = DynamicArray_init(10);   // TODO : better init size logic to increase performance
 	container->drawableList = DynamicArray_init(10); // TODO : better init size logic to increase performance
 
+	container->absPos = pos;
+
 	container->theme = &currentWindowState.activeTheme.container;
 
 	return container;
 }
 
 void containerAddWidget(container_t *container, BaseWidget_t *widget) {
-	widget->pos = getPosToContainer(container->pos, widget->pos);
+	widget->parentPos = &container->absPos;
+	widget->pos = getPosToContainer(widget->parentPos, widget->initPos);
 	addWidget(container->widgetList, widget);
 }
 
 void containerAddDrawable(container_t *container, Drawable_t *drawable) {
-	drawable->pos = getPosToContainer(container->pos, drawable->pos);
+	drawable->parentPos = &container->absPos;
+	drawable->pos = getPosToContainer(drawable->parentPos, drawable->initPos);
 	addDrawable(container->drawableList, drawable);
 }
 
-container_t *windowAddContainer(CommonPos_t pos) {
+container_t *windowAddContainer(AbsolutePos_t pos) {
 
 	container_t *container = initContainer(pos);
 
@@ -264,7 +261,7 @@ container_t *windowAddContainer(CommonPos_t pos) {
 
 void initRootContainer() {
 
-	CommonPos_t rootPos = {UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(0), UI_UTILS_PERCENT(100), UI_UTILS_PERCENT(100)};
+	AbsolutePos_t rootPos = {0, 0, currentWindowState.width, currentWindowState.height};
 
 	container_t *rootContainer = windowAddContainer(rootPos);
 
@@ -285,4 +282,18 @@ void rootContainerAddWidget(BaseWidget_t *widget) {
 void rootContainerAddDrawable(Drawable_t *drawable) {
 	container_t *rootContainer = (container_t *)DynamicArray_get(currentWindowState.containers, 0);
 	containerAddDrawable(rootContainer, drawable);
+}
+
+AbsolutePos_t widgetRelToAbsPos(CommonPos_t widgetRelPos, const AbsolutePos_t* parentAbsPos) {
+    AbsolutePos_t absPos;
+
+    int parentWidth  = parentAbsPos->right  - parentAbsPos->left;
+    int parentHeight = parentAbsPos->bottom - parentAbsPos->top;
+
+    absPos.left   = parentAbsPos->left + (int)(widgetRelPos.left * parentWidth);
+    absPos.right  = parentAbsPos->left + (int)(widgetRelPos.right * parentWidth);
+    absPos.top    = parentAbsPos->top  + (int)(widgetRelPos.top * parentHeight);
+    absPos.bottom = parentAbsPos->top  + (int)(widgetRelPos.bottom * parentHeight);
+
+    return absPos;
 }
