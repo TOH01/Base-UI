@@ -9,6 +9,7 @@
 #include "widget.h"
 #include <stdio.h>
 #include "colorMatrix.h"
+#include "naricaMap.h"
 
 buttonWidget_t *textDumpMenuButtons[3];
 const char *textDumpMenuButtonNames[] = {
@@ -52,6 +53,9 @@ void Demo_InitAll(void) {
 	mainContentContainer->layout.right = LAYOUT_BORDER_RIGHT;
 	mainContentContainer->layout.bottom = LAYOUT_BORDER_BOTTOM;
 	mainContentContainer->layout.offsetRight = -400;
+
+	narciaMap_t * narciaMap = initNarciaMap((CommonPos_t){0, 0, 1, 1});
+	containerAddWidget(mainContentContainer, (BaseWidget_t *) narciaMap);
 
 	textDumpHeaderContainer->fixed = true;
 	textDumpHeaderContainer->layout.right = LAYOUT_BORDER_RIGHT;
