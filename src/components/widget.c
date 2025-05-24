@@ -22,7 +22,7 @@ void renderWidgetList(DynamicArray_t * array) {
 	{
 		widget = DynamicArray_get(array, i);
 		
-		if(widget != NULL){
+		if(widget != NULL && !widget->hidden){
 			widget->drawHandler(widget);
 		}
 	}

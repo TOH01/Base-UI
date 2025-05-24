@@ -22,6 +22,7 @@ typedef struct BaseWidget {
 	WidgetType_t type;
 	AbsolutePos_t * parentPos;
 	AbsolutePos_t pos;
+	bool hidden;
 } BaseWidget_t;
 
 typedef struct WidgetNode WidgetNode_t;

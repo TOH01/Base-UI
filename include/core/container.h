@@ -9,6 +9,34 @@
 
 #define containerPos_t AbsolutePos_t
 
+typedef enum LayoutType {
+	LAYOUT_NONE,
+	LAYOUT_CONTAINER,
+	LAYOUT_BORDER_LEFT,
+	LAYOUT_BORDER_RIGHT,
+	LAYOUT_BORDER_TOP,
+	LAYOUT_BORDER_BOTTOM,
+} LayoutType_t;
+
+
+typedef struct Layout {
+	LayoutType_t top;
+	LayoutType_t left;
+	LayoutType_t right;
+	LayoutType_t bottom;
+
+	int offsetTop;
+	int offsetLeft;
+	int offsetRight;
+	int offsetBottom;
+
+	AbsolutePos_t * topElement;
+	AbsolutePos_t * leftElement;
+	AbsolutePos_t * rightElement;
+	AbsolutePos_t * bottomElement;
+
+} Layout_t;
+
 typedef struct container_t {
 	AbsolutePos_t absPos;
 	DynamicArray_t * widgetList;
@@ -17,6 +45,9 @@ typedef struct container_t {
 	bool visible;
 	bool movable;
 	bool resizable;
+	bool fixed;				// only set true, if this container is not dependent on other containers for sizing
+	bool fixedWidgets;
+	Layout_t layout;
 } container_t;
 
 typedef struct movingContainer_t {
@@ -36,5 +67,6 @@ void containerAddDrawable(container_t * container, Drawable_t * drawable);
 void initRootContainer();
 void rootContainerAddDrawable(Drawable_t *drawable);
 void rootContainerAddWidget(BaseWidget_t *widget);
+void setContainerFixed(container_t * container);
 
 #endif

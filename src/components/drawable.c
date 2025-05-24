@@ -40,6 +40,10 @@ Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t *theme) {
 
 void drawable_draw(Drawable_t *drawable) {
 
+	if(drawable->hidden){
+		return;
+	}
+
 	switch (drawable->type) {
 	case DRAWABLE_LINE:
 

@@ -159,3 +159,10 @@ AbsolutePos_t getPosToContainer(const AbsolutePos_t* parentAbsPos, CommonPos_t w
 
     return absPos;
 }
+
+bool UiUtils_WidgetFitsInContainer(AbsolutePos_t widget, AbsolutePos_t container) {
+    return widget.left   >= container.left &&
+           widget.top    >= container.top &&
+           widget.right  <= container.right &&
+           widget.bottom <= container.bottom;
+}

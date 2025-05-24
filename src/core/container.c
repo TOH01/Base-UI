@@ -11,6 +11,85 @@ DWORD hoverStartTime = 0;
 #define HOVER_TIMER_ID 1
 #define HOVER_DELAY_MS 5
 
+int layoutToBorderHelper(LayoutType_t type, int offset) {
+	switch (type) {
+	case LAYOUT_BORDER_BOTTOM:
+		return currentWindowState.height + offset;
+		break;
+	case LAYOUT_BORDER_LEFT:
+		return offset;
+		break;
+	case LAYOUT_BORDER_RIGHT:
+		return currentWindowState.width + offset;
+		break;
+	case LAYOUT_BORDER_TOP:
+		return offset;
+		break;
+	default:
+		return 0;
+		break;
+	}
+}
+
+void updateContainersLayoutPos() {
+
+	container_t *currContainer = NULL;
+
+	for (int i = 0; i < currentWindowState.containers->size; i++) {
+		
+		currContainer = DynamicArray_get(currentWindowState.containers, i);
+
+		if (currContainer->fixed) {
+			if (currContainer->layout.right != LAYOUT_CONTAINER && currContainer->layout.right != LAYOUT_NONE) {
+				currContainer->absPos.right = layoutToBorderHelper(currContainer->layout.right, currContainer->layout.offsetRight);
+			}
+			if (currContainer->layout.bottom != LAYOUT_CONTAINER && currContainer->layout.bottom != LAYOUT_NONE) {
+				currContainer->absPos.bottom = layoutToBorderHelper(currContainer->layout.bottom, currContainer->layout.offsetBottom);
+			}
+			if (currContainer->layout.top != LAYOUT_CONTAINER && currContainer->layout.top != LAYOUT_NONE) {
+				currContainer->absPos.top = layoutToBorderHelper(currContainer->layout.top, currContainer->layout.offsetTop);
+			}
+			if (currContainer->layout.left != LAYOUT_CONTAINER && currContainer->layout.left != LAYOUT_NONE) {
+				currContainer->absPos.left = layoutToBorderHelper(currContainer->layout.left, currContainer->layout.offsetLeft);
+			}
+
+			if(!currContainer->fixedWidgets){
+				updatePosToContainerList(currContainer->absPos, currContainer->widgetList);
+				drawable_updatePosToContainerList(currContainer->absPos, currContainer->drawableList);
+			}
+		}
+	}
+}
+
+void updateWidgetVisibility(){
+	int containerCount = currentWindowState.containers->size;
+
+    for (int i = 0; i < containerCount; i++) {
+        container_t* container = (container_t*)DynamicArray_get(currentWindowState.containers, i);
+
+        if (container && container->fixedWidgets) {
+
+            // Update widget visibility
+            int widgetCount = container->widgetList->size;
+            for (int j = 0; j < widgetCount; j++) {
+                BaseWidget_t* widget = (BaseWidget_t*)DynamicArray_get(container->widgetList, j);
+                if (widget) {
+                    widget->hidden = !UiUtils_WidgetFitsInContainer(widget->pos, container->absPos);
+                }
+            }
+
+            // Update drawable visibility
+            int drawCount = container->drawableList->size;
+            for (int j = 0; j < drawCount; j++) {
+                Drawable_t* drawable = (Drawable_t*)DynamicArray_get(container->drawableList, j);
+                if (drawable) {
+                    drawable->hidden = !UiUtils_WidgetFitsInContainer(drawable->pos, container->absPos);
+                }
+            }
+        }
+    }
+}
+
 void redrawContainer(container_t *container) { UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth); }
 
 void redrawContainerList() {
@@ -65,7 +144,7 @@ void containerListLButtonDown(int x, int y) {
 
 				BaseWidget_t *widget = widgetClicked(x, y, container->widgetList);
 
-				if (widget) {
+				if (widget && !widget->hidden) {
 					widget->onClick(widget, x, y);
 					InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
 					break;
@@ -89,6 +168,8 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	updateContainersLayoutPos();
+	updateWidgetVisibility();
 	InvalidateRect(hwnd, NULL, FALSE);
 	return 0;
 }
@@ -103,9 +184,11 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (movingContainer.action) {
 
-		updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->widgetList);
-		drawable_updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->drawableList);
-
+		if(!movingContainer.container->fixedWidgets){
+			updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->widgetList);
+			drawable_updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->drawableList);
+		}
+		
 		movingContainer.action = 0;
 	}
 
@@ -122,26 +205,26 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		int deltaY = y - movingContainer.mouseStartY;
 
 		if (movingContainer.action == CONTAINER_MOVE_ACTION) {
-			movingContainer.container->absPos.left   = movingContainer.startPos.left + deltaX;
-			movingContainer.container->absPos.right  = movingContainer.startPos.right + deltaX;
-			movingContainer.container->absPos.top    = movingContainer.startPos.top + deltaY;
+			movingContainer.container->absPos.left = movingContainer.startPos.left + deltaX;
+			movingContainer.container->absPos.right = movingContainer.startPos.right + deltaX;
+			movingContainer.container->absPos.top = movingContainer.startPos.top + deltaY;
 			movingContainer.container->absPos.bottom = movingContainer.startPos.bottom + deltaY;
 		} else {
 			switch (movingContainer.action) {
-				case TOP:
-					movingContainer.container->absPos.top = movingContainer.startPos.top + deltaY;
-					break;
-				case BOTTOM:
-					movingContainer.container->absPos.bottom = movingContainer.startPos.bottom + deltaY;
-					break;
-				case LEFT:
-					movingContainer.container->absPos.left = movingContainer.startPos.left + deltaX;
-					break;
-				case RIGHT:
-					movingContainer.container->absPos.right = movingContainer.startPos.right + deltaX;
-					break;
-				default:
-					break;
+			case TOP:
+				movingContainer.container->absPos.top = movingContainer.startPos.top + deltaY;
+				break;
+			case BOTTOM:
+				movingContainer.container->absPos.bottom = movingContainer.startPos.bottom + deltaY;
+				break;
+			case LEFT:
+				movingContainer.container->absPos.left = movingContainer.startPos.left + deltaX;
+				break;
+			case RIGHT:
+				movingContainer.container->absPos.right = movingContainer.startPos.right + deltaX;
+				break;
+			default:
+				break;
 			}
 		}
 
@@ -165,7 +248,7 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			}
 		}
 
-		if (hoverCandidate != lastHoverCandidate) {
+		if (hoverCandidate != lastHoverCandidate && !hoverCandidate->hidden) {
 			if (hoverCandidate) {
 				// Hovered element changed, restart timer
 				hoverStartTime = GetTickCount();
@@ -284,16 +367,8 @@ void rootContainerAddDrawable(Drawable_t *drawable) {
 	containerAddDrawable(rootContainer, drawable);
 }
 
-AbsolutePos_t widgetRelToAbsPos(CommonPos_t widgetRelPos, const AbsolutePos_t* parentAbsPos) {
-    AbsolutePos_t absPos;
-
-    int parentWidth  = parentAbsPos->right  - parentAbsPos->left;
-    int parentHeight = parentAbsPos->bottom - parentAbsPos->top;
-
-    absPos.left   = parentAbsPos->left + (int)(widgetRelPos.left * parentWidth);
-    absPos.right  = parentAbsPos->left + (int)(widgetRelPos.right * parentWidth);
-    absPos.top    = parentAbsPos->top  + (int)(widgetRelPos.top * parentHeight);
-    absPos.bottom = parentAbsPos->top  + (int)(widgetRelPos.bottom * parentHeight);
-
-    return absPos;
+void setContainerFixed(container_t *container) {
+	container->movable = false;
+	container->resizable = false;
 }
+

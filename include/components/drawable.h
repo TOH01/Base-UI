@@ -14,6 +14,7 @@ typedef struct Drawable {
 	DrawableType_t type;
     AbsolutePos_t * parentPos;
 	AbsolutePos_t pos;
+	bool hidden;
     CommonPos_t initPos;
 	union {
 		struct {

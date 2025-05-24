@@ -19,6 +19,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		WmParamHandlerTable_Destroy(currentWindowState.handlerTable);
 		PostQuitMessage(0);
 		break;
+	case WM_GETMINMAXINFO: {
+		MINMAXINFO *minMax = (MINMAXINFO *)lParam;
+
+		minMax->ptMinTrackSize.x = CONFIG_MIN_WINDOW_WIDTH;
+		minMax->ptMinTrackSize.y = CONFIG_MIN_WINDOW_Height;
+
+		return 0; 
+	}
+
 #ifdef CUSTOM_TITLE_BAR
 	case WM_NCCALCSIZE: {
 		if (!wParam)
@@ -39,7 +48,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (win32_window_is_maximized(hwnd)) {
 			requested_client_rect->top += padding;
 		}
-		
+
 		return 0;
 	}
 	case WM_NCHITTEST: {

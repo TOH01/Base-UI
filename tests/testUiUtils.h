@@ -59,6 +59,33 @@ MU_TEST(test_outside_border) {
     mu_assert(UiUtils_CoordinateIsOnBorderOf(x, y, borderWidth, testPos) == BORDER_NONE, "Should be no Border");
 }
 
+AbsolutePos_t container = {100, 100, 300, 300}; // left, top, right, bottom
+
+MU_TEST(test_widget_fully_inside) {
+    AbsolutePos_t widget = {150, 150, 250, 250};
+    mu_check(UiUtils_WidgetFitsInContainer(widget, container));
+}
+
+MU_TEST(test_widget_partial_outside_left) {
+    AbsolutePos_t widget = {90, 150, 250, 250};
+    mu_check(!UiUtils_WidgetFitsInContainer(widget, container));
+}
+
+MU_TEST(test_widget_partial_outside_right) {
+    AbsolutePos_t widget = {150, 150, 310, 250};
+    mu_check(!UiUtils_WidgetFitsInContainer(widget, container));
+}
+
+MU_TEST(test_widget_partial_outside_top) {
+    AbsolutePos_t widget = {150, 90, 250, 250};
+    mu_check(!UiUtils_WidgetFitsInContainer(widget, container));
+}
+
+MU_TEST(test_widget_partial_outside_bottom) {
+    AbsolutePos_t widget = {150, 150, 250, 310};
+    mu_check(!UiUtils_WidgetFitsInContainer(widget, container));
+}
+
 MU_TEST_SUITE(test_ui_utils_suite) {
     MU_RUN_TEST(test_UiUtils_absolutePosToRect_basic);
     MU_RUN_TEST(test_coordinate_inside_box);
@@ -67,6 +94,11 @@ MU_TEST_SUITE(test_ui_utils_suite) {
     MU_RUN_TEST(test_top_border);
     MU_RUN_TEST(test_bottom_border);
     MU_RUN_TEST(test_outside_border);
+    MU_RUN_TEST(test_widget_fully_inside);
+    MU_RUN_TEST(test_widget_partial_outside_left);
+    MU_RUN_TEST(test_widget_partial_outside_right);
+    MU_RUN_TEST(test_widget_partial_outside_top);
+    MU_RUN_TEST(test_widget_partial_outside_bottom);
 }
 
 #endif
