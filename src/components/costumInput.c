@@ -68,7 +68,7 @@ static LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 	if (activeInput) {
 
-		int buffLen = strlen(activeInput->buffer);
+	int buffLen = strlen(activeInput->buffer);
 
 		if (wParam == VK_ESCAPE) {
 			activeInput = NULL;
@@ -106,6 +106,7 @@ inputWidget_t *customInput_initInput(CommonPos_t pos) {
 
 	if (!handlerInit) {
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_KEYDOWN, &keystoreCallback);
+		handlerInit = 1;
 	}
 
 	input->baseWidget.initPos = pos;
