@@ -39,24 +39,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (win32_window_is_maximized(hwnd)) {
 			requested_client_rect->top += padding;
 		}
-
-		if(currentWindowState.titlbarHeight != getTitleBarHeight(hwnd)){
-			for (int i = 1; i < currentWindowState.containers->size; i++)
-			{
-				container_t * container = (container_t * )DynamicArray_get(currentWindowState.containers, i);
-
-				container->absPos.top += (getTitleBarHeight(hwnd) - currentWindowState.titlbarHeight);
-				container->absPos.bottom += (getTitleBarHeight(hwnd) - currentWindowState.titlbarHeight);
-				
-				updatePosToContainerList(container->absPos, container->widgetList);
-				drawable_updatePosToContainerList(container->absPos, container->drawableList);
-
-			}
-			
-		}
-
-		currentWindowState.titlbarHeight = getTitleBarHeight(hwnd);
-
+		
 		return 0;
 	}
 	case WM_NCHITTEST: {
@@ -122,10 +105,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		currentWindowState.memBitmap = CreateCompatibleBitmap(currentWindowState.hdc, currentWindowState.width, currentWindowState.height);
 		HBITMAP hbmOld = SelectObject(currentWindowState.memHDC, currentWindowState.memBitmap);
 
-// call draw handlers (draw to memDC)
+		// call draw handlers (draw to memDC)
 
 		MenuUi_CallAllActiveHandlers(hwnd, msg, wParam, lParam);
-
 
 		WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
 
@@ -148,7 +130,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	default:
 
 		MenuUi_SubmenuCommandHandler(hwnd, msg, wParam, lParam);
-
 
 		if (WmParamHandlerTable_IdHasHandler(currentWindowState.handlerTable, msg)) {
 

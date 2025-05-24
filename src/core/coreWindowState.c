@@ -18,17 +18,19 @@ LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 #ifdef CUSTOM_TITLE_BAR
 	SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER);
 
+	currentWindowState.titlbarHeight = getTitleBarHeight(hwnd);
+	
 	for (int i = 1; i < currentWindowState.containers->size; i++) {
 		container_t *container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
-		container->absPos.top += getTitleBarHeight(hwnd);
-		container->absPos.bottom += getTitleBarHeight(hwnd);
+		container->absPos.top += currentWindowState.titlbarHeight;
+		container->absPos.bottom += currentWindowState.titlbarHeight;
 
 		updatePosToContainerList(container->absPos, container->widgetList);
 		drawable_updatePosToContainerList(container->absPos, container->drawableList);
 	}
 
-	currentWindowState.titlbarHeight = getTitleBarHeight(hwnd);
+	
 
 #endif
 	InvalidateRect(hwnd, NULL, FALSE);
