@@ -1,9 +1,9 @@
 #define _WIN32_WINNT 0x0A00
 
 #include "UiUtils.h"
+#include "config.h"
 #include "titlbar.h"
 #include <stdbool.h>
-#include "config.h"
 
 #ifdef CUSTOM_TITLE_BAR
 
@@ -82,7 +82,7 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 	}
 
 	// draw close
-	
+
 	HPEN iconPenClose = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.close.ICON);
 	SelectObject(currentWindowState.memHDC, iconPenClose);
 
@@ -111,7 +111,7 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 	// draw minimize
 	HPEN iconPenMinimize = CreatePen(PS_SOLID, 2, currentWindowState.activeTheme.minimize.ICON);
 	SelectObject(currentWindowState.memHDC, iconPenMinimize);
-	
+
 	RECT minimizeRect = {titlebar.right - (MINIMIZE * height), titlebar.top, titlebar.right - ((MINIMIZE - 1) * height), titlebar.bottom};
 	int minWidth = minimizeRect.right - minimizeRect.left;
 	int minHeight = minimizeRect.bottom - minimizeRect.top;
@@ -127,6 +127,18 @@ void drawTitlebar(HDC hdc, PAINTSTRUCT ps) {
 }
 
 LRESULT Titlebar_WmNCMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+
+	if (!currentWindowState.mouseTrackingTitlebar) {
+		TRACKMOUSEEVENT tme = {0};
+		tme.cbSize = sizeof(TRACKMOUSEEVENT);
+		tme.dwFlags = TME_LEAVE | TME_NONCLIENT;
+		tme.hwndTrack = hwnd;
+		tme.dwHoverTime = HOVER_DEFAULT;
+
+		if (TrackMouseEvent(&tme)) {
+			currentWindowState.mouseTrackingTitlebar = true;
+		}
+	}
 
 	POINT cursor_point;
 	GetCursorPos(&cursor_point);
@@ -158,8 +170,8 @@ LRESULT Titlebar_WmNCMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 }
 
 LRESULT Titlebar_WmMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	
-	if(active != BORDER_NONE){
+
+	if (active != BORDER_NONE) {
 		active = BORDER_NONE;
 		RECT titlebar = win32_titlebar_rect(hwnd);
 		InvalidateRect(currentWindowState.hwnd, &titlebar, FALSE);
@@ -193,8 +205,17 @@ LRESULT MenuUi_WmNCLButtonUp(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
+LRESULT Titlebar_MouseLeaveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	active = BORDER_NONE;
+
+	currentWindowState.mouseTrackingTitlebar = false;
+
+	InvalidateRect(hwnd, NULL, FALSE);
+}
+
 void initTitlebar() {
 	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &Titlebar_WmMouseMove);
+	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_NCMOUSELEAVE, &Titlebar_MouseLeaveCallback);
 }
 
 #endif

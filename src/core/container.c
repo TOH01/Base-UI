@@ -36,7 +36,7 @@ void updateContainersLayoutPos() {
 	container_t *currContainer = NULL;
 
 	for (int i = 0; i < currentWindowState.containers->size; i++) {
-		
+
 		currContainer = DynamicArray_get(currentWindowState.containers, i);
 
 		if (currContainer->fixed) {
@@ -53,7 +53,7 @@ void updateContainersLayoutPos() {
 				currContainer->absPos.left = layoutToBorderHelper(currContainer->layout.left, currContainer->layout.offsetLeft);
 			}
 
-			if(!currContainer->fixedWidgets){
+			if (!currContainer->fixedWidgets) {
 				updatePosToContainerList(currContainer->absPos, currContainer->widgetList);
 				drawable_updatePosToContainerList(currContainer->absPos, currContainer->drawableList);
 			}
@@ -61,33 +61,33 @@ void updateContainersLayoutPos() {
 	}
 }
 
-void updateWidgetVisibility(){
+void updateWidgetVisibility() {
 	int containerCount = currentWindowState.containers->size;
 
-    for (int i = 0; i < containerCount; i++) {
-        container_t* container = (container_t*)DynamicArray_get(currentWindowState.containers, i);
+	for (int i = 0; i < containerCount; i++) {
+		container_t *container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
-        if (container && container->fixedWidgets) {
+		if (container && container->fixedWidgets) {
 
-            // Update widget visibility
-            int widgetCount = container->widgetList->size;
-            for (int j = 0; j < widgetCount; j++) {
-                BaseWidget_t* widget = (BaseWidget_t*)DynamicArray_get(container->widgetList, j);
-                if (widget) {
-                    widget->hidden = !UiUtils_WidgetFitsInContainer(widget->pos, container->absPos);
-                }
-            }
+			// Update widget visibility
+			int widgetCount = container->widgetList->size;
+			for (int j = 0; j < widgetCount; j++) {
+				BaseWidget_t *widget = (BaseWidget_t *)DynamicArray_get(container->widgetList, j);
+				if (widget) {
+					widget->hidden = !UiUtils_WidgetFitsInContainer(widget->pos, container->absPos);
+				}
+			}
 
-            // Update drawable visibility
-            int drawCount = container->drawableList->size;
-            for (int j = 0; j < drawCount; j++) {
-                Drawable_t* drawable = (Drawable_t*)DynamicArray_get(container->drawableList, j);
-                if (drawable) {
-                    drawable->hidden = !UiUtils_WidgetFitsInContainer(drawable->pos, container->absPos);
-                }
-            }
-        }
-    }
+			// Update drawable visibility
+			int drawCount = container->drawableList->size;
+			for (int j = 0; j < drawCount; j++) {
+				Drawable_t *drawable = (Drawable_t *)DynamicArray_get(container->drawableList, j);
+				if (drawable) {
+					drawable->hidden = !UiUtils_WidgetFitsInContainer(drawable->pos, container->absPos);
+				}
+			}
+		}
+	}
 }
 
 void redrawContainer(container_t *container) { UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth); }
@@ -184,11 +184,11 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (movingContainer.action) {
 
-		if(!movingContainer.container->fixedWidgets){
+		if (!movingContainer.container->fixedWidgets) {
 			updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->widgetList);
 			drawable_updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->drawableList);
 		}
-		
+
 		movingContainer.action = 0;
 	}
 
@@ -199,6 +199,19 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	int x = LOWORD(lParam); // Horizontal position in client area
 	int y = HIWORD(lParam); // Vertical position in client area
 
+	if (!currentWindowState.mouseTrackingActive) {
+        TRACKMOUSEEVENT tme = {0};
+        tme.cbSize = sizeof(TRACKMOUSEEVENT);
+        tme.dwFlags = TME_LEAVE;
+        tme.hwndTrack = hwnd;
+        tme.dwHoverTime = HOVER_DEFAULT;
+
+        if (TrackMouseEvent(&tme)) {
+            currentWindowState.mouseTrackingActive = true;
+        }
+    }
+	
+	
 	if (movingContainer.action) {
 
 		int deltaX = x - movingContainer.mouseStartX;
@@ -248,33 +261,26 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			}
 		}
 
-		if (hoverCandidate != lastHoverCandidate && !hoverCandidate->hidden) {
-			if (hoverCandidate) {
-				// Hovered element changed, restart timer
+		if (hoverCandidate != lastHoverCandidate) {
+			// If there was a previous hover, end it
+			if (lastHoverCandidate && lastHoverCandidate->onHoverEnd) {
+				lastHoverCandidate->onHoverEnd(lastHoverCandidate);
+			}
+
+			// Start new hover
+			if (hoverCandidate && !hoverCandidate->hidden) {
 				hoverStartTime = GetTickCount();
 				SetTimer(currentWindowState.hwnd, HOVER_TIMER_ID, HOVER_DELAY_MS, NULL);
 			} else {
-				// Mouse moved away, stop timer
 				KillTimer(currentWindowState.hwnd, HOVER_TIMER_ID);
-
-				if (lastHoverCandidate != NULL) {
-
-					if (lastHoverCandidate->onHoverEnd != NULL) {
-						lastHoverCandidate->onHoverEnd(lastHoverCandidate);
-					} else {
-						printf("Hover End callback missing");
-					}
-
-				} else {
-					printf("Hover Error");
-				}
 			}
+
 			lastHoverCandidate = hoverCandidate;
 		}
 	}
 }
 
-LRESULT CALLBACK TimerCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT TimerCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (msg == WM_TIMER && wParam == HOVER_TIMER_ID) {
 		if (lastHoverCandidate) {
 			if (GetTickCount() - hoverStartTime >= HOVER_DELAY_MS) {
@@ -290,6 +296,21 @@ LRESULT CALLBACK TimerCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	}
 }
 
+LRESULT MouseLeaveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	KillTimer(hwnd, HOVER_TIMER_ID);
+
+	if (lastHoverCandidate != NULL && lastHoverCandidate->onHoverEnd != NULL) {
+		lastHoverCandidate->onHoverEnd(lastHoverCandidate);
+	}
+
+	lastHoverCandidate = NULL;
+	hoverCandidate = NULL;
+
+	currentWindowState.mouseTrackingActive = false;
+
+	InvalidateRect(hwnd, NULL, FALSE);
+}
+
 container_t *initContainer(containerPos_t pos) {
 
 	container_t *container = (container_t *)calloc(1, sizeof(container_t));
@@ -301,6 +322,7 @@ container_t *initContainer(containerPos_t pos) {
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONUP, &LButtonUpCallback);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &MouseMoveCallback);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_TIMER, &TimerCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSELEAVE, &MouseLeaveCallback);
 
 		currentWindowState.handlerTable->hasContainerHandlers = true;
 	}
@@ -371,4 +393,3 @@ void setContainerFixed(container_t *container) {
 	container->movable = false;
 	container->resizable = false;
 }
-

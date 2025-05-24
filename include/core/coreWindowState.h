@@ -18,6 +18,8 @@ typedef struct WindowState {
 	HWND hwnd;
 	UiTheme_t activeTheme;
 	DynamicArray_t * containers;
+	bool mouseTrackingActive;
+	bool mouseTrackingTitlebar;
 	#ifdef CUSTOM_TITLE_BAR
 	int titlbarHeight;
 	#endif
