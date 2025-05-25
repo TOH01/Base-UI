@@ -9,14 +9,6 @@
 
 #ifdef CUSTOM_TITLE_BAR
 
-#ifndef GET_X_PARAM
-#define GET_X_PARAM(lp) ((int)(short)LOWORD(lp))
-#endif
-
-#ifndef GET_Y_PARAM
-#define GET_Y_PARAM(lp) ((int)(short)HIWORD(lp))
-#endif
-
 typedef enum{
     NONE,
     CLOSE,

@@ -32,6 +32,12 @@ textDumpWidget_t *textDumps[3];
 submenuGroup_t *textDumpMenuGroup;
 MenuUi_Submenu_t *textDumpSubmenus[3];
 
+narciaMap_t * narciaMap;
+
+void goButtonCallback(int id){
+	goToTile(narciaMap, 50, 50);
+}
+
 void Demo_InitAll(void) {
 
 	AbsolutePos_t mainContent = (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0.1, CONFIG_INIT_WINDOW_HEIGTH), UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_HEIGTH)};
@@ -54,7 +60,7 @@ void Demo_InitAll(void) {
 	mainContentContainer->layout.bottom = LAYOUT_BORDER_BOTTOM;
 	mainContentContainer->layout.offsetRight = -400;
 
-	narciaMap_t * narciaMap = initNarciaMap((CommonPos_t){0, 0, 1, 1});
+	narciaMap = initNarciaMap((CommonPos_t){0, 0, 1, 1});
 	containerAddWidget(mainContentContainer, (BaseWidget_t *) narciaMap);
 
 	textDumpHeaderContainer->fixed = true;
@@ -99,7 +105,7 @@ void Demo_InitAll(void) {
 
 	inputWidget_t * inputX = customInput_initInput((CommonPos_t){0.2, 0.05, 0.35, 0.8});
 	inputWidget_t * inputY = customInput_initInput((CommonPos_t){0.2, 0.4, 0.7, 0.8});
-	buttonWidget_t * goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, NULL, 0);
+	buttonWidget_t * goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
 
 	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *) inputX);
 	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *) inputY);
