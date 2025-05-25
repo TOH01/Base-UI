@@ -19,6 +19,12 @@ void UiUtils_DrawRectangleRelative(AbsolutePos_t pos) {
 void UiUtils_DrawColoredRectangle(AbsolutePos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize) {
 
 	HPEN pen = CreatePen(PS_SOLID, BorderSize, colorBorder);
+
+    if(BorderSize == 0){
+        DeleteObject(pen);
+        pen = (HPEN)GetStockObject(NULL_PEN);
+    }
+
 	HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
 
 	HBRUSH fillBrush = CreateSolidBrush(colorBG);

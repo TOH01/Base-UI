@@ -20,10 +20,13 @@ static COLORREF TileTypeToColor(mapTile_t mapTile) {
 		return RGB(181, 20, 247);
 	case TOWN_TYPE_SMALL:
 		return RGB(148, 89, 247);
-	// Add other tile types and colors here
 	default:
 		return RGB(100, 100, 100);
 	}
+}
+
+static void drawTown(AbsolutePos_t pos){
+
 }
 
 static void drawNarciaMap(BaseWidget_t *base) {
@@ -47,9 +50,9 @@ static void drawNarciaMap(BaseWidget_t *base) {
 	int middleTileTopLeftY = centerY - tileSize / 2;
 
 	float tilesLeftF = ((float)(centerX - left) + tileSize / 2.0f) / tileSize;
-	float tilesRightF = ((float)(right - centerX) + tileSize / 2.0f) / tileSize;
+	float tilesRightF = tilesLeftF;
 	float tilesUpF = ((float)(centerY - top) + tileSize / 2.0f) / tileSize;
-	float tilesDownF = ((float)(bottom - centerY) + tileSize / 2.0f) / tileSize;
+	float tilesDownF = tilesUpF;
 
 	int startX = map->middleX - (int)ceil(tilesLeftF) + 1;
 	int endX = map->middleX + (int)ceil(tilesRightF);
@@ -68,10 +71,31 @@ static void drawNarciaMap(BaseWidget_t *base) {
 	int borderSize = 1;
 	COLORREF borderColor = RGB(80, 80, 80);
 
+    //draw background
+    int tileDrawLeft = middleTileTopLeftX + (startX - map->middleX) * tileSize;
+    int tileDrawTop = middleTileTopLeftY + (startY - map->middleY) * tileSize;
+    int tileDrawRight = middleTileTopLeftX + (endX - map->middleX + 1) * tileSize;
+    int tileDrawBottom = middleTileTopLeftY + (endY - map->middleY + 1) * tileSize;
+
+    AbsolutePos_t backgroundPos;
+    backgroundPos.left = max(tileDrawLeft, left);
+    backgroundPos.top = max(tileDrawTop, top);
+    backgroundPos.right = min(tileDrawRight, right);
+    backgroundPos.bottom = min(tileDrawBottom, bottom);
+
+    UiUtils_DrawColoredRectangle(backgroundPos, RGB(140, 182, 58), borderColor, 0); // no border
+
+
+    int middleXMap = map->middleX;
+    int middleYMap = map->middleY;
+
 	for (int y = startY; y <= endY; y++) {
 		for (int x = startX; x <= endX; x++) {
-			int tileLeft = middleTileTopLeftX + (x - map->middleX) * tileSize;
-			int tileTop = middleTileTopLeftY + (y - map->middleY) * tileSize;
+			
+            if(map->map[y][x].type == TILE_EMPTY && (x + y) % 2 == 0){continue;}
+            
+            int tileLeft = middleTileTopLeftX + (x - middleXMap) * tileSize;
+			int tileTop = middleTileTopLeftY + (y - middleYMap) * tileSize;
 			int tileRight = tileLeft + tileSize;
 			int tileBottom = tileTop + tileSize;
 
@@ -93,7 +117,7 @@ static void drawNarciaMap(BaseWidget_t *base) {
 				bgColor = TileTypeToColor(mapTile);
 			}
 
-			UiUtils_DrawColoredRectangle(tileRect, bgColor, borderColor, borderSize);
+			UiUtils_DrawColoredRectangle(tileRect, bgColor, borderColor, 0);
 		}
 	}
 }
