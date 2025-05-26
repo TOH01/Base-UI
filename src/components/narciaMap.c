@@ -1,6 +1,7 @@
 #include "UiUtils.h"
 #include "naricaMap.h"
 #include <math.h>
+#include <stdio.h>
 
 narciaMap_t *focusedNarciaMap = NULL;
 
@@ -25,9 +26,56 @@ static COLORREF TileTypeToColor(mapTile_t mapTile) {
 	}
 }
 
-static void drawTown(AbsolutePos_t pos){
+static void drawTown(AbsolutePos_t pos, mapTile_t mapTile, COLORREF color) {
+	int borderWidth = 3;
 
+	switch (mapTile.type) {
+	case TILE_TOWN_TOP:
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top}, color, borderWidth);
+		break;
+
+	case TILE_TOWN_BOTTOM:
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom}, color, borderWidth);
+		break;
+
+	case TILE_TOWN_LEFT:
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom}, color, borderWidth);
+		break;
+
+	case TILE_TOWN_RIGHT:
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom}, color, borderWidth);
+		break;
+
+	case TILE_TOWN_TOP_LEFT:
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom}, color, borderWidth);
+		break;
+
+	case TILE_TOWN_TOP_RIGHT:
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom}, color, borderWidth);
+		break;
+
+	case TILE_TOWN_BOTTOM_LEFT:
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom}, color, borderWidth);
+		break;
+
+	case TILE_TOWN_BOTTOM_RIGHT:
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom}, color, borderWidth);
+		break;
+
+	case TILE_TOWN_CENTER:
+		// Optionally, draw a cross or leave it blank
+		break;
+
+	default:
+		break;
+	}
 }
+
+bool coordinateEqual(Coordinate_t c1, Coordinate_t c2) { return (c1.x == c2.x && c1.y == c2.y); }
 
 static void drawNarciaMap(BaseWidget_t *base) {
 	narciaMap_t *map = (narciaMap_t *)base;
@@ -71,30 +119,41 @@ static void drawNarciaMap(BaseWidget_t *base) {
 	int borderSize = 1;
 	COLORREF borderColor = RGB(80, 80, 80);
 
-    //draw background
-    int tileDrawLeft = middleTileTopLeftX + (startX - map->middleX) * tileSize;
-    int tileDrawTop = middleTileTopLeftY + (startY - map->middleY) * tileSize;
-    int tileDrawRight = middleTileTopLeftX + (endX - map->middleX + 1) * tileSize;
-    int tileDrawBottom = middleTileTopLeftY + (endY - map->middleY + 1) * tileSize;
+	// draw background
+	int tileDrawLeft = middleTileTopLeftX + (startX - map->middleX) * tileSize;
+	int tileDrawTop = middleTileTopLeftY + (startY - map->middleY) * tileSize;
+	int tileDrawRight = middleTileTopLeftX + (endX - map->middleX + 1) * tileSize;
+	int tileDrawBottom = middleTileTopLeftY + (endY - map->middleY + 1) * tileSize;
 
-    AbsolutePos_t backgroundPos;
-    backgroundPos.left = max(tileDrawLeft, left);
-    backgroundPos.top = max(tileDrawTop, top);
-    backgroundPos.right = min(tileDrawRight, right);
-    backgroundPos.bottom = min(tileDrawBottom, bottom);
+	AbsolutePos_t backgroundPos;
+	backgroundPos.left = max(tileDrawLeft, left);
+	backgroundPos.top = max(tileDrawTop, top);
+	backgroundPos.right = min(tileDrawRight, right);
+	backgroundPos.bottom = min(tileDrawBottom, bottom);
 
-    UiUtils_DrawColoredRectangle(backgroundPos, RGB(140, 182, 58), borderColor, 0); // no border
+	UiUtils_DrawColoredRectangle(backgroundPos, RGB(140, 182, 58), borderColor, 0); // no border
 
-
-    int middleXMap = map->middleX;
-    int middleYMap = map->middleY;
+	int middleXMap = map->middleX;
+	int middleYMap = map->middleY;
 
 	for (int y = startY; y <= endY; y++) {
 		for (int x = startX; x <= endX; x++) {
-			
-            if(map->map[y][x].type == TILE_EMPTY && (x + y) % 2 == 0){continue;}
-            
-            int tileLeft = middleTileTopLeftX + (x - middleXMap) * tileSize;
+
+			mapTile_t mapTile = map->map[y][x];
+
+			if (mapTile.type != TILE_EMPTY) {
+				continue;
+			}
+
+			COLORREF bgColor = RGB(115, 157, 47);
+
+			if (coordinateEqual(map->selected1, (Coordinate_t){y, x}) || coordinateEqual(map->selected2, (Coordinate_t){y, x})) {
+				bgColor = RGB(255, 255, 255);
+			} else if (map->map[y][x].type == TILE_EMPTY && (x + y) % 2 == 0) {
+				continue;
+			}
+
+			int tileLeft = middleTileTopLeftX + (x - middleXMap) * tileSize;
 			int tileTop = middleTileTopLeftY + (y - middleYMap) * tileSize;
 			int tileRight = tileLeft + tileSize;
 			int tileBottom = tileTop + tileSize;
@@ -108,16 +167,50 @@ static void drawNarciaMap(BaseWidget_t *base) {
 			tileRect.right = tileRight > right ? right : tileRight;
 			tileRect.bottom = tileBottom > bottom ? bottom : tileBottom;
 
+			UiUtils_DrawColoredRectangle(tileRect, bgColor, borderColor, 0);
+		}
+	}
+
+	for (int y = startY; y <= endY; y++) {
+		for (int x = startX; x <= endX; x++) {
+
 			mapTile_t mapTile = map->map[y][x];
 
-			COLORREF bgColor;
 			if (mapTile.type == TILE_EMPTY) {
-				bgColor = ((x + y) % 2 == 0) ? RGB(140, 182, 58) : RGB(115, 157, 47);
-			} else {
-				bgColor = TileTypeToColor(mapTile);
+				continue;
 			}
 
-			UiUtils_DrawColoredRectangle(tileRect, bgColor, borderColor, 0);
+			int tileLeft = middleTileTopLeftX + (x - middleXMap) * tileSize;
+			int tileTop = middleTileTopLeftY + (y - middleYMap) * tileSize;
+			int tileRight = tileLeft + tileSize;
+			int tileBottom = tileTop + tileSize;
+
+			if (tileRight <= left || tileLeft >= right || tileBottom <= top || tileTop >= bottom)
+				continue;
+
+			AbsolutePos_t tileRect;
+			tileRect.left = tileLeft < left ? left : tileLeft;
+			tileRect.top = tileTop < top ? top : tileTop;
+			tileRect.right = tileRight > right ? right : tileRight;
+			tileRect.bottom = tileBottom > bottom ? bottom : tileBottom;
+
+			bool selected1Valid = (map->selected1.x >= 0 && map->selected1.y >= 0);
+			bool selected2Valid = (map->selected2.x >= 0 && map->selected2.y >= 0);
+
+			bool selected = false;
+
+			if (selected1Valid && mapTile.townID == map->map[map->selected1.x][map->selected1.y].townID) {
+				selected = true;
+			}
+			if (selected2Valid && mapTile.townID == map->map[map->selected2.x][map->selected2.y].townID) {
+				selected = true;
+			}
+
+			if (selected) {
+				drawTown(tileRect, mapTile, RGB(255, 255, 255));
+			} else {
+				drawTown(tileRect, mapTile, TileTypeToColor(mapTile));
+			}
 		}
 	}
 }
@@ -135,6 +228,69 @@ static void onClickNarciaMap(BaseWidget_t *base, int x, int y) {
 		activeDragStartY = y;
 		dragStartMiddleX = narciaMap->middleX;
 		dragStartMiddleY = narciaMap->middleY;
+	}
+
+	// Setup
+	int widgetLeft = base->pos.left;
+	int widgetTop = base->pos.top;
+	int widgetRight = base->pos.right;
+	int widgetBottom = base->pos.bottom;
+
+	int widgetWidth = widgetRight - widgetLeft;
+	int widgetHeight = widgetBottom - widgetTop;
+
+	int centerX = widgetLeft + widgetWidth / 2;
+	int centerY = widgetTop + widgetHeight / 2;
+
+	int tileSize = narciaMap->tileSize;
+
+	// Get top-left corner of middle tile, same as drawing
+	int middleTileTopLeftX = centerX - tileSize / 2;
+	int middleTileTopLeftY = centerY - tileSize / 2;
+
+	// Now compute the top-left of the full visible map area (drawing origin)
+	int tilesLeft = (centerX - widgetLeft + tileSize / 2) / tileSize;
+	int tilesUp = (centerY - widgetTop + tileSize / 2) / tileSize;
+
+	int startX = narciaMap->middleX - tilesLeft + 1;
+	int startY = narciaMap->middleY - tilesUp + 1;
+
+	int drawOriginX = middleTileTopLeftX + (startX - narciaMap->middleX) * tileSize;
+	int drawOriginY = middleTileTopLeftY + (startY - narciaMap->middleY) * tileSize;
+
+	// Convert mouse (x, y) into tile indices
+	int pixelOffsetX = x - drawOriginX;
+	int pixelOffsetY = y - drawOriginY;
+
+	if (pixelOffsetX < 0 || pixelOffsetY < 0) {
+		return; // Clicked outside draw area
+	}
+
+	int tileOffsetX = pixelOffsetX / tileSize;
+	int tileOffsetY = pixelOffsetY / tileSize;
+
+	int tileX = startX + tileOffsetX;
+	int tileY = startY + tileOffsetY;
+
+	// Bounds check
+	if (tileX >= 0 && tileX < narciaMap->mapSize && tileY >= 0 && tileY < narciaMap->mapSize) {
+
+		Coordinate_t clicked = {tileY, tileX};
+
+		if (coordinateEqual(narciaMap->selected1, clicked)) {
+			narciaMap->selected1 = (Coordinate_t){-1, -1};
+		} else if (coordinateEqual(narciaMap->selected2, clicked)) {
+			narciaMap->selected2 = (Coordinate_t){-1, -1};
+		} else if (narciaMap->selected1.x == -1) {
+			narciaMap->selected1 = clicked;
+		} else if (narciaMap->selected2.x == -1) {
+			narciaMap->selected2 = clicked;
+		} else {
+			narciaMap->selected1 = narciaMap->selected2;
+			narciaMap->selected2 = clicked;
+		}
+
+		printf("Clicked tile townID: %d\n", narciaMap->map[tileY][tileX].townID);
 	}
 }
 
@@ -217,38 +373,85 @@ LRESULT mouseMoveNarciaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-void PopulateMapWithTowns(narciaMap_t *map, Coordinate_t *coords, int coordCount, townType_t townType) {
+bool insideofMap(narciaMap_t *map, int x, int y) {
+	bool xCheck = false;
+	bool yCheck = false;
+
+	if (x < map->mapSize && x >= 0) {
+		xCheck = true;
+	}
+
+	if (y < map->mapSize && y >= 0) {
+		yCheck = true;
+	}
+
+	return xCheck && yCheck;
+}
+
+void PopulateMapWithTowns(narciaMap_t *map, Coordinate_t *coords, int coordCount, townType_t townType, int startID) {
+
+	int id = startID;
+
 	for (int i = 0; i < coordCount; i++) {
-		int cx = coords[i].x;
-		int cy = coords[i].y;
 
-		// Bounds check for center tile
-		if (cx < 0 || cx >= map->mapSize || cy < 0 || cy >= map->mapSize)
-			continue;
+		int townX = coords[i].x;
+		int townY = coords[i].y;
 
-		// Set center tile to town_center
-		map->map[cy][cx].type = TILE_TOWN_CENTER;
-		map->map[cy][cx].townType = townType;
-
-		// Loop over neighbors (-1, 0, +1 in both x and y), including diagonals
-		for (int dy = -1; dy <= 1; dy++) {
-			for (int dx = -1; dx <= 1; dx++) {
-				if (dx == 0 && dy == 0)
-					continue; // skip center tile itself
-
-				int nx = cx + dx;
-				int ny = cy + dy;
-
-				// Check bounds
-				if (nx >= 0 && nx < map->mapSize && ny >= 0 && ny < map->mapSize) {
-					// Only set to TILE_TOWN if it's not already a town center
-					if (map->map[ny][nx].type != TILE_TOWN_CENTER) {
-						map->map[ny][nx].type = TILE_TOWN;
-						map->map[ny][nx].townType = townType;
-					}
-				}
-			}
+		if (insideofMap(map, townX - 1, townY - 1)) {
+			map->map[townY - 1][townX - 1].type = TILE_TOWN_TOP_LEFT;
+			map->map[townY - 1][townX - 1].townType = townType;
+			map->map[townY - 1][townX - 1].townID = id;
 		}
+
+		if (insideofMap(map, townX, townY - 1)) {
+			map->map[townY - 1][townX].type = TILE_TOWN_TOP;
+			map->map[townY - 1][townX].townType = townType;
+			map->map[townY - 1][townX].townID = id;
+		}
+
+		if (insideofMap(map, townX + 1, townY - 1)) {
+			map->map[townY - 1][townX + 1].type = TILE_TOWN_TOP_RIGHT;
+			map->map[townY - 1][townX + 1].townType = townType;
+			map->map[townY - 1][townX + 1].townID = id;
+		}
+
+		if (insideofMap(map, townX - 1, townY)) {
+			map->map[townY][townX - 1].type = TILE_TOWN_LEFT;
+			map->map[townY][townX - 1].townType = townType;
+			map->map[townY][townX - 1].townID = id;
+		}
+
+		if (insideofMap(map, townX, townY)) {
+			map->map[townY][townX].type = TILE_TOWN_CENTER;
+			map->map[townY][townX].townType = townType;
+			map->map[townY][townX].townID = id;
+		}
+
+		if (insideofMap(map, townX + 1, townY)) {
+			map->map[townY][townX + 1].type = TILE_TOWN_RIGHT;
+			map->map[townY][townX + 1].townType = townType;
+			map->map[townY][townX + 1].townID = id;
+		}
+
+		if (insideofMap(map, townX - 1, townY + 1)) {
+			map->map[townY + 1][townX - 1].type = TILE_TOWN_BOTTOM_LEFT;
+			map->map[townY + 1][townX - 1].townType = townType;
+			map->map[townY + 1][townX - 1].townID = id;
+		}
+
+		if (insideofMap(map, townX, townY + 1)) {
+			map->map[townY + 1][townX].type = TILE_TOWN_BOTTOM;
+			map->map[townY + 1][townX].townType = townType;
+			map->map[townY + 1][townX].townID = id;
+		}
+
+		if (insideofMap(map, townX + 1, townY + 1)) {
+			map->map[townY + 1][townX + 1].type = TILE_TOWN_BOTTOM_RIGHT;
+			map->map[townY + 1][townX + 1].townType = townType;
+			map->map[townY + 1][townX + 1].townID = id;
+		}
+
+		id++;
 	}
 }
 
@@ -266,9 +469,12 @@ narciaMap_t *initNarciaMap(CommonPos_t pos) {
 	narciaMap->maxTileSize = 40;
 	narciaMap->minTileSize = 10;
 
-	PopulateMapWithTowns(narciaMap, narciaWarEraTowns, narciaWarEraTowns_count, TOWN_TYPE_SMALL);
-	PopulateMapWithTowns(narciaMap, narciaWarEraLargeTowns, narciaWarEraLargeTowns_count, TOWN_TYPE_LARGE);
-	PopulateMapWithTowns(narciaMap, narciaWarEraImperalCastle, narciaWarEraImperalCastle_count, TOWN_TYPE_IMPERIAL_CASTLE);
+	narciaMap->selected1 = (Coordinate_t){-1, -1};
+	narciaMap->selected2 = (Coordinate_t){-1, -1};
+
+	PopulateMapWithTowns(narciaMap, narciaWarEraTowns, narciaWarEraTowns_count, TOWN_TYPE_SMALL, 1);
+	PopulateMapWithTowns(narciaMap, narciaWarEraLargeTowns, narciaWarEraLargeTowns_count, TOWN_TYPE_LARGE, narciaWarEraTowns_count + 1);
+	PopulateMapWithTowns(narciaMap, narciaWarEraImperalCastle, narciaWarEraImperalCastle_count, TOWN_TYPE_IMPERIAL_CASTLE, narciaWarEraLargeTowns_count + narciaWarEraTowns_count + 1);
 
 	if (!callbackInitialized) {
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &mouseMoveNarciaMap);

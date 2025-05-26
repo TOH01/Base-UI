@@ -8,9 +8,15 @@
 
 typedef enum tileType {
 	TILE_EMPTY,
-	TILE_TOWN,
 	TILE_TOWN_CENTER,
-	SELECTED,
+	TILE_TOWN_TOP,
+	TILE_TOWN_BOTTOM,
+	TILE_TOWN_LEFT,
+	TILE_TOWN_RIGHT,
+	TILE_TOWN_TOP_LEFT,
+	TILE_TOWN_TOP_RIGHT,
+	TILE_TOWN_BOTTOM_LEFT,
+	TILE_TOWN_BOTTOM_RIGHT,
 } tileType_t;
 
 typedef enum townType{
@@ -22,6 +28,7 @@ typedef enum townType{
 typedef struct mapTile{
 	tileType_t type;
 	townType_t townType;
+	int townID;
 	int pathID;
 } mapTile_t;
 
@@ -46,6 +53,8 @@ typedef struct narciaMap {
 	int minTileSize;
 	int maxTileSize;
 	DynamicArray_t * paths;
+	Coordinate_t selected1;
+	Coordinate_t selected2;
 } narciaMap_t;
 
 narciaMap_t *initNarciaMap(CommonPos_t pos);
