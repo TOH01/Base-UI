@@ -1,3 +1,4 @@
+#for release make BUILD_TYPE=release
 # Compiler
 CC = gcc
 
