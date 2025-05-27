@@ -229,72 +229,82 @@ static void onClickNarciaMap(BaseWidget_t *base, int x, int y) {
 		dragStartMiddleX = narciaMap->middleX;
 		dragStartMiddleY = narciaMap->middleY;
 	}
-
-	// Setup
-	int widgetLeft = base->pos.left;
-	int widgetTop = base->pos.top;
-	int widgetRight = base->pos.right;
-	int widgetBottom = base->pos.bottom;
-
-	int widgetWidth = widgetRight - widgetLeft;
-	int widgetHeight = widgetBottom - widgetTop;
-
-	int centerX = widgetLeft + widgetWidth / 2;
-	int centerY = widgetTop + widgetHeight / 2;
-
-	int tileSize = narciaMap->tileSize;
-
-	// Get top-left corner of middle tile, same as drawing
-	int middleTileTopLeftX = centerX - tileSize / 2;
-	int middleTileTopLeftY = centerY - tileSize / 2;
-
-	// Now compute the top-left of the full visible map area (drawing origin)
-	int tilesLeft = (centerX - widgetLeft + tileSize / 2) / tileSize;
-	int tilesUp = (centerY - widgetTop + tileSize / 2) / tileSize;
-
-	int startX = narciaMap->middleX - tilesLeft + 1;
-	int startY = narciaMap->middleY - tilesUp + 1;
-
-	int drawOriginX = middleTileTopLeftX + (startX - narciaMap->middleX) * tileSize;
-	int drawOriginY = middleTileTopLeftY + (startY - narciaMap->middleY) * tileSize;
-
-	// Convert mouse (x, y) into tile indices
-	int pixelOffsetX = x - drawOriginX;
-	int pixelOffsetY = y - drawOriginY;
-
-	if (pixelOffsetX < 0 || pixelOffsetY < 0) {
-		return; // Clicked outside draw area
-	}
-
-	int tileOffsetX = pixelOffsetX / tileSize;
-	int tileOffsetY = pixelOffsetY / tileSize;
-
-	int tileX = startX + tileOffsetX;
-	int tileY = startY + tileOffsetY;
-
-	// Bounds check
-	if (tileX >= 0 && tileX < narciaMap->mapSize && tileY >= 0 && tileY < narciaMap->mapSize) {
-
-		Coordinate_t clicked = {tileY, tileX};
-
-		if (coordinateEqual(narciaMap->selected1, clicked)) {
-			narciaMap->selected1 = (Coordinate_t){-1, -1};
-		} else if (coordinateEqual(narciaMap->selected2, clicked)) {
-			narciaMap->selected2 = (Coordinate_t){-1, -1};
-		} else if (narciaMap->selected1.x == -1) {
-			narciaMap->selected1 = clicked;
-		} else if (narciaMap->selected2.x == -1) {
-			narciaMap->selected2 = clicked;
-		} else {
-			narciaMap->selected1 = narciaMap->selected2;
-			narciaMap->selected2 = clicked;
-		}
-
-		printf("Clicked tile townID: %d\n", narciaMap->map[tileY][tileX].townID);
-	}
 }
 
 LRESULT buttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+	ScreenToClient(hwnd, &mousePos);
+
+	if (abs(activeDragStartX - mousePos.x) < 3 || 3 > abs(activeDragStartY - mousePos.y)) {
+
+		BaseWidget_t base = activeNaricMap->baseWidget;
+		narciaMap_t *narciaMap = activeNaricMap;
+
+		// Setup
+		int widgetLeft = base.pos.left;
+		int widgetTop = base.pos.top;
+		int widgetRight = base.pos.right;
+		int widgetBottom = base.pos.bottom;
+
+		int widgetWidth = widgetRight - widgetLeft;
+		int widgetHeight = widgetBottom - widgetTop;
+
+		int centerX = widgetLeft + widgetWidth / 2;
+		int centerY = widgetTop + widgetHeight / 2;
+
+		int tileSize = narciaMap->tileSize;
+
+		// Get top-left corner of middle tile, same as drawing
+		int middleTileTopLeftX = centerX - tileSize / 2;
+		int middleTileTopLeftY = centerY - tileSize / 2;
+
+		// Now compute the top-left of the full visible map area (drawing origin)
+		int tilesLeft = (centerX - widgetLeft + tileSize / 2) / tileSize;
+		int tilesUp = (centerY - widgetTop + tileSize / 2) / tileSize;
+
+		int startX = narciaMap->middleX - tilesLeft + 1;
+		int startY = narciaMap->middleY - tilesUp + 1;
+
+		int drawOriginX = middleTileTopLeftX + (startX - narciaMap->middleX) * tileSize;
+		int drawOriginY = middleTileTopLeftY + (startY - narciaMap->middleY) * tileSize;
+
+		// Convert mouse (x, y) into tile indices
+		int pixelOffsetX = activeDragStartX - drawOriginX;
+		int pixelOffsetY = activeDragStartY - drawOriginY;
+
+		if (pixelOffsetX < 0 || pixelOffsetY < 0) {
+			return 0; // Clicked outside draw area
+		}
+
+		int tileOffsetX = pixelOffsetX / tileSize;
+		int tileOffsetY = pixelOffsetY / tileSize;
+
+		int tileX = startX + tileOffsetX;
+		int tileY = startY + tileOffsetY;
+
+		// Bounds check
+		if (tileX >= 0 && tileX < narciaMap->mapSize && tileY >= 0 && tileY < narciaMap->mapSize) {
+
+			Coordinate_t clicked = {tileY, tileX};
+			Coordinate_t selected1 = narciaMap->selected1;
+			Coordinate_t selected2 = narciaMap->selected2;
+
+			if ((coordinateEqual(selected1, clicked)) || ((selected1.x >= 0 && selected1.y >= 0) && (narciaMap->map[tileY][tileX].townID == narciaMap->map[selected1.x][selected1.y].townID) &&(narciaMap->map[tileY][tileX].townID != 0))) {
+				narciaMap->selected1 = (Coordinate_t){-1, -1};
+			} else if ((coordinateEqual(selected2, clicked)) || ((selected2.x >= 0 && selected2.y) >= 0 && (narciaMap->map[tileY][tileX].townID == narciaMap->map[selected2.x][selected2.y].townID) &&(narciaMap->map[tileY][tileX].townID != 0))) {
+				narciaMap->selected2 = (Coordinate_t){-1, -1};
+			} else if (selected1.x == -1) {
+				narciaMap->selected1 = clicked;
+			} else if (selected2.x == -1) {
+				narciaMap->selected2 = clicked;
+			} else {
+				narciaMap->selected1 = selected2;
+				narciaMap->selected2 = clicked;
+			}
+		}
+	}
+
 	if (activeNaricMap) {
 		activeNaricMap = NULL;
 	}
