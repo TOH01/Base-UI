@@ -26,6 +26,49 @@ static COLORREF TileTypeToColor(mapTile_t mapTile) {
 	}
 }
 
+Coordinate_t getCenterOfTownTile(narciaMap_t *map, Coordinate_t townTile) {
+
+	Coordinate_t center = townTile;
+
+	switch (map->map[townTile.y][townTile.x].townType) {
+	case TILE_TOWN_TOP:
+		center.y += 1;
+		break;
+	case TILE_TOWN_BOTTOM:
+		center.y -= 1;
+		break;
+	case TILE_TOWN_LEFT:
+		center.x += 1;
+		break;
+	case TILE_TOWN_RIGHT:
+		center.x -= 1;
+		break;
+	case TILE_TOWN_TOP_LEFT:
+		center.x += 1;
+		center.y += 1;
+		break;
+	case TILE_TOWN_TOP_RIGHT:
+		center.x -= 1;
+		center.y += 1;
+		break;
+	case TILE_TOWN_BOTTOM_LEFT:
+		center.x += 1;
+		center.y -= 1;
+		break;
+	case TILE_TOWN_BOTTOM_RIGHT:
+		center.x -= 1;
+		center.y -= 1;
+		break;
+	case TILE_TOWN_CENTER:
+	default:
+		break;
+	}
+
+	return center;
+}
+
+bool adjacentToTown(Coordinate_t townCenter, Coordinate_t tile) { return (abs(townCenter.x - tile.x) <= 2) && (abs(townCenter.y - tile.y) <= 2); }
+
 static void drawTown(AbsolutePos_t pos, mapTile_t mapTile, COLORREF color) {
 	int borderWidth = 3;
 
@@ -147,7 +190,7 @@ static void drawNarciaMap(BaseWidget_t *base) {
 
 			COLORREF bgColor = RGB(115, 157, 47);
 
-			if (coordinateEqual(map->selected1, (Coordinate_t){y, x}) || coordinateEqual(map->selected2, (Coordinate_t){y, x})) {
+			if (coordinateEqual(map->selected1, (Coordinate_t){x, y}) || coordinateEqual(map->selected2, (Coordinate_t){x, y})) {
 				bgColor = RGB(255, 255, 255);
 			} else if (map->map[y][x].type == TILE_EMPTY && (x + y) % 2 == 0) {
 				continue;
@@ -199,10 +242,10 @@ static void drawNarciaMap(BaseWidget_t *base) {
 
 			bool selected = false;
 
-			if (selected1Valid && mapTile.townID == map->map[map->selected1.x][map->selected1.y].townID) {
+			if (selected1Valid && mapTile.townID == map->map[map->selected1.y][map->selected1.x].townID) {
 				selected = true;
 			}
-			if (selected2Valid && mapTile.townID == map->map[map->selected2.x][map->selected2.y].townID) {
+			if (selected2Valid && mapTile.townID == map->map[map->selected2.y][map->selected2.x].townID) {
 				selected = true;
 			}
 
@@ -215,7 +258,7 @@ static void drawNarciaMap(BaseWidget_t *base) {
 	}
 }
 
-static void onClickNarciaMap(BaseWidget_t *base, int x, int y) {
+static void onClickNarciaMap(BaseWidget_t *base, int x, int y, ClickType_t clickType) {
 	narciaMap_t *narciaMap = (narciaMap_t *)base;
 
 	if (focusedNarciaMap == NULL) {
@@ -229,6 +272,18 @@ static void onClickNarciaMap(BaseWidget_t *base, int x, int y) {
 		dragStartMiddleX = narciaMap->middleX;
 		dragStartMiddleY = narciaMap->middleY;
 	}
+}
+
+bool isAdjacent(Coordinate_t c1, Coordinate_t c2) {
+	if (coordinateEqual(c1, c2)) {
+		return false;
+	}
+
+	return (abs(c1.x - c2.x) <= 1) && (abs(c1.y - c2.y) <= 1);
+}
+
+LRESULT RbuttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+
 }
 
 LRESULT buttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -286,21 +341,24 @@ LRESULT buttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		// Bounds check
 		if (tileX >= 0 && tileX < narciaMap->mapSize && tileY >= 0 && tileY < narciaMap->mapSize) {
 
-			Coordinate_t clicked = {tileY, tileX};
+			Coordinate_t clicked = {tileX, tileY};
 			Coordinate_t selected1 = narciaMap->selected1;
 			Coordinate_t selected2 = narciaMap->selected2;
 
-			if ((coordinateEqual(selected1, clicked)) || ((selected1.x >= 0 && selected1.y >= 0) && (narciaMap->map[tileY][tileX].townID == narciaMap->map[selected1.x][selected1.y].townID) &&(narciaMap->map[tileY][tileX].townID != 0))) {
-				narciaMap->selected1 = (Coordinate_t){-1, -1};
-			} else if ((coordinateEqual(selected2, clicked)) || ((selected2.x >= 0 && selected2.y) >= 0 && (narciaMap->map[tileY][tileX].townID == narciaMap->map[selected2.x][selected2.y].townID) &&(narciaMap->map[tileY][tileX].townID != 0))) {
-				narciaMap->selected2 = (Coordinate_t){-1, -1};
-			} else if (selected1.x == -1) {
-				narciaMap->selected1 = clicked;
-			} else if (selected2.x == -1) {
-				narciaMap->selected2 = clicked;
-			} else {
-				narciaMap->selected1 = selected2;
-				narciaMap->selected2 = clicked;
+			if (narciaMap->map[tileY][tileX].townID != 0) {
+
+				if ((coordinateEqual(selected1, clicked)) || ((selected1.x >= 0 && selected1.y >= 0) && (narciaMap->map[tileY][tileX].townID == narciaMap->map[selected1.y][selected1.x].townID))) {
+					narciaMap->selected1 = (Coordinate_t){-1, -1};
+				} else if ((coordinateEqual(selected2, clicked)) || ((selected2.x >= 0 && selected2.y >= 0) && (narciaMap->map[tileY][tileX].townID == narciaMap->map[selected2.y][selected2.x].townID))) {
+					narciaMap->selected2 = (Coordinate_t){-1, -1};
+				} else if (selected1.x == -1) {
+					narciaMap->selected1 = clicked;
+				} else if (selected2.x == -1) {
+					narciaMap->selected2 = clicked;
+				} else {
+					narciaMap->selected1 = selected2;
+					narciaMap->selected2 = clicked;
+				}
 			}
 		}
 	}

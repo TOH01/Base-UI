@@ -121,7 +121,7 @@ void moveContainerOnTop(int idx) {
 	}
 }
 
-void containerListLButtonDown(int x, int y) {
+void containerListClick(int x, int y, ClickType_t clickType) {
 
 	// reset selected input, has to be done before widget callback
 	activeInput = NULL;
@@ -133,7 +133,7 @@ void containerListLButtonDown(int x, int y) {
 		container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
 		if (container && container->visible) {
-			if (UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->absPos) && !movingContainer.action && container->resizable) {
+			if (UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->absPos) && !movingContainer.action && container->resizable && clickType == CLICK_TYPE_LDOWN) {
 				movingContainer.startPos = container->absPos;
 				movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->absPos);
 				movingContainer.container = container;
@@ -145,10 +145,10 @@ void containerListLButtonDown(int x, int y) {
 				BaseWidget_t *widget = widgetClicked(x, y, container->widgetList);
 
 				if (widget && !widget->hidden) {
-					widget->onClick(widget, x, y);
+					widget->onClick(widget, x, y, clickType);
 					InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
 					break;
-				} else if (!movingContainer.action && container->movable) {
+				} else if (!movingContainer.action && container->movable && clickType == CLICK_TYPE_LDOWN) {
 					movingContainer.startPos = container->absPos;
 					movingContainer.action = CONTAINER_MOVE_ACTION;
 					movingContainer.container = container;
@@ -178,7 +178,35 @@ LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	int x = LOWORD(lParam);
 	int y = HIWORD(lParam);
 
-	containerListLButtonDown(x, y);
+	containerListClick(x, y, CLICK_TYPE_LDOWN);
+}
+
+LRESULT RButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	int x = LOWORD(lParam);
+	int y = HIWORD(lParam);
+
+	containerListClick(x, y, CLICK_TYPE_RDOWN);
+}
+
+LRESULT RButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	int x = LOWORD(lParam);
+	int y = HIWORD(lParam);
+
+	containerListClick(x, y, CLICK_TYPE_RUP);
+}
+
+LRESULT MButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	int x = LOWORD(lParam);
+	int y = HIWORD(lParam);
+
+	containerListClick(x, y, CLICK_TYPE_MDOWN);
+}
+
+LRESULT MButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	int x = LOWORD(lParam);
+	int y = HIWORD(lParam);
+
+	containerListClick(x, y, CLICK_TYPE_MUP);
 }
 
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -192,6 +220,11 @@ LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		movingContainer.action = 0;
 	}
 
+	int x = LOWORD(lParam);
+	int y = HIWORD(lParam);
+
+	containerListClick(x, y, CLICK_TYPE_LUP);
+
 	InvalidateRect(hwnd, NULL, FALSE);
 }
 
@@ -200,18 +233,17 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	int y = HIWORD(lParam); // Vertical position in client area
 
 	if (!currentWindowState.mouseTrackingActive) {
-        TRACKMOUSEEVENT tme = {0};
-        tme.cbSize = sizeof(TRACKMOUSEEVENT);
-        tme.dwFlags = TME_LEAVE;
-        tme.hwndTrack = hwnd;
-        tme.dwHoverTime = HOVER_DEFAULT;
+		TRACKMOUSEEVENT tme = {0};
+		tme.cbSize = sizeof(TRACKMOUSEEVENT);
+		tme.dwFlags = TME_LEAVE;
+		tme.hwndTrack = hwnd;
+		tme.dwHoverTime = HOVER_DEFAULT;
 
-        if (TrackMouseEvent(&tme)) {
-            currentWindowState.mouseTrackingActive = true;
-        }
-    }
-	
-	
+		if (TrackMouseEvent(&tme)) {
+			currentWindowState.mouseTrackingActive = true;
+		}
+	}
+
 	if (movingContainer.action) {
 
 		int deltaX = x - movingContainer.mouseStartX;
@@ -320,6 +352,10 @@ container_t *initContainer(containerPos_t pos) {
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE, &resizeContainers);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONDOWN, &LButtonDownCallback);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONUP, &LButtonUpCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_RBUTTONDOWN, &RButtonDownCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_RBUTTONUP, &RButtonUpCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MBUTTONDOWN, &MButtonDownCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MBUTTONUP, &MButtonUpCallback);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &MouseMoveCallback);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_TIMER, &TimerCallback);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSELEAVE, &MouseLeaveCallback);

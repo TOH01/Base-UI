@@ -24,7 +24,7 @@ static void drawButton(BaseWidget_t *baseWidget) {
 #endif
 }
 
-static void onClickButton(BaseWidget_t *base, int x, int y) {
+static void onClickButton(BaseWidget_t *base, int x, int y, ClickType_t clickType) {
 	assert(base->type == WIDGET_TYPE_BUTTON);
 	buttonWidget_t *button = (buttonWidget_t *)base;
 

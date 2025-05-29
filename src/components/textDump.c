@@ -59,7 +59,7 @@ void drawTextDump(BaseWidget_t *baseWidget) {
 	}
 }
 
-void onClickTextDump(BaseWidget_t *base, int x, int y) {
+void onClickTextDump(BaseWidget_t *base, int x, int y, ClickType_t clickType) {
 	textDumpWidget_t *textDump = (textDumpWidget_t *)base;
 	activeTextDump = textDump;
 }

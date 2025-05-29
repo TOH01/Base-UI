@@ -13,10 +13,19 @@ typedef enum {
 	WIDGET_TYPE_TEXT_DUMP,
 } WidgetType_t;
 
+typedef enum {
+	CLICK_TYPE_LDOWN,
+	CLICK_TYPE_LUP,
+	CLICK_TYPE_RDOWN,
+	CLICK_TYPE_RUP,
+	CLICK_TYPE_MDOWN,
+	CLICK_TYPE_MUP,
+} ClickType_t;
+
 typedef struct BaseWidget {
 	void (*drawHandler)(BaseWidget_t *);
 	CommonPos_t initPos;
-	void (*onClick)(BaseWidget_t *, int, int);
+	void (*onClick)(BaseWidget_t *, int, int, ClickType_t);
 	void (*onHover)(BaseWidget_t *);
 	void (*onHoverEnd)(BaseWidget_t *);
 	WidgetType_t type;

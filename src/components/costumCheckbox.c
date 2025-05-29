@@ -53,7 +53,7 @@ static void onHoverEndCheckbox(BaseWidget_t *base) {
 	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
-static void onClickCheckbox(BaseWidget_t *baseWidget, int x, int y) {
+static void onClickCheckbox(BaseWidget_t *baseWidget, int x, int y, ClickType_t clickType) {
 	assert(baseWidget->type == WIDGET_TYPE_CHECKBOX);
 	checkboxWidget_t *checkbox = (checkboxWidget_t *)baseWidget;
 	*(checkbox->value) = !*(checkbox->value);

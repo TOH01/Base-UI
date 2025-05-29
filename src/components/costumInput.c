@@ -95,7 +95,7 @@ static LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 	}
 }
 
-static void onClickInput(BaseWidget_t *baseWidget, int x, int y) {
+static void onClickInput(BaseWidget_t *baseWidget, int x, int y, ClickType_t clickType) {
 	assert(baseWidget->type == WIDGET_TYPE_INPUT);
 	inputWidget_t *input = (inputWidget_t *)baseWidget;
 	activeInput = input;

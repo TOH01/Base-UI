@@ -54,7 +54,7 @@ static void drawSlider(BaseWidget_t *baseWidget) {
 	UiUtils_DrawColoredRectangle(pointPos, pointColor, slider->theme->thumb.border, slider->theme->thumbBorderWidth);
 }
 
-static void onClickSlider(BaseWidget_t *baseWidget, int x, int y) {
+static void onClickSlider(BaseWidget_t *baseWidget, int x, int y, ClickType_t clickType) {
 	assert(baseWidget->type == WIDGET_TYPE_SLIDER);
 	sliderWidget_t *slider = (sliderWidget_t *)baseWidget;
 

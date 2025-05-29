@@ -23,7 +23,13 @@ typedef enum townType{
 	TOWN_TYPE_LARGE,
 	TOWN_TYPE_SMALL,
 	TOWN_TYPE_IMPERIAL_CASTLE,
+	TOWN_TYPE_UNSELECTED,
 } townType_t;
+
+typedef struct Coordinate {
+	int x;
+	int y;
+} Coordinate_t;
 
 typedef struct mapTile{
 	tileType_t type;
@@ -37,10 +43,6 @@ typedef struct path{
 	COLORREF color;
 } path_t;
 
-typedef struct Coordinate {
-	int x;
-	int y;
-} Coordinate_t;
 
 typedef struct narciaMap {
 	BaseWidget_t baseWidget;
@@ -55,6 +57,7 @@ typedef struct narciaMap {
 	DynamicArray_t * paths;
 	Coordinate_t selected1;
 	Coordinate_t selected2;
+	DynamicArray_t townCenters;
 } narciaMap_t;
 
 narciaMap_t *initNarciaMap(CommonPos_t pos);
