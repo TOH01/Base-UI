@@ -329,8 +329,6 @@ static void drawNarciaMap(BaseWidget_t *base) {
 			Coordinate_t townCenter = getCenterOfTownTile(map, (Coordinate_t){x, y});
 			bool disabled = !map->map[townCenter.y][townCenter.x].active;
 
-			UiUtils_DrawTownCoordinates(townCenter, map->tileSize, currentWindowState.memHDC);
-
 			if (disabled) {
 				drawTown(rect, mapTile, RGB(184, 184, 184));
 			} else if (selected) {
