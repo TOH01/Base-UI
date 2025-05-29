@@ -1,3 +1,4 @@
+#include "colorMatrix.h"
 #include "common.h"
 #include "customButton.h"
 #include "customCheckbox.h"
@@ -5,11 +6,10 @@
 #include "customSlider.h"
 #include "drawable.h"
 #include "menu.h"
+#include "naricaMap.h"
 #include "textDump.h"
 #include "widget.h"
 #include <stdio.h>
-#include "colorMatrix.h"
-#include "naricaMap.h"
 
 buttonWidget_t *textDumpMenuButtons[3];
 const char *textDumpMenuButtonNames[] = {
@@ -32,10 +32,19 @@ textDumpWidget_t *textDumps[3];
 submenuGroup_t *textDumpMenuGroup;
 MenuUi_Submenu_t *textDumpSubmenus[3];
 
-narciaMap_t * narciaMap;
+narciaMap_t *narciaMap;
 
-void goButtonCallback(int id){
-	goToTile(narciaMap, 50, 50);
+Coordinate_t testCoordinate[3] = {{162, 9}, {17, 10}, {12, 12}};
+path_t testPath;
+
+void goButtonCallback(int id) { goToTile(narciaMap, 50, 50); }
+
+void generatePath(int id) {
+	testPath.tiles = testCoordinate;
+	testPath.color = RGB(255, 255, 255);
+	testPath.tileCount = 3;
+
+	DynamicArray_Add(narciaMap->paths, &testPath);
 }
 
 void Demo_InitAll(void) {
@@ -61,7 +70,7 @@ void Demo_InitAll(void) {
 	mainContentContainer->layout.offsetRight = -400;
 
 	narciaMap = initNarciaMap((CommonPos_t){0, 0, 1, 1});
-	containerAddWidget(mainContentContainer, (BaseWidget_t *) narciaMap);
+	containerAddWidget(mainContentContainer, (BaseWidget_t *)narciaMap);
 
 	textDumpHeaderContainer->fixed = true;
 	textDumpHeaderContainer->layout.right = LAYOUT_BORDER_RIGHT;
@@ -103,59 +112,55 @@ void Demo_InitAll(void) {
 		customTextDump_AddLine(textDumps[i], textDumpMenuButtonNames[i]);
 	}
 
-	inputWidget_t * inputX = customInput_initInput((CommonPos_t){0.2, 0.05, 0.35, 0.8});
-	inputWidget_t * inputY = customInput_initInput((CommonPos_t){0.2, 0.4, 0.7, 0.8});
-	buttonWidget_t * goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
+	inputWidget_t *inputX = customInput_initInput((CommonPos_t){0.2, 0.05, 0.35, 0.8});
+	inputWidget_t *inputY = customInput_initInput((CommonPos_t){0.2, 0.4, 0.7, 0.8});
+	buttonWidget_t *goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
 
-	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *) inputX);
-	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *) inputY);
-	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *) goButton);
+	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputX);
+	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputY);
+	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)goButton);
 
-	colorMatrix_t * colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
+	colorMatrix_t *colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
 
-	Drawable_t * colorMatrixLabel = drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText, &currentWindowState.activeTheme.label);
+	Drawable_t *colorMatrixLabel = drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText, &currentWindowState.activeTheme.label);
 
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *) colorMatrix);
+	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)colorMatrix);
 	containerAddDrawable(mainHeaderContainer, colorMatrixLabel);
 
-
-	buttonWidget_t * generatePathButton = customButton_initButton((CommonPos_t){0.3, 0.02, 0.12, 0.7}, NULL, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *) generatePathButton);
+	buttonWidget_t *generatePathButton = customButton_initButton((CommonPos_t){0.3, 0.02, 0.12, 0.7}, &generatePath, 0);
+	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)generatePathButton);
 	customButton_setButtonText(generatePathButton, generatePathText);
 
-	Drawable_t * seperatorLine1 = drawable_initLine((CommonPos_t){0.2, 0.14, 0.14, 0.8}, &currentWindowState.activeTheme.line);
+	Drawable_t *seperatorLine1 = drawable_initLine((CommonPos_t){0.2, 0.14, 0.14, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine1);
 
-
-	buttonWidget_t * previousPathButton = customButton_initButton((CommonPos_t){0.3, 0.16, 0.27, 0.7}, NULL, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *) previousPathButton);
+	buttonWidget_t *previousPathButton = customButton_initButton((CommonPos_t){0.3, 0.16, 0.27, 0.7}, NULL, 0);
+	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)previousPathButton);
 	customButton_setButtonText(previousPathButton, previousPathText);
-	
-	buttonWidget_t * nexPathButton = customButton_initButton((CommonPos_t){0.3, 0.29, 0.40, 0.7}, NULL, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *) nexPathButton);
+
+	buttonWidget_t *nexPathButton = customButton_initButton((CommonPos_t){0.3, 0.29, 0.40, 0.7}, NULL, 0);
+	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)nexPathButton);
 	customButton_setButtonText(nexPathButton, nextPathText);
 
-	Drawable_t * seperatorLine2 = drawable_initLine((CommonPos_t){0.2, 0.42, 0.42, 0.8}, &currentWindowState.activeTheme.line);
+	Drawable_t *seperatorLine2 = drawable_initLine((CommonPos_t){0.2, 0.42, 0.42, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine2);
-	
 
-	buttonWidget_t * clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, NULL, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *) clearSelectionButton);
+	buttonWidget_t *clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, NULL, 0);
+	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)clearSelectionButton);
 	customButton_setButtonText(clearSelectionButton, clearSelectionText);
-	
-	Drawable_t * seperatorLine3 = drawable_initLine((CommonPos_t){0.2, 0.56, 0.56, 0.8}, &currentWindowState.activeTheme.line);
+
+	Drawable_t *seperatorLine3 = drawable_initLine((CommonPos_t){0.2, 0.56, 0.56, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine3);
 
-
-	buttonWidget_t * addEnemyHomebaseButton = customButton_initButton((CommonPos_t){0.2, 0.58, 0.73, 0.53}, NULL, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *) addEnemyHomebaseButton);
+	buttonWidget_t *addEnemyHomebaseButton = customButton_initButton((CommonPos_t){0.2, 0.58, 0.73, 0.53}, NULL, 0);
+	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)addEnemyHomebaseButton);
 	customButton_setButtonText(addEnemyHomebaseButton, generateEnemeyTownText);
-	
-	buttonWidget_t * addHomebaseButton = customButton_initButton((CommonPos_t){0.57, 0.58, 0.73, 0.9}, NULL, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *) addHomebaseButton);
+
+	buttonWidget_t *addHomebaseButton = customButton_initButton((CommonPos_t){0.57, 0.58, 0.73, 0.9}, NULL, 0);
+	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)addHomebaseButton);
 	customButton_setButtonText(addHomebaseButton, generateFriendlyTownText);
 
-	Drawable_t * seperatorLine4 = drawable_initLine((CommonPos_t){0.2, 0.75, 0.75, 0.8}, &currentWindowState.activeTheme.line);
+	Drawable_t *seperatorLine4 = drawable_initLine((CommonPos_t){0.2, 0.75, 0.75, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine4);
 
 	mainHeaderContainer->fixedWidgets = true;

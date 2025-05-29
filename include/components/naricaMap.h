@@ -36,10 +36,12 @@ typedef struct mapTile{
 	townType_t townType;
 	int townID;
 	int pathID;
+	bool active;
 } mapTile_t;
 
 typedef struct path{
-	DynamicArray_t * tiles;
+	Coordinate_t * tiles;
+	int tileCount;
 	COLORREF color;
 } path_t;
 
