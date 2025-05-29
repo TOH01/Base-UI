@@ -34,7 +34,7 @@ MenuUi_Submenu_t *textDumpSubmenus[3];
 
 narciaMap_t *narciaMap;
 
-Coordinate_t testCoordinate[3] = {{162, 9}, {17, 10}, {12, 12}};
+Coordinate_t testCoordinate[3] = {{44, 52}, {48, 13}, {12, 23}};
 path_t testPath;
 
 void goButtonCallback(int id) { goToTile(narciaMap, 50, 50); }

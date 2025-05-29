@@ -106,12 +106,7 @@ static void drawPathOnMap(narciaMap_t *map, COLORREF color, Coordinate_t *path, 
 		POINT fromPoint = TileToScreenCenter(map, from);
 		POINT toPoint = TileToScreenCenter(map, to);
 
-		UiUtils_DrawLineRelative((AbsolutePos_t){
-			.left = fromPoint.x,
-			.top = fromPoint.y,
-			.right = toPoint.x,
-			.bottom = toPoint.y
-		}, color, 4);
+		UiUtils_DrawLineRelative((AbsolutePos_t){.left = fromPoint.x, .top = fromPoint.y, .right = toPoint.x, .bottom = toPoint.y}, color, 4);
 	}
 }
 
@@ -333,6 +328,8 @@ static void drawNarciaMap(BaseWidget_t *base) {
 
 			Coordinate_t townCenter = getCenterOfTownTile(map, (Coordinate_t){x, y});
 			bool disabled = !map->map[townCenter.y][townCenter.x].active;
+
+			UiUtils_DrawTownCoordinates(townCenter, map->tileSize, currentWindowState.memHDC);
 
 			if (disabled) {
 				drawTown(rect, mapTile, RGB(184, 184, 184));
