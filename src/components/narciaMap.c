@@ -14,7 +14,9 @@ int dragStartMiddleY = 0;
 
 bool callbackInitialized = false;
 
-LARGE_INTEGER start, end, freq;
+static HBRUSH checkerBrush = NULL;
+static HBITMAP checkerBitmap = NULL;
+static int lastTileSize = -1;
 
 POINT TileToScreenCenter(narciaMap_t *map, Coordinate_t tile) {
 	BaseWidget_t base = map->baseWidget;
@@ -243,33 +245,30 @@ void drawTownName(townType_t type, AbsolutePos_t rect) {
 
 static void drawNarciaMap(BaseWidget_t *base) {
 	narciaMap_t *map = (narciaMap_t *)base;
-
-	const int mapSize = map->mapSize;
 	const int tileSize = map->tileSize;
+	const int mapSize = map->mapSize;
 
-	int left = base->pos.left;
-	int top = base->pos.top;
-	int right = base->pos.right;
-	int bottom = base->pos.bottom;
+	const int left = base->pos.left;
+	const int top = base->pos.top;
+	const int right = base->pos.right;
+	const int bottom = base->pos.bottom;
 
-	int widgetWidth = right - left;
-	int widgetHeight = bottom - top;
+	const int widgetWidth = right - left;
+	const int widgetHeight = bottom - top;
 
-	int centerX = left + widgetWidth / 2;
-	int centerY = top + widgetHeight / 2;
+	const int centerX = left + widgetWidth / 2;
+	const int centerY = top + widgetHeight / 2;
 
-	int middleTileTopLeftX = centerX - tileSize / 2;
-	int middleTileTopLeftY = centerY - tileSize / 2;
+	const int middleTileTopLeftX = centerX - tileSize / 2;
+	const int middleTileTopLeftY = centerY - tileSize / 2;
 
-	float tilesLeftF = ((float)(centerX - left) + tileSize / 2.0f) / tileSize;
-	float tilesRightF = tilesLeftF;
-	float tilesUpF = ((float)(centerY - top) + tileSize / 2.0f) / tileSize;
-	float tilesDownF = tilesUpF;
+	const float tilesLeftF = ((float)(centerX - left) + tileSize / 2.0f) / tileSize;
+	const float tilesUpF = ((float)(centerY - top) + tileSize / 2.0f) / tileSize;
 
 	int startX = map->middleX - (int)ceil(tilesLeftF) + 1;
-	int endX = map->middleX + (int)ceil(tilesRightF);
+	int endX = map->middleX + (int)ceil(tilesLeftF);
 	int startY = map->middleY - (int)ceil(tilesUpF) + 1;
-	int endY = map->middleY + (int)ceil(tilesDownF);
+	int endY = map->middleY + (int)ceil(tilesUpF);
 
 	if (startX < 0)
 		startX = 0;
@@ -280,64 +279,99 @@ static void drawNarciaMap(BaseWidget_t *base) {
 	if (endY >= mapSize)
 		endY = mapSize - 1;
 
-	int borderSize = 1;
-	COLORREF borderColor = RGB(80, 80, 80);
+	// --- Calculate tile drawing bounds in screen px ---
+	const int tileDrawLeft = middleTileTopLeftX + (startX - map->middleX) * tileSize;
+	const int tileDrawTop = middleTileTopLeftY + (startY - map->middleY) * tileSize;
+	const int tileDrawRight = middleTileTopLeftX + (endX - map->middleX + 1) * tileSize;
+	const int tileDrawBottom = middleTileTopLeftY + (endY - map->middleY + 1) * tileSize;
 
-	// draw background
-	int tileDrawLeft = middleTileTopLeftX + (startX - map->middleX) * tileSize;
-	int tileDrawTop = middleTileTopLeftY + (startY - map->middleY) * tileSize;
-	int tileDrawRight = middleTileTopLeftX + (endX - map->middleX + 1) * tileSize;
-	int tileDrawBottom = middleTileTopLeftY + (endY - map->middleY + 1) * tileSize;
+	AbsolutePos_t backgroundPos = {.left = max(tileDrawLeft, left), .top = max(tileDrawTop, top), .right = min(tileDrawRight, right), .bottom = min(tileDrawBottom, bottom)};
+	RECT backgroundRect = UiUtils_absolutePosToRect(backgroundPos);
 
-	AbsolutePos_t backgroundPos;
-	backgroundPos.left = max(tileDrawLeft, left);
-	backgroundPos.top = max(tileDrawTop, top);
-	backgroundPos.right = min(tileDrawRight, right);
-	backgroundPos.bottom = min(tileDrawBottom, bottom);
+	// --- Rebuild brush if tile size changed ---
+	if (lastTileSize != tileSize) {
+		lastTileSize = tileSize;
 
-	UiUtils_DrawColoredRectangle(backgroundPos, RGB(140, 182, 58), borderColor, 0); // no border
-
-	int middleXMap = map->middleX;
-	int middleYMap = map->middleY;
-
-	HBRUSH fillBrush = CreateSolidBrush(RGB(115, 157, 47));
-	HBRUSH oldBrush = SelectObject(currentWindowState.memHDC, fillBrush);
-
-	for (int y = startY; y <= endY; y++) {
-		for (int x = startX; x <= endX; x++) {
-			mapTile_t mapTile = map->map[y][x];
-			if (mapTile.type != TILE_EMPTY)
-				continue;
-
-			// currently deprecated, cannot select tiles until v2
-			if (coordinateEqual(map->selected1, (Coordinate_t){x, y}) || coordinateEqual(map->selected2, (Coordinate_t){x, y})) {
-
-			} else if ((x + y) % 2 == 0) {
-				continue;
-			}
-
-			AbsolutePos_t rect = TileToScreenRect(map, x, y);
-			if (rect.right <= left || rect.left >= right || rect.bottom <= top || rect.top >= bottom)
-				continue;
-
-			rect.left = max(rect.left, left);
-			rect.top = max(rect.top, top);
-			rect.right = min(rect.right, right);
-			rect.bottom = min(rect.bottom, bottom);
-
-			RECT realRect = UiUtils_absolutePosToRect(rect);
-
-			QueryPerformanceCounter(&start);
-			FillRect(currentWindowState.memHDC, &realRect, fillBrush);
-			QueryPerformanceCounter(&end);
-
-			double elapsedSeconds = (double)(end.QuadPart - start.QuadPart) / freq.QuadPart;
-			printf("Elapsed time: %.6f seconds\n", elapsedSeconds);
+		if (checkerBrush) {
+			DeleteObject(checkerBrush);
+			checkerBrush = NULL;
 		}
+		if (checkerBitmap) {
+			DeleteObject(checkerBitmap);
+			checkerBitmap = NULL;
+		}
+
+		const int patternSize = tileSize * 2;
+
+		HDC memDC = CreateCompatibleDC(currentWindowState.memHDC);
+		checkerBitmap = CreateCompatibleBitmap(currentWindowState.memHDC, patternSize, patternSize);
+		HBITMAP oldBmp = (HBITMAP)SelectObject(memDC, checkerBitmap);
+
+		// Fill with base color
+		HBRUSH baseBrush = CreateSolidBrush(RGB(140, 182, 58));
+		FillRect(memDC, &(RECT){0, 0, patternSize, patternSize}, baseBrush);
+		DeleteObject(baseBrush);
+
+		// Draw dark squares
+		HBRUSH darkBrush = CreateSolidBrush(RGB(115, 157, 47));
+		FillRect(memDC, &(RECT){0, 0, tileSize, tileSize}, darkBrush);
+		FillRect(memDC, &(RECT){tileSize, tileSize, patternSize, patternSize}, darkBrush);
+		DeleteObject(darkBrush);
+
+		SelectObject(memDC, oldBmp);
+		DeleteDC(memDC);
+
+		checkerBrush = CreatePatternBrush(checkerBitmap);
 	}
 
+	// --- Align brush to tiles ---
+	int brushOrgX = (tileDrawLeft) % (tileSize * 2);
+	int brushOrgY = (tileDrawTop) % (tileSize * 2);
+	if (brushOrgX < 0)
+		brushOrgX += tileSize * 2;
+	if (brushOrgY < 0)
+		brushOrgY += tileSize * 2;
+	SetBrushOrgEx(currentWindowState.memHDC, brushOrgX, brushOrgY, NULL);
+
+	// --- Draw checker background ---
+	HBRUSH oldBrush = (HBRUSH)SelectObject(currentWindowState.memHDC, checkerBrush);
+	FillRect(currentWindowState.memHDC, &backgroundRect, checkerBrush);
 	SelectObject(currentWindowState.memHDC, oldBrush);
-	DeleteObject(fillBrush);
+
+	/*
+	for (int y = startY; y <= endY; y++) {
+	    for (int x = startX; x <= endX; x++) {
+	        mapTile_t mapTile = map->map[y][x];
+	        if (mapTile.type != TILE_EMPTY)
+	            continue;
+
+	        // currently deprecated, cannot select tiles until v2
+	        if (coordinateEqual(map->selected1, (Coordinate_t){x, y}) || coordinateEqual(map->selected2, (Coordinate_t){x, y})) {
+
+	        } else if ((x + y) % 2 == 0) {
+	            continue;
+	        }
+
+	        AbsolutePos_t rect = TileToScreenRect(map, x, y);
+	        if (rect.right <= left || rect.left >= right || rect.bottom <= top || rect.top >= bottom)
+	            continue;
+
+	        rect.left = max(rect.left, left);
+	        rect.top = max(rect.top, top);
+	        rect.right = min(rect.right, right);
+	        rect.bottom = min(rect.bottom, bottom);
+
+	        RECT realRect = UiUtils_absolutePosToRect(rect);
+
+	        QueryPerformanceCounter(&start);
+	        FillRect(currentWindowState.memHDC, &realRect, fillBrush);
+	        QueryPerformanceCounter(&end);
+
+	        double elapsedSeconds = (double)(end.QuadPart - start.QuadPart) / freq.QuadPart;
+	        printf("Elapsed time: %.6f seconds\n", elapsedSeconds);
+	    }
+	}
+	    */
 
 	for (int y = startY; y <= endY; y++) {
 		for (int x = startX; x <= endX; x++) {
@@ -654,8 +688,6 @@ void activateAllTiles(narciaMap_t *map) {
 
 narciaMap_t *initNarciaMap(CommonPos_t pos) {
 	narciaMap_t *narciaMap = (narciaMap_t *)calloc(1, sizeof(narciaMap_t));
-
-	QueryPerformanceFrequency(&freq);
 
 	narciaMap->baseWidget.initPos = pos;
 	narciaMap->baseWidget.drawHandler = &drawNarciaMap;
