@@ -2,6 +2,7 @@
 #include "naricaMap.h"
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 narciaMap_t *focusedNarciaMap = NULL;
 
@@ -217,6 +218,28 @@ static void drawTown(AbsolutePos_t pos, mapTile_t mapTile, COLORREF color) {
 
 bool coordinateEqual(Coordinate_t c1, Coordinate_t c2) { return (c1.x == c2.x && c1.y == c2.y); }
 
+void drawTownCoordinates(Coordinate_t coordinate, AbsolutePos_t rect) {
+	char text[11]; // (XXX, XXX) + string terminator
+	snprintf(text, 11, "(%d, %d)", coordinate.y, coordinate.x);
+
+	DrawFittingText(currentWindowState.memHDC, text, UiUtils_absolutePosToRect(rect));
+}
+
+void drawTownName(townType_t type, AbsolutePos_t rect) {
+	char text[3] = ""; // only "IC" and "LT" valid + string terminator
+
+	if(type == TOWN_TYPE_LARGE){
+		strncpy(text, "LT", 2);
+		text[2] = '\0';
+	}
+	else if(type == TOWN_TYPE_IMPERIAL_CASTLE){
+		strncpy(text, "IC", 2);
+		text[2] = '\0';
+	}
+
+	DrawFittingText(currentWindowState.memHDC, text, UiUtils_absolutePosToRect(rect));
+}
+
 static void drawNarciaMap(BaseWidget_t *base) {
 	narciaMap_t *map = (narciaMap_t *)base;
 
@@ -336,6 +359,23 @@ static void drawNarciaMap(BaseWidget_t *base) {
 			} else {
 				drawTown(rect, mapTile, TileTypeToColor(mapTile));
 			}
+
+			if (mapTile.type == TILE_TOWN_TOP_LEFT) {
+				rect.bottom = rect.top;
+				rect.top -= map->tileSize * 1.5;
+				rect.right += map->tileSize * 2.5;
+				rect.left -= map->tileSize / 2;
+
+				drawTownCoordinates(townCenter, rect);
+			}
+			if((mapTile.townType == TOWN_TYPE_IMPERIAL_CASTLE || mapTile.townType == TOWN_TYPE_LARGE) && mapTile.type == TILE_TOWN_BOTTOM){
+				rect.top = rect.bottom;
+				rect.bottom += map->tileSize * 1.5;
+				rect.left -= map->tileSize * 1.5;
+				rect.right += map->tileSize * 1.5;
+
+				drawTownName(mapTile.townType, rect);
+			}
 		}
 	}
 
@@ -355,7 +395,7 @@ void RbuttonDownCallbackNaricaMap(int x, int y, narciaMap_t *map) {
 	Coordinate_t tile;
 	if (screenPosToNarciaPos(map, x, y, &tile)) {
 		mapTile_t clickedTile = map->map[tile.y][tile.x];
-		if (clickedTile.townID != 0) {
+		if (clickedTile.townID != 0 && !coordinateEqual(tile, map->selected1) && !coordinateEqual(tile, map->selected2)) {
 			Coordinate_t center = getCenterOfTownTile(map, tile);
 			map->map[center.y][center.x].active = !map->map[center.y][center.x].active;
 		}

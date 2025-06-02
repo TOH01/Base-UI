@@ -34,10 +34,26 @@ MenuUi_Submenu_t *textDumpSubmenus[3];
 
 narciaMap_t *narciaMap;
 
-Coordinate_t testCoordinate[3] = {{44, 52}, {48, 13}, {12, 23}};
+inputWidget_t *inputX;
+inputWidget_t *inputY;
+
+Coordinate_t testCoordinate[3] = {{52, 44}, {48, 13}, {12, 23}};
 path_t testPath;
 
-void goButtonCallback(int id) { goToTile(narciaMap, 50, 50); }
+void goButtonCallback(int id) {
+
+	char *endX;
+	char *endY;
+
+	int x = (int)strtol(inputX->buffer, &endX, 10);
+	int y = (int)strtol(inputY->buffer, &endY, 10);
+
+	if (*endX == '\0' && *endY == '\0') {
+		if (x < narciaMap->mapSize && y < narciaMap->mapSize) {
+			goToTile(narciaMap, y, x);
+		}
+	}
+}
 
 void generatePath(int id) {
 	testPath.tiles = testCoordinate;
@@ -112,9 +128,17 @@ void Demo_InitAll(void) {
 		customTextDump_AddLine(textDumps[i], textDumpMenuButtonNames[i]);
 	}
 
-	inputWidget_t *inputX = customInput_initInput((CommonPos_t){0.2, 0.05, 0.35, 0.8});
-	inputWidget_t *inputY = customInput_initInput((CommonPos_t){0.2, 0.4, 0.7, 0.8});
+	inputX = customInput_initInput((CommonPos_t){0.2, 0.05, 0.35, 0.8});
+
+	strncpy(inputX->defaultText, "X", 2);
+
+	inputY = customInput_initInput((CommonPos_t){0.2, 0.4, 0.7, 0.8});
+
+	strncpy(inputY->defaultText, "Y", 2);
+
 	buttonWidget_t *goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
+
+	customButton_setButtonText(goButton, "GO");
 
 	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputX);
 	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputY);
