@@ -14,6 +14,8 @@ int dragStartMiddleY = 0;
 
 bool callbackInitialized = false;
 
+LARGE_INTEGER start, end, freq;
+
 POINT TileToScreenCenter(narciaMap_t *map, Coordinate_t tile) {
 	BaseWidget_t base = map->baseWidget;
 
@@ -228,11 +230,10 @@ void drawTownCoordinates(Coordinate_t coordinate, AbsolutePos_t rect) {
 void drawTownName(townType_t type, AbsolutePos_t rect) {
 	char text[3] = ""; // only "IC" and "LT" valid + string terminator
 
-	if(type == TOWN_TYPE_LARGE){
+	if (type == TOWN_TYPE_LARGE) {
 		strncpy(text, "LT", 2);
 		text[2] = '\0';
-	}
-	else if(type == TOWN_TYPE_IMPERIAL_CASTLE){
+	} else if (type == TOWN_TYPE_IMPERIAL_CASTLE) {
 		strncpy(text, "IC", 2);
 		text[2] = '\0';
 	}
@@ -299,15 +300,18 @@ static void drawNarciaMap(BaseWidget_t *base) {
 	int middleXMap = map->middleX;
 	int middleYMap = map->middleY;
 
+	HBRUSH fillBrush = CreateSolidBrush(RGB(115, 157, 47));
+	HBRUSH oldBrush = SelectObject(currentWindowState.memHDC, fillBrush);
+
 	for (int y = startY; y <= endY; y++) {
 		for (int x = startX; x <= endX; x++) {
 			mapTile_t mapTile = map->map[y][x];
 			if (mapTile.type != TILE_EMPTY)
 				continue;
 
-			COLORREF bgColor = RGB(115, 157, 47);
+			// currently deprecated, cannot select tiles until v2
 			if (coordinateEqual(map->selected1, (Coordinate_t){x, y}) || coordinateEqual(map->selected2, (Coordinate_t){x, y})) {
-				bgColor = RGB(255, 255, 255);
+
 			} else if ((x + y) % 2 == 0) {
 				continue;
 			}
@@ -321,9 +325,19 @@ static void drawNarciaMap(BaseWidget_t *base) {
 			rect.right = min(rect.right, right);
 			rect.bottom = min(rect.bottom, bottom);
 
-			UiUtils_DrawColoredRectangle(rect, bgColor, borderColor, 0);
+			RECT realRect = UiUtils_absolutePosToRect(rect);
+
+			QueryPerformanceCounter(&start);
+			FillRect(currentWindowState.memHDC, &realRect, fillBrush);
+			QueryPerformanceCounter(&end);
+
+			double elapsedSeconds = (double)(end.QuadPart - start.QuadPart) / freq.QuadPart;
+			printf("Elapsed time: %.6f seconds\n", elapsedSeconds);
 		}
 	}
+
+	SelectObject(currentWindowState.memHDC, oldBrush);
+	DeleteObject(fillBrush);
 
 	for (int y = startY; y <= endY; y++) {
 		for (int x = startX; x <= endX; x++) {
@@ -368,7 +382,7 @@ static void drawNarciaMap(BaseWidget_t *base) {
 
 				drawTownCoordinates(townCenter, rect);
 			}
-			if((mapTile.townType == TOWN_TYPE_IMPERIAL_CASTLE || mapTile.townType == TOWN_TYPE_LARGE) && mapTile.type == TILE_TOWN_BOTTOM){
+			if ((mapTile.townType == TOWN_TYPE_IMPERIAL_CASTLE || mapTile.townType == TOWN_TYPE_LARGE) && mapTile.type == TILE_TOWN_BOTTOM) {
 				rect.top = rect.bottom;
 				rect.bottom += map->tileSize * 1.5;
 				rect.left -= map->tileSize * 1.5;
@@ -640,6 +654,8 @@ void activateAllTiles(narciaMap_t *map) {
 
 narciaMap_t *initNarciaMap(CommonPos_t pos) {
 	narciaMap_t *narciaMap = (narciaMap_t *)calloc(1, sizeof(narciaMap_t));
+
+	QueryPerformanceFrequency(&freq);
 
 	narciaMap->baseWidget.initPos = pos;
 	narciaMap->baseWidget.drawHandler = &drawNarciaMap;
