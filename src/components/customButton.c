@@ -26,6 +26,11 @@ static void drawButton(BaseWidget_t *baseWidget) {
 
 static void onClickButton(BaseWidget_t *base, int x, int y, ClickType_t clickType) {
 	assert(base->type == WIDGET_TYPE_BUTTON);
+	
+	(void) x;
+	(void) y;
+	(void) clickType;
+
 	buttonWidget_t *button = (buttonWidget_t *)base;
 
 	if (button->onClickUserCallback != NULL) {
@@ -78,7 +83,11 @@ buttonWidget_t *customButton_initButton(CommonPos_t pos, void (*onClickUserCallb
 	return button;
 }
 
-void customButton_setButtonText(buttonWidget_t *button, const char name[BUTTON_MAX_NAME_LENGTH]) {
+void customButton_setButtonText(buttonWidget_t *button, const char *name) {
+	if (!name) {
+		button->name[0] = '\0';
+		return;
+	}
 	strncpy(button->name, name, BUTTON_MAX_NAME_LENGTH);
 	button->name[BUTTON_MAX_NAME_LENGTH - 1] = '\0';
 }

@@ -37,13 +37,12 @@ typedef struct submenuGroup {
 	int activeSubmenuID;
 } submenuGroup_t;
 
-MenuUi_Submenu_t * MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH], buttonWidget_t *button, submenuGroup_t *group);
-void MenuUi_InitBaseHandlers(void);
+MenuUi_Submenu_t * MenuUi_SubmenuInit(const char name[MENU_UI_MAX_NAME_LENGTH], buttonWidget_t *button, submenuGroup_t *group);
 void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, MenuUi_Submenu_t * submenu);
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, MenuUi_Submenu_t * submenu);
 void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, MenuUi_Submenu_t * submenu);
-MenuUi_Submenu_t *MenuUi_CallAllActiveHandlers(HWND hwnd, int id, WPARAM wparam, LPARAM lparam);
+void MenuUi_CallAllActiveHandlers(HWND hwnd, int id, WPARAM wparam, LPARAM lparam);
 container_t *MenuUi_SubmenuAddContainer(MenuUi_Submenu_t * submenu, containerPos_t pos);
 submenuGroup_t *initSubmenuGroup(void);
 

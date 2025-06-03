@@ -1,8 +1,6 @@
 #ifndef TITLEBAR_H
 #define TITLEBAR_H
 
-#define _WIN32_WINNT 0x0A00
-
 #include "common.h"
 #include <uxtheme.h>
 #include <vssym32.h>

@@ -25,13 +25,13 @@ BUILD_TYPE ?= debug
 # Flags per build type
 ifeq ($(BUILD_TYPE),release)
     CFLAGS = -O3 -march=native -flto -ffast-math -DNDEBUG \
-             -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components
+             -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components -D_WIN32_WINNT=0x0A00
     LDFLAGS = -lgdi32 -lcomdlg32 -mwindows -luser32 -luxtheme
 else
     # debug
     CFLAGS = -g -O0 -DDEBUG \
              -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components \
-             -Wall -Wextra -Werror -Wstrict-prototypes
+             -Wall -Wextra -Werror -Wstrict-prototypes -D_WIN32_WINNT=0x0A00
     LDFLAGS = -lgdi32 -lcomdlg32 -mconsole -luser32 -luxtheme
 endif
 

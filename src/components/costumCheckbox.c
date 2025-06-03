@@ -56,6 +56,9 @@ static void onHoverEndCheckbox(BaseWidget_t *base) {
 static void onClickCheckbox(BaseWidget_t *baseWidget, int x, int y, ClickType_t clickType) {
 	assert(baseWidget->type == WIDGET_TYPE_CHECKBOX);
 	checkboxWidget_t *checkbox = (checkboxWidget_t *)baseWidget;
+	(void) x;
+	(void) y;
+	(void) clickType;
 	*(checkbox->value) = !*(checkbox->value);
 }
 
@@ -74,4 +77,6 @@ checkboxWidget_t *customCheckbox_initCheckbox(CommonPos_t pos, bool *value) {
 	checkbox->theme = &currentWindowState.activeTheme.checkbox;
 
 	checkbox->value = value;
+
+	return checkbox;
 }

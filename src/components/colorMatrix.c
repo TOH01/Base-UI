@@ -38,6 +38,10 @@ static void drawColorMatrix(BaseWidget_t * base){
 
 static void onColorMatrixClick(BaseWidget_t * base, int x, int y, ClickType_t clickType){
     colorMatrix_t * colorMatrix = (colorMatrix_t *) base;
+    (void) colorMatrix;
+    (void) x;
+    (void) y;
+    (void) clickType;
 }
 
 colorMatrix_t * initColorMatrix(CommonPos_t pos, int width, int height){

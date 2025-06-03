@@ -1,5 +1,3 @@
-#define _WIN32_WINNT 0x0A00
-
 #include "coreWndProc.h"
 #include "Common.h"
 #include "WmParamHashTable.h"

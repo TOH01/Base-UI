@@ -21,7 +21,7 @@ typedef struct Drawable {
 			rectangleTheme_t * theme;
 		} rectangle;
 		struct {
-			char * text;
+			const char * text;
 			labelTheme_t * theme;
 		} label;
 		struct {
@@ -34,8 +34,8 @@ typedef struct Drawable {
 void drawable_drawAll(DynamicArray_t * array);
 void addDrawable(DynamicArray_t * array, Drawable_t *drawable);
 Drawable_t *drawable_initRectangle(CommonPos_t pos, rectangleTheme_t * theme);
-Drawable_t *drawable_initLabel(CommonPos_t pos, char * text, labelTheme_t * theme);
+Drawable_t *drawable_initLabel(CommonPos_t pos, const char * text, labelTheme_t * theme);
 Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t * theme);
-void drawable_updatePosToContainerList(AbsolutePos_t containerPos, DynamicArray_t * array);
+void drawable_updatePosToContainerList(DynamicArray_t * array);
 
 #endif

@@ -41,6 +41,7 @@ Coordinate_t testCoordinate[3] = {{56, 41}, {48, 13}, {12, 23}};
 path_t testPath;
 
 void goButtonCallback(int id) {
+	(void)id;
 
 	char *endX;
 	char *endY;
@@ -56,7 +57,10 @@ void goButtonCallback(int id) {
 }
 
 void generatePath(int id) {
-	
+	(void)id;
+
+
+
 	printf("Calling findShortestPath with map=%p start=(%d,%d) end=(%d,%d)\n", (void *)narciaMap, narciaMap->selected1.x, narciaMap->selected1.y, narciaMap->selected2.x, narciaMap->selected2.y);
 
 	path_t *path = findShortestPath(narciaMap, narciaMap->selected1, narciaMap->selected2);

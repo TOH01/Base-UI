@@ -16,6 +16,6 @@ typedef struct ButtonWidget {
 } buttonWidget_t;
 
 buttonWidget_t *customButton_initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id);
-void customButton_setButtonText(buttonWidget_t *button, const char name[BUTTON_MAX_NAME_LENGTH]);
+void customButton_setButtonText(buttonWidget_t *button, const char *name);
 
 #endif

@@ -102,16 +102,16 @@ void MenuUi_SubmenuSwap(int menuId) {
 	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
-MenuUi_Submenu_t *MenuUi_CallAllActiveHandlers(HWND hwnd, int msg, WPARAM wparam, LPARAM lparam) {
+void MenuUi_CallAllActiveHandlers(HWND hwnd, int msg, WPARAM wparam, LPARAM lparam) {
 
 	if (submenuGroups != NULL) {
-		for (size_t i = 0; i < submenuGroups->size; i++) {
+		for (int i = 0; i < submenuGroups->size; i++) {
 			WmParamHandlerTable_CallHandlersOfId(getActiveFromGroup(i)->WmParamHashTable, hwnd, msg, wparam, lparam);
 		}
 	}
 }
 
-MenuUi_Submenu_t * MenuUi_SubmenuInit(char name[MENU_UI_MAX_NAME_LENGTH], buttonWidget_t *button, submenuGroup_t *group) {
+MenuUi_Submenu_t * MenuUi_SubmenuInit(const char name[MENU_UI_MAX_NAME_LENGTH], buttonWidget_t *button, submenuGroup_t *group) {
 
 	if (group->submenus->size >= MENU_UI_SUBMENU_MAX) {
 		return NULL;
@@ -141,7 +141,7 @@ void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		return;
 	}
 	
-	for (size_t i = 0; i < submenuGroups->size; i++) {
+	for (int i = 0; i < submenuGroups->size; i++) {
 		if (getActiveFromGroup(i)->WmParamHashTable != NULL) {
 
 			if (WmParamHandlerTable_IdHasHandler(getActiveFromGroup(i)->WmParamHashTable, msg)) {

@@ -66,9 +66,13 @@ static void onHoverEndInput(BaseWidget_t *base) {
 
 static LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
+	(void)hwnd;
+	(void)msg;
+	(void)lParam;
+
 	if (activeInput) {
 
-	int buffLen = strlen(activeInput->buffer);
+		int buffLen = strlen(activeInput->buffer);
 
 		if (wParam == VK_ESCAPE) {
 			activeInput = NULL;
@@ -93,11 +97,16 @@ static LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 		// trigger redraw to show new letters
 		InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 	}
+
+	return 0;
 }
 
 static void onClickInput(BaseWidget_t *baseWidget, int x, int y, ClickType_t clickType) {
 	assert(baseWidget->type == WIDGET_TYPE_INPUT);
 	inputWidget_t *input = (inputWidget_t *)baseWidget;
+	(void)x;
+	(void)y;
+	(void)clickType;
 	activeInput = input;
 }
 

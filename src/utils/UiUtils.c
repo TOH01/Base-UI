@@ -60,7 +60,7 @@ void UiUtils_DrawLineRelativeTheme(AbsolutePos_t pos, COLORREF color, int width)
 	DeleteObject(pen);
 }
 
-void UiUtils_DrawTextTheme(AbsolutePos_t pos, char *name, UINT format, HFONT font, COLORREF color) {
+void UiUtils_DrawTextTheme(AbsolutePos_t pos, const char *name, UINT format, HFONT font, COLORREF color) {
 
 	SetTextColor(currentWindowState.memHDC, color);
 	SetBkMode(currentWindowState.memHDC, TRANSPARENT);
@@ -95,7 +95,7 @@ int UiUtils_getLineHeight(HFONT font) {
 	return tm.tmHeight;
 }
 
-bool UiUtils_TextFitsBoxTheme(char text[], AbsolutePos_t pos, HFONT font) {
+bool UiUtils_TextFitsBoxTheme(const char text[], AbsolutePos_t pos, HFONT font) {
 	SIZE textSize;
 
 	HDC hdc = currentWindowState.memHDC;

@@ -24,8 +24,8 @@ UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth,
 void UiUtils_FillRectangleRelative(AbsolutePos_t);
 void UiUtils_DrawText(AbsolutePos_t pos, char *name, UINT format);
 HFONT UiUtils_CreateFont(void);
-void UiUtils_DrawTextTheme(AbsolutePos_t pos, char *name, UINT format, HFONT font, COLORREF color);
-bool UiUtils_TextFitsBoxTheme(char text[], AbsolutePos_t pos, HFONT font);
+void UiUtils_DrawTextTheme(AbsolutePos_t pos, const char *name, UINT format, HFONT font, COLORREF color);
+bool UiUtils_TextFitsBoxTheme(const char text[], AbsolutePos_t pos, HFONT font);
 void UiUtils_DrawColoredRectangle(AbsolutePos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize);
 int UiUtils_getLineHeight(HFONT font);
 AbsolutePos_t getPosToContainer(const AbsolutePos_t* parentAbsPos, CommonPos_t widgetRelPos);
