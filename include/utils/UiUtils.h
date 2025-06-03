@@ -29,9 +29,10 @@ bool UiUtils_TextFitsBoxTheme(char text[], AbsolutePos_t pos, HFONT font);
 void UiUtils_DrawColoredRectangle(AbsolutePos_t pos, COLORREF colorBG, COLORREF colorBorder, int BorderSize);
 int UiUtils_getLineHeight(HFONT font);
 AbsolutePos_t getPosToContainer(const AbsolutePos_t* parentAbsPos, CommonPos_t widgetRelPos);
-void UiUtils_DrawLineRelative(AbsolutePos_t pos, COLORREF color, int width);
+void UiUtils_DrawLineRelativeTheme(AbsolutePos_t pos, COLORREF color, int width);
 RECT UiUtils_absolutePosToRect(AbsolutePos_t pos);
 bool UiUtils_WidgetFitsInContainer(AbsolutePos_t widget, AbsolutePos_t container);
-void DrawFittingText(HDC hdc, char text[], RECT box);
+HFONT getFontForRect(HDC hdc, char text[], RECT box);
+void UiUtils_DrawLineRelative(AbsolutePos_t pos);
 
 #endif

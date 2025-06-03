@@ -18,6 +18,17 @@ static HBRUSH checkerBrush = NULL;
 static HBITMAP checkerBitmap = NULL;
 static int lastTileSize = -1;
 
+HFONT cachedFontCoordinates = NULL;
+HFONT cachedFontTownName = NULL;
+char maxTextForCachedFontCoordinates[11] = "(XXX, XXX)";
+char maxTextForCachedFontName[3] = "XX";
+
+HPEN selectedTownPen = NULL;
+HPEN excludedTownPen = NULL;
+HPEN largeTownPen = NULL;
+HPEN smallTownPen = NULL;
+HPEN imperialCastlePen = NULL;
+
 POINT TileToScreenCenter(narciaMap_t *map, Coordinate_t tile) {
 	BaseWidget_t base = map->baseWidget;
 
@@ -111,7 +122,7 @@ static void drawPathOnMap(narciaMap_t *map, COLORREF color, Coordinate_t *path, 
 		POINT fromPoint = TileToScreenCenter(map, from);
 		POINT toPoint = TileToScreenCenter(map, to);
 
-		UiUtils_DrawLineRelative((AbsolutePos_t){.left = fromPoint.x, .top = fromPoint.y, .right = toPoint.x, .bottom = toPoint.y}, color, 4);
+		UiUtils_DrawLineRelativeTheme((AbsolutePos_t){.left = fromPoint.x, .top = fromPoint.y, .right = toPoint.x, .bottom = toPoint.y}, color, 4);
 	}
 }
 
@@ -156,59 +167,58 @@ Coordinate_t getCenterOfTownTile(narciaMap_t *map, Coordinate_t townTile) {
 	return center;
 }
 
-static COLORREF TileTypeToColor(mapTile_t mapTile) {
+static HPEN TileTypeToColor(mapTile_t mapTile) {
 	switch (mapTile.townType) {
 	case TOWN_TYPE_LARGE:
-		return RGB(123, 77, 247);
+		return largeTownPen;
 	case TOWN_TYPE_IMPERIAL_CASTLE:
-		return RGB(181, 20, 247);
+		return imperialCastlePen;
 	case TOWN_TYPE_SMALL:
-		return RGB(148, 89, 247);
+		return smallTownPen;
 	default:
-		return RGB(100, 100, 100);
+		NULL;
 	}
 }
 
 bool adjacentToTown(Coordinate_t townCenter, Coordinate_t tile) { return (abs(townCenter.x - tile.x) <= 2) && (abs(townCenter.y - tile.y) <= 2); }
 
-static void drawTown(AbsolutePos_t pos, mapTile_t mapTile, COLORREF color) {
-	int borderWidth = 3;
+static void drawTown(AbsolutePos_t pos, mapTile_t mapTile) {
 
 	switch (mapTile.type) {
 	case TILE_TOWN_TOP:
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top});
 		break;
 
 	case TILE_TOWN_BOTTOM:
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom});
 		break;
 
 	case TILE_TOWN_LEFT:
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom});
 		break;
 
 	case TILE_TOWN_RIGHT:
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom});
 		break;
 
 	case TILE_TOWN_TOP_LEFT:
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top}, color, borderWidth);
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top});
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom});
 		break;
 
 	case TILE_TOWN_TOP_RIGHT:
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top}, color, borderWidth);
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.right, pos.top});
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom});
 		break;
 
 	case TILE_TOWN_BOTTOM_LEFT:
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom}, color, borderWidth);
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom});
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.left, pos.left, pos.bottom});
 		break;
 
 	case TILE_TOWN_BOTTOM_RIGHT:
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom}, color, borderWidth);
-		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom}, color, borderWidth);
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.bottom, pos.left, pos.right, pos.bottom});
+		UiUtils_DrawLineRelative((AbsolutePos_t){pos.top, pos.right, pos.right, pos.bottom});
 		break;
 
 	case TILE_TOWN_CENTER:
@@ -222,14 +232,14 @@ static void drawTown(AbsolutePos_t pos, mapTile_t mapTile, COLORREF color) {
 
 bool coordinateEqual(Coordinate_t c1, Coordinate_t c2) { return (c1.x == c2.x && c1.y == c2.y); }
 
-void drawTownCoordinates(Coordinate_t coordinate, AbsolutePos_t rect) {
+void drawTownCoordinates(Coordinate_t coordinate, AbsolutePos_t rect, HFONT font) {
 	char text[11]; // (XXX, XXX) + string terminator
 	snprintf(text, 11, "(%d, %d)", coordinate.y, coordinate.x);
 
-	DrawFittingText(currentWindowState.memHDC, text, UiUtils_absolutePosToRect(rect));
+	UiUtils_DrawText(rect, text, DT_CENTER | DT_VCENTER | DT_NOCLIP);
 }
 
-void drawTownName(townType_t type, AbsolutePos_t rect) {
+void drawTownName(townType_t type, AbsolutePos_t rect, HFONT font) {
 	char text[3] = ""; // only "IC" and "LT" valid + string terminator
 
 	if (type == TOWN_TYPE_LARGE) {
@@ -240,7 +250,7 @@ void drawTownName(townType_t type, AbsolutePos_t rect) {
 		text[2] = '\0';
 	}
 
-	DrawFittingText(currentWindowState.memHDC, text, UiUtils_absolutePosToRect(rect));
+	UiUtils_DrawText(rect, text, DT_CENTER | DT_VCENTER | DT_NOCLIP);
 }
 
 static void drawNarciaMap(BaseWidget_t *base) {
@@ -338,40 +348,14 @@ static void drawNarciaMap(BaseWidget_t *base) {
 	FillRect(currentWindowState.memHDC, &backgroundRect, checkerBrush);
 	SelectObject(currentWindowState.memHDC, oldBrush);
 
-	/*
-	for (int y = startY; y <= endY; y++) {
-	    for (int x = startX; x <= endX; x++) {
-	        mapTile_t mapTile = map->map[y][x];
-	        if (mapTile.type != TILE_EMPTY)
-	            continue;
+	cachedFontCoordinates = NULL;
+	cachedFontTownName = NULL;
 
-	        // currently deprecated, cannot select tiles until v2
-	        if (coordinateEqual(map->selected1, (Coordinate_t){x, y}) || coordinateEqual(map->selected2, (Coordinate_t){x, y})) {
+	SetTextColor(currentWindowState.memHDC, RGB(0, 0, 0));
+	SetBkMode(currentWindowState.memHDC, TRANSPARENT);
 
-	        } else if ((x + y) % 2 == 0) {
-	            continue;
-	        }
-
-	        AbsolutePos_t rect = TileToScreenRect(map, x, y);
-	        if (rect.right <= left || rect.left >= right || rect.bottom <= top || rect.top >= bottom)
-	            continue;
-
-	        rect.left = max(rect.left, left);
-	        rect.top = max(rect.top, top);
-	        rect.right = min(rect.right, right);
-	        rect.bottom = min(rect.bottom, bottom);
-
-	        RECT realRect = UiUtils_absolutePosToRect(rect);
-
-	        QueryPerformanceCounter(&start);
-	        FillRect(currentWindowState.memHDC, &realRect, fillBrush);
-	        QueryPerformanceCounter(&end);
-
-	        double elapsedSeconds = (double)(end.QuadPart - start.QuadPart) / freq.QuadPart;
-	        printf("Elapsed time: %.6f seconds\n", elapsedSeconds);
-	    }
-	}
-	    */
+	bool selected1Valid = (map->selected1.x >= 0 && map->selected1.y >= 0);
+	bool selected2Valid = (map->selected2.x >= 0 && map->selected2.y >= 0);
 
 	for (int y = startY; y <= endY; y++) {
 		for (int x = startX; x <= endX; x++) {
@@ -389,8 +373,6 @@ static void drawNarciaMap(BaseWidget_t *base) {
 			rect.bottom = min(rect.bottom, bottom);
 
 			bool selected = false;
-			bool selected1Valid = (map->selected1.x >= 0 && map->selected1.y >= 0);
-			bool selected2Valid = (map->selected2.x >= 0 && map->selected2.y >= 0);
 
 			if (selected1Valid && mapTile.townID == map->map[map->selected1.y][map->selected1.x].townID)
 				selected = true;
@@ -401,11 +383,17 @@ static void drawNarciaMap(BaseWidget_t *base) {
 			bool disabled = !map->map[townCenter.y][townCenter.x].active;
 
 			if (disabled) {
-				drawTown(rect, mapTile, RGB(184, 184, 184));
+				HPEN oldPen = SelectObject(currentWindowState.memHDC, excludedTownPen);
+				drawTown(rect, mapTile);
+				SelectObject(currentWindowState.memHDC, oldPen);
 			} else if (selected) {
-				drawTown(rect, mapTile, RGB(255, 255, 255));
+				HPEN oldPen = SelectObject(currentWindowState.memHDC, selectedTownPen);
+				drawTown(rect, mapTile);
+				SelectObject(currentWindowState.memHDC, oldPen);
 			} else {
-				drawTown(rect, mapTile, TileTypeToColor(mapTile));
+				HPEN oldPen = SelectObject(currentWindowState.memHDC, TileTypeToColor(mapTile));
+				drawTown(rect, mapTile);
+				SelectObject(currentWindowState.memHDC, oldPen);
 			}
 
 			if (mapTile.type == TILE_TOWN_TOP_LEFT) {
@@ -414,7 +402,15 @@ static void drawNarciaMap(BaseWidget_t *base) {
 				rect.right += map->tileSize * 2.5;
 				rect.left -= map->tileSize / 2;
 
-				drawTownCoordinates(townCenter, rect);
+				if (!cachedFontCoordinates) {
+					cachedFontCoordinates = getFontForRect(currentWindowState.memHDC, maxTextForCachedFontCoordinates, UiUtils_absolutePosToRect(rect));
+				}
+
+				HFONT oldFont = SelectObject(currentWindowState.memHDC, cachedFontCoordinates);
+
+				drawTownCoordinates(townCenter, rect, cachedFontCoordinates);
+
+				SelectObject(currentWindowState.memHDC, oldFont);
 			}
 			if ((mapTile.townType == TOWN_TYPE_IMPERIAL_CASTLE || mapTile.townType == TOWN_TYPE_LARGE) && mapTile.type == TILE_TOWN_BOTTOM) {
 				rect.top = rect.bottom;
@@ -422,7 +418,15 @@ static void drawNarciaMap(BaseWidget_t *base) {
 				rect.left -= map->tileSize * 1.5;
 				rect.right += map->tileSize * 1.5;
 
-				drawTownName(mapTile.townType, rect);
+				if (!cachedFontTownName) {
+					cachedFontTownName = getFontForRect(currentWindowState.memHDC, maxTextForCachedFontName, UiUtils_absolutePosToRect(rect));
+				}
+
+				HFONT oldFont = SelectObject(currentWindowState.memHDC, cachedFontTownName);
+
+				drawTownName(mapTile.townType, rect, cachedFontTownName);
+
+				SelectObject(currentWindowState.memHDC, oldFont);
 			}
 		}
 	}
@@ -697,7 +701,7 @@ narciaMap_t *initNarciaMap(CommonPos_t pos) {
 	narciaMap->tileSize = 20;
 	narciaMap->mapSize = 180;
 	narciaMap->zoomStep = 1;
-	narciaMap->maxTileSize = 40;
+	narciaMap->maxTileSize = 35;
 	narciaMap->minTileSize = 10;
 
 	narciaMap->selected1 = (Coordinate_t){-1, -1};
@@ -716,6 +720,14 @@ narciaMap_t *initNarciaMap(CommonPos_t pos) {
 	activateAllTiles(narciaMap);
 
 	narciaMap->paths = DynamicArray_init(10);
+
+	if (!selectedTownPen) {
+		selectedTownPen = CreatePen(PS_SOLID, 3, RGB(255, 255, 255));
+		excludedTownPen = CreatePen(PS_SOLID, 3, RGB(184, 184, 184));
+		largeTownPen = CreatePen(PS_SOLID, 3, RGB(123, 77, 247));
+		smallTownPen = CreatePen(PS_SOLID, 3, RGB(148, 89, 247));
+		imperialCastlePen = CreatePen(PS_SOLID, 3, RGB(181, 20, 247));
+	}
 
 	return narciaMap;
 }

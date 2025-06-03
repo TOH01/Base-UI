@@ -43,14 +43,18 @@ void UiUtils_DrawText(AbsolutePos_t pos, char *name, UINT format) {
 	DrawText(currentWindowState.memHDC, name, -1, &textRect, format);
 }
 
-void UiUtils_DrawLineRelative(AbsolutePos_t pos, COLORREF color, int width) {
-	HPEN pen = CreatePen(PS_SOLID, width, color);
-	HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
-
+void UiUtils_DrawLineRelative(AbsolutePos_t pos) {
 	RECT r = UiUtils_absolutePosToRect(pos);
 
 	MoveToEx(currentWindowState.memHDC, r.left, r.top, NULL);
 	LineTo(currentWindowState.memHDC, r.right, r.bottom);
+}
+
+void UiUtils_DrawLineRelativeTheme(AbsolutePos_t pos, COLORREF color, int width) {
+	HPEN pen = CreatePen(PS_SOLID, width, color);
+	HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
+
+	UiUtils_DrawLineRelative(pos);
 
 	SelectObject(currentWindowState.memHDC, oldPen);
 	DeleteObject(pen);
@@ -164,46 +168,37 @@ AbsolutePos_t getPosToContainer(const AbsolutePos_t *parentAbsPos, CommonPos_t w
 
 bool UiUtils_WidgetFitsInContainer(AbsolutePos_t widget, AbsolutePos_t container) { return widget.left >= container.left && widget.top >= container.top && widget.right <= container.right && widget.bottom <= container.bottom; }
 
-void DrawFittingText(HDC hdc, char text[], RECT box) {
-    int boxWidth = box.right - box.left;
-    int boxHeight = box.bottom - box.top;
+HFONT getFontForRect(HDC hdc, char text[], RECT box) {
+	int boxWidth = box.right - box.left;
+	int boxHeight = box.bottom - box.top;
 
-    int fontSize = boxHeight;
-    HFONT hFont = NULL;
-    SIZE size;
+	int fontSize = boxHeight;
+	HFONT hFont = NULL;
+	SIZE size;
 
-    // Binary search for best font size
-    int minSize = 4, maxSize = boxHeight;
-    while (minSize <= maxSize) {
-        fontSize = (minSize + maxSize) / 2;
+	// Binary search for best font size
+	int minSize = 4, maxSize = boxHeight;
+	while (minSize <= maxSize) {
+		fontSize = (minSize + maxSize) / 2;
 
-        if (hFont) DeleteObject(hFont);
-        hFont = CreateFontA(-fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-                            DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                            DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
+		if (hFont)
+			DeleteObject(hFont);
+		hFont = CreateFontA(-fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
 
-        HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
-        GetTextExtentPoint32A(hdc, text, strlen(text), &size);
-        SelectObject(hdc, oldFont);
+		HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
+		GetTextExtentPoint32A(hdc, text, strlen(text), &size);
+		SelectObject(hdc, oldFont);
 
-        if (size.cx > boxWidth || size.cy > boxHeight)
-            maxSize = fontSize - 1;
-        else
-            minSize = fontSize + 1;
-    }
+		if (size.cx > boxWidth || size.cy > boxHeight)
+			maxSize = fontSize - 1;
+		else
+			minSize = fontSize + 1;
+	}
 
-    // Use the best fitting font size found
-    if (hFont) DeleteObject(hFont);
-    hFont = CreateFontA(-maxSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-                        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
+	// Use the best fitting font size found
+	if (hFont)
+		DeleteObject(hFont);
+	hFont = CreateFontA(-maxSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
 
-    HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
-    SetBkMode(hdc, TRANSPARENT);
-    SetTextColor(hdc, RGB(0, 0, 0));
-
-    DrawTextA(hdc, text, -1, &box, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-    SelectObject(hdc, oldFont);
-    DeleteObject(hFont);
+	return hFont;
 }

@@ -49,7 +49,7 @@ void drawable_draw(Drawable_t *drawable) {
 
 		lineTheme_t *theme = drawable->line.theme;
 
-		UiUtils_DrawLineRelative(drawable->pos, theme->color.fill, theme->width);
+		UiUtils_DrawLineRelativeTheme(drawable->pos, theme->color.fill, theme->width);
 
 		break;
 	case DRAWABLE_RECTANGLE:
