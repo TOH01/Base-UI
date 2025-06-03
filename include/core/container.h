@@ -64,7 +64,7 @@ container_t *initContainer(containerPos_t pos);
 void containerAddWidget(container_t *container, BaseWidget_t *widget);
 container_t *windowAddContainer(AbsolutePos_t pos);
 void containerAddDrawable(container_t * container, Drawable_t * drawable);
-void initRootContainer();
+void initRootContainer(void);
 void rootContainerAddDrawable(Drawable_t *drawable);
 void rootContainerAddWidget(BaseWidget_t *widget);
 void setContainerFixed(container_t * container);

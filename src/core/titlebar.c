@@ -213,7 +213,7 @@ LRESULT Titlebar_MouseLeaveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	InvalidateRect(hwnd, NULL, FALSE);
 }
 
-void initTitlebar() {
+void initTitlebar(void) {
 	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &Titlebar_WmMouseMove);
 	WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_NCMOUSELEAVE, &Titlebar_MouseLeaveCallback);
 }

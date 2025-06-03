@@ -24,7 +24,7 @@ int getTitleBarHeight(HWND handle);
 LRESULT Titlebar_WmNCLButtonDown(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT MenuUi_WmNCLButtonUp(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT Titlebar_WmNCMouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-void initTitlebar();
+void initTitlebar(void);
 
 #endif
 

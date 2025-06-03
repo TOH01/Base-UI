@@ -15,7 +15,7 @@ MenuUi_Submenu_t *getActiveFromGroup(int groupID) {
 	return submenu;
 }
 
-submenuGroup_t *initSubmenuGroup() {
+submenuGroup_t *initSubmenuGroup(void) {
 	submenuGroup_t *group = (submenuGroup_t *)calloc(1, sizeof(submenuGroup_t));
 
 	if (submenuGroups == NULL) {

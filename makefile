@@ -30,7 +30,8 @@ ifeq ($(BUILD_TYPE),release)
 else
     # debug
     CFLAGS = -g -O0 -DDEBUG \
-             -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components
+             -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components \
+             -Wall -Wextra -Werror -Wstrict-prototypes
     LDFLAGS = -lgdi32 -lcomdlg32 -mconsole -luser32 -luxtheme
 endif
 

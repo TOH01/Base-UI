@@ -39,3 +39,16 @@ void DynamicArray_Swap(DynamicArray_t * array, int idx1, int idx2){
 	DynamicArray_Insert(array, DynamicArray_get(array, idx1), idx2);
 	DynamicArray_Insert(array, temp, idx1);
 }
+
+void DynamicArray_Free(DynamicArray_t *array) {
+    if (!array || !array->items) return;
+
+    for (int i = 0; i < array->size; ++i) {
+        free(array->items[i]); 
+    }
+
+    free(array->items);  
+    array->items = NULL;
+    array->size = 0;
+    array->capacity = 0;
+}

@@ -400,7 +400,7 @@ container_t *windowAddContainer(AbsolutePos_t pos) {
 	return container;
 }
 
-void initRootContainer() {
+void initRootContainer(void) {
 
 	AbsolutePos_t rootPos = {0, 0, currentWindowState.width, currentWindowState.height};
 

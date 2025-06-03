@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "widget.h"
+#include <stdint.h>
 
 #define MAX_MAP_SIZE 200 // with 2 current narcia gamemodes, max map is 200 big
 
@@ -81,5 +82,18 @@ static const int narciaWarEraLargeTowns_count = 7;
 static const int narciaWarEraImperalCastle_count = 1;
 
 void goToTile(narciaMap_t * narciaMap, int x, int y);
+path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end);
+
+#define MAX_TOWN_COUNT 1024
+#define MAX_DISTANCE 40.0f
+#define INF_TIME 99999999
+
+typedef struct TownNode {
+	Coordinate_t coord;
+	float time;
+	int previousIndex; // index into town array
+	bool visited;
+} TownNode;
+
 
 #endif

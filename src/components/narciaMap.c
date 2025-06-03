@@ -234,7 +234,7 @@ bool coordinateEqual(Coordinate_t c1, Coordinate_t c2) { return (c1.x == c2.x &&
 
 void drawTownCoordinates(Coordinate_t coordinate, AbsolutePos_t rect, HFONT font) {
 	char text[11]; // (XXX, XXX) + string terminator
-	snprintf(text, 11, "(%d, %d)", coordinate.y, coordinate.x);
+	snprintf(text, 11, "(%d, %d)", coordinate.x, coordinate.y);
 
 	UiUtils_DrawText(rect, text, DT_CENTER | DT_VCENTER | DT_NOCLIP);
 }
@@ -621,8 +621,8 @@ void PopulateMapWithTowns(narciaMap_t *map, Coordinate_t *coords, int coordCount
 
 	for (int i = 0; i < coordCount; i++) {
 
-		int townX = coords[i].y;
-		int townY = coords[i].x;
+		int townX = coords[i].x;
+		int townY = coords[i].y;
 
 		if (insideofMap(map, townX - 1, townY - 1)) {
 			map->map[townY - 1][townX - 1].type = TILE_TOWN_TOP_LEFT;
@@ -733,3 +733,127 @@ narciaMap_t *initNarciaMap(CommonPos_t pos) {
 }
 
 void narciaMapAddPath(narciaMap_t *map, path_t *path) { DynamicArray_Add(map->paths, path); }
+
+int getDistance(Coordinate_t c1, Coordinate_t c2) {
+	int dx = c2.x - c1.x;
+	int dy = c2.y - c1.y;
+	return sqrtf((float)(dx * dx + dy * dy));
+}
+
+int getTimeForDistance(float distance) { return (uint32_t)(0.77 * pow(distance, 1.8)); }
+
+int getWaterForDistance(float distance) { return (uint32_t)(60.0 * pow(distance, 1.75)); }
+
+DynamicArray_t *getAllActiveTown(narciaMap_t *map) {
+
+	DynamicArray_t *array = DynamicArray_init(narciaWarEraTowns_count + narciaWarEraLargeTowns_count + narciaWarEraImperalCastle_count);
+
+	for (size_t y = 0; y < map->mapSize; y++) {
+		for (size_t x = 0; x < map->mapSize; x++) {
+			if (map->map[y][x].type == TILE_TOWN_CENTER && map->map[y][x].active) {
+				Coordinate_t *coordinate = (Coordinate_t *)malloc(sizeof(Coordinate_t));
+				coordinate->y = y;
+				coordinate->x = x;
+				DynamicArray_Add(array, coordinate);
+			}
+		}
+	}
+}
+
+path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end) {
+	printf("Inside findShortestPath, map=%p start=(%d,%d) end=(%d,%d)\n", (void *)map, start.x, start.y, end.x, end.y);
+	DynamicArray_t *allTowns = getAllActiveTown(map);
+	int townCount = allTowns->size;
+	if (townCount > MAX_TOWN_COUNT)
+		return NULL;
+
+	// Build lookup table: reachable neighbors
+	float graph[MAX_TOWN_COUNT][MAX_TOWN_COUNT];
+	for (int i = 0; i < townCount; i++) {
+		for (int j = 0; j < townCount; j++) {
+			if (i == j) {
+				graph[i][j] = 0;
+				continue;
+			}
+			Coordinate_t *a = (Coordinate_t *)allTowns->items[i];
+			Coordinate_t *b = (Coordinate_t *)allTowns->items[j];
+			float dist = getDistance(*a, *b);
+			graph[i][j] = (dist < MAX_DISTANCE) ? (float)getTimeForDistance(dist) : INF_TIME;
+		}
+	}
+
+	// Find indices of start and end
+	int startIndex = -1, endIndex = -1;
+	for (int i = 0; i < townCount; i++) {
+		Coordinate_t *t = (Coordinate_t *)allTowns->items[i];
+		if (t->x == start.x && t->y == start.y)
+			startIndex = i;
+		if (t->x == end.x && t->y == end.y)
+			endIndex = i;
+	}
+	if (startIndex == -1 || endIndex == -1)
+		return NULL;
+
+	// Initialize Dijkstra nodes
+	TownNode nodes[MAX_TOWN_COUNT];
+	for (int i = 0; i < townCount; i++) {
+		nodes[i].coord = *(Coordinate_t *)allTowns->items[i];
+		nodes[i].time = INF_TIME;
+		nodes[i].previousIndex = -1;
+		nodes[i].visited = false;
+	}
+	nodes[startIndex].time = 0;
+
+	// Dijkstra's algorithm
+	for (int count = 0; count < townCount; count++) {
+		// Find unvisited node with smallest time
+		int u = -1;
+		float minTime = INF_TIME;
+		for (int i = 0; i < townCount; i++) {
+			if (!nodes[i].visited && nodes[i].time < minTime) {
+				minTime = nodes[i].time;
+				u = i;
+			}
+		}
+		if (u == -1)
+			break;
+		nodes[u].visited = true;
+
+		for (int v = 0; v < townCount; v++) {
+			if (!nodes[v].visited && graph[u][v] < INF_TIME) {
+				float alt = nodes[u].time + graph[u][v];
+				if (alt < nodes[v].time) {
+					nodes[v].time = alt;
+					nodes[v].previousIndex = u;
+				}
+			}
+		}
+	}
+
+	// Reconstruct path
+	if (nodes[endIndex].previousIndex == -1)
+		return NULL; // No path
+
+	int pathSize = 0;
+	int tempIndex = endIndex;
+	while (tempIndex != -1) {
+		pathSize++;
+		tempIndex = nodes[tempIndex].previousIndex;
+	}
+
+	Coordinate_t *tileList = malloc(sizeof(Coordinate_t) * pathSize);
+	int index = pathSize - 1;
+	tempIndex = endIndex;
+	while (tempIndex != -1) {
+		tileList[index--] = nodes[tempIndex].coord;
+		tempIndex = nodes[tempIndex].previousIndex;
+	}
+
+	path_t *path = malloc(sizeof(path_t));
+	path->tiles = tileList;
+	path->tileCount = pathSize;
+	path->color = RGB(255, 255, 0); // Example path color
+
+	DynamicArray_Free(allTowns);
+	return path;
+}

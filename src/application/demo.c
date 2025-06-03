@@ -37,7 +37,7 @@ narciaMap_t *narciaMap;
 inputWidget_t *inputX;
 inputWidget_t *inputY;
 
-Coordinate_t testCoordinate[3] = {{52, 44}, {48, 13}, {12, 23}};
+Coordinate_t testCoordinate[3] = {{56, 41}, {48, 13}, {12, 23}};
 path_t testPath;
 
 void goButtonCallback(int id) {
@@ -50,17 +50,18 @@ void goButtonCallback(int id) {
 
 	if (*endX == '\0' && *endY == '\0') {
 		if (x < narciaMap->mapSize && y < narciaMap->mapSize) {
-			goToTile(narciaMap, y, x);
+			goToTile(narciaMap, x, y);
 		}
 	}
 }
 
 void generatePath(int id) {
-	testPath.tiles = testCoordinate;
-	testPath.color = RGB(255, 255, 255);
-	testPath.tileCount = 3;
+	
+	printf("Calling findShortestPath with map=%p start=(%d,%d) end=(%d,%d)\n", (void *)narciaMap, narciaMap->selected1.x, narciaMap->selected1.y, narciaMap->selected2.x, narciaMap->selected2.y);
 
-	DynamicArray_Add(narciaMap->paths, &testPath);
+	path_t *path = findShortestPath(narciaMap, narciaMap->selected1, narciaMap->selected2);
+
+	DynamicArray_Add(narciaMap->paths, &path);
 }
 
 void Demo_InitAll(void) {

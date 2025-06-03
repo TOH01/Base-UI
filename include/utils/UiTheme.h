@@ -296,6 +296,6 @@ typedef struct UiTheme {
 #define IFDEF_TITLEBAR_OCEAN
 #endif
 
-void UiTheme_initFonts();
+void UiTheme_initFonts(void);
 
 #endif
