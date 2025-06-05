@@ -22,7 +22,7 @@ void UiUtils_DrawRectangleRelative(AbsolutePos_t pos);
 bool UiUtils_CoordinateIsInsideOf(int x, int y, AbsolutePos_t pos);
 UiUtils_BorderEnum UiUtils_CoordinateIsOnBorderOf(int x, int y, int borderWidth, AbsolutePos_t pos);
 void UiUtils_FillRectangleRelative(AbsolutePos_t);
-void UiUtils_DrawText(AbsolutePos_t pos, char *name, UINT format);
+void UiUtils_DrawText(AbsolutePos_t pos, const char *name, UINT format);
 HFONT UiUtils_CreateFont(void);
 void UiUtils_DrawTextTheme(AbsolutePos_t pos, const char *name, UINT format, HFONT font, COLORREF color);
 bool UiUtils_TextFitsBoxTheme(const char text[], AbsolutePos_t pos, HFONT font);

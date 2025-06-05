@@ -31,7 +31,7 @@ int layoutToBorderHelper(LayoutType_t type, int offset) {
 	}
 }
 
-void updateContainersLayoutPos() {
+void updateContainersLayoutPos(void) {
 
 	container_t *currContainer = NULL;
 
@@ -54,14 +54,14 @@ void updateContainersLayoutPos() {
 			}
 
 			if (!currContainer->fixedWidgets) {
-				updatePosToContainerList(currContainer->absPos, currContainer->widgetList);
-				drawable_updatePosToContainerList(currContainer->absPos, currContainer->drawableList);
+				updatePosToContainerList(currContainer->widgetList);
+				drawable_updatePosToContainerList(currContainer->drawableList);
 			}
 		}
 	}
 }
 
-void updateWidgetVisibility() {
+void updateWidgetVisibility(void) {
 	int containerCount = currentWindowState.containers->size;
 
 	for (int i = 0; i < containerCount; i++) {
@@ -92,7 +92,7 @@ void updateWidgetVisibility() {
 
 void redrawContainer(container_t *container) { UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth); }
 
-void redrawContainerList() {
+void redrawContainerList(void) {
 
 	container_t *container = NULL;
 
@@ -163,11 +163,18 @@ void containerListClick(int x, int y, ClickType_t clickType) {
 }
 
 LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
+	(void)lParam;
 	redrawContainerList();
 	return 0;
 }
 
 LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)msg;
+	(void)wParam;
+	(void)lParam;
 	updateContainersLayoutPos();
 	updateWidgetVisibility();
 	InvalidateRect(hwnd, NULL, FALSE);
@@ -175,46 +182,74 @@ LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
+
 	int x = LOWORD(lParam);
 	int y = HIWORD(lParam);
 
 	containerListClick(x, y, CLICK_TYPE_LDOWN);
+
+	return 0;
 }
 
 LRESULT RButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
 	int x = LOWORD(lParam);
 	int y = HIWORD(lParam);
 
 	containerListClick(x, y, CLICK_TYPE_RDOWN);
+
+	return 0;
 }
 
 LRESULT RButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
 	int x = LOWORD(lParam);
 	int y = HIWORD(lParam);
 
 	containerListClick(x, y, CLICK_TYPE_RUP);
+
+	return 0;
 }
 
 LRESULT MButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
 	int x = LOWORD(lParam);
 	int y = HIWORD(lParam);
 
 	containerListClick(x, y, CLICK_TYPE_MDOWN);
+
+	return 0;
 }
 
 LRESULT MButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
 	int x = LOWORD(lParam);
 	int y = HIWORD(lParam);
 
 	containerListClick(x, y, CLICK_TYPE_MUP);
+
+	return 0;
 }
 
 LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)msg;
+	(void)wParam;
 	if (movingContainer.action) {
 
 		if (!movingContainer.container->fixedWidgets) {
-			updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->widgetList);
-			drawable_updatePosToContainerList(movingContainer.container->absPos, movingContainer.container->drawableList);
+			updatePosToContainerList(movingContainer.container->widgetList);
+			drawable_updatePosToContainerList(movingContainer.container->drawableList);
 		}
 
 		movingContainer.action = 0;
@@ -226,9 +261,13 @@ LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	containerListClick(x, y, CLICK_TYPE_LUP);
 
 	InvalidateRect(hwnd, NULL, FALSE);
+
+	return 0;
 }
 
 LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)msg;
+	(void)wParam;
 	int x = LOWORD(lParam); // Horizontal position in client area
 	int y = HIWORD(lParam); // Vertical position in client area
 
@@ -310,9 +349,13 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			lastHoverCandidate = hoverCandidate;
 		}
 	}
+
+	return 0;
 }
 
 LRESULT TimerCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)wParam;
+	(void)lParam;
 	if (msg == WM_TIMER && wParam == HOVER_TIMER_ID) {
 		if (lastHoverCandidate) {
 			if (GetTickCount() - hoverStartTime >= HOVER_DELAY_MS) {
@@ -326,9 +369,14 @@ LRESULT TimerCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			KillTimer(hwnd, HOVER_TIMER_ID);
 		}
 	}
+
+	return 0;
 }
 
 LRESULT MouseLeaveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)msg;
+	(void)wParam;
+	(void)lParam;
 	KillTimer(hwnd, HOVER_TIMER_ID);
 
 	if (lastHoverCandidate != NULL && lastHoverCandidate->onHoverEnd != NULL) {
@@ -341,6 +389,7 @@ LRESULT MouseLeaveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	currentWindowState.mouseTrackingActive = false;
 
 	InvalidateRect(hwnd, NULL, FALSE);
+	return 0;
 }
 
 container_t *initContainer(containerPos_t pos) {

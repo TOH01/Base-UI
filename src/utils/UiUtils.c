@@ -36,7 +36,7 @@ void UiUtils_DrawColoredRectangle(AbsolutePos_t pos, COLORREF colorBG, COLORREF 
 	DeleteObject(fillBrush);
 }
 
-void UiUtils_DrawText(AbsolutePos_t pos, char *name, UINT format) {
+void UiUtils_DrawText(AbsolutePos_t pos, const char *name, UINT format) {
 
 	RECT textRect = UiUtils_absolutePosToRect(pos);
 

@@ -17,7 +17,7 @@ typedef enum{
 int win32_dpi_scale(int value, UINT dpi);
 RECT win32_titlebar_rect(HWND handle);
 bool win32_window_is_maximized(HWND handle);
-void drawTitlebar(HDC hdc, PAINTSTRUCT ps);
+void drawTitlebar(HDC hdc);
 int getTitleBarHeight(HWND handle);
 LRESULT Titlebar_WmNCLButtonDown(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT MenuUi_WmNCLButtonUp(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

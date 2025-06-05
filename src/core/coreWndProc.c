@@ -119,7 +119,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
 
 #ifdef CUSTOM_TITLE_BAR
-		drawTitlebar(currentWindowState.memHDC, currentWindowState.ps);
+		drawTitlebar(currentWindowState.memHDC);
 #endif
 
 		// Blit to the screen

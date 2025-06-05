@@ -15,8 +15,6 @@ void drawTextDump(BaseWidget_t *baseWidget) {
 
 	int lineHeight = UiUtils_getLineHeight(textDump->theme->text.font);
 
-	RECT containerRect = UiUtils_absolutePosToRect(baseWidget->pos);
-
 	if (!lineHeight) {
 #ifdef DEBUG
 		printf("Cant draw text dump ... likely font is missing");
@@ -60,11 +58,14 @@ void drawTextDump(BaseWidget_t *baseWidget) {
 }
 
 void onClickTextDump(BaseWidget_t *base, int x, int y, ClickType_t clickType) {
+	(void) x;
+	(void) y;
+	(void) clickType;
 	textDumpWidget_t *textDump = (textDumpWidget_t *)base;
 	activeTextDump = textDump;
 }
 
-void refreshTextDump(textDumpWidget_t *textDump) { InvalidateRect(currentWindowState.hwnd, NULL, FALSE); }
+void refreshTextDump(void) { InvalidateRect(currentWindowState.hwnd, NULL, FALSE); }
 
 void customTextDump_AddLine(textDumpWidget_t *textDump, const char *newText) {
 	textLineNode_t *newNode = (textLineNode_t *)malloc(sizeof(textLineNode_t));
@@ -85,6 +86,9 @@ void customTextDump_AddLine(textDumpWidget_t *textDump, const char *newText) {
 }
 
 LRESULT scrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+
+	(void) msg;
+	(void) lParam;
 
 	if (activeTextDump) {
 
@@ -110,6 +114,8 @@ LRESULT scrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			}
 		}
 	}
+
+	return 0;
 }
 
 textDumpWidget_t *customTextDump_initTextDump(CommonPos_t pos) {

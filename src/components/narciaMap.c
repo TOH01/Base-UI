@@ -176,7 +176,7 @@ static HPEN TileTypeToColor(mapTile_t mapTile) {
 	case TOWN_TYPE_SMALL:
 		return smallTownPen;
 	default:
-		NULL;
+		return NULL;
 	}
 }
 
@@ -232,14 +232,14 @@ static void drawTown(AbsolutePos_t pos, mapTile_t mapTile) {
 
 bool coordinateEqual(Coordinate_t c1, Coordinate_t c2) { return (c1.x == c2.x && c1.y == c2.y); }
 
-void drawTownCoordinates(Coordinate_t coordinate, AbsolutePos_t rect, HFONT font) {
+void drawTownCoordinates(Coordinate_t coordinate, AbsolutePos_t rect) {
 	char text[11]; // (XXX, XXX) + string terminator
 	snprintf(text, 11, "(%d, %d)", coordinate.x, coordinate.y);
 
 	UiUtils_DrawText(rect, text, DT_CENTER | DT_VCENTER | DT_NOCLIP);
 }
 
-void drawTownName(townType_t type, AbsolutePos_t rect, HFONT font) {
+void drawTownName(townType_t type, AbsolutePos_t rect) {
 	char text[3] = ""; // only "IC" and "LT" valid + string terminator
 
 	if (type == TOWN_TYPE_LARGE) {
@@ -408,7 +408,7 @@ static void drawNarciaMap(BaseWidget_t *base) {
 
 				HFONT oldFont = SelectObject(currentWindowState.memHDC, cachedFontCoordinates);
 
-				drawTownCoordinates(townCenter, rect, cachedFontCoordinates);
+				drawTownCoordinates(townCenter, rect);
 
 				SelectObject(currentWindowState.memHDC, oldFont);
 			}
@@ -424,7 +424,7 @@ static void drawNarciaMap(BaseWidget_t *base) {
 
 				HFONT oldFont = SelectObject(currentWindowState.memHDC, cachedFontTownName);
 
-				drawTownName(mapTile.townType, rect, cachedFontTownName);
+				drawTownName(mapTile.townType, rect);
 
 				SelectObject(currentWindowState.memHDC, oldFont);
 			}
@@ -489,6 +489,10 @@ bool isAdjacent(Coordinate_t c1, Coordinate_t c2) {
 }
 
 LRESULT buttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void) wParam;
+	(void) lParam;
+	(void) msg;
+	
 	POINT mousePos;
 	GetCursorPos(&mousePos);
 	ScreenToClient(hwnd, &mousePos);
@@ -528,6 +532,10 @@ LRESULT buttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 }
 
 LRESULT handleMouseWheelNarcia(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void) lParam;
+	(void) hwnd;
+	(void) msg;
+	
 	if (focusedNarciaMap) {
 
 		POINT mousePos;
@@ -552,6 +560,8 @@ LRESULT handleMouseWheelNarcia(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			}
 		}
 	}
+
+	return 0;
 }
 
 void goToTile(narciaMap_t *narciaMap, int x, int y) {
@@ -561,6 +571,10 @@ void goToTile(narciaMap_t *narciaMap, int x, int y) {
 }
 
 LRESULT mouseMoveNarciaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void) msg;
+	(void) wParam;
+	(void) hwnd;
+	
 	if (activeNaricMap == NULL)
 		return 0;
 
@@ -615,7 +629,7 @@ bool insideofMap(narciaMap_t *map, int x, int y) {
 	return xCheck && yCheck;
 }
 
-void PopulateMapWithTowns(narciaMap_t *map, Coordinate_t *coords, int coordCount, townType_t townType, int startID) {
+void PopulateMapWithTowns(narciaMap_t *map, const Coordinate_t *coords, int coordCount, townType_t townType, int startID) {
 
 	int id = startID;
 
@@ -748,8 +762,8 @@ DynamicArray_t *getAllActiveTown(narciaMap_t *map) {
 
 	DynamicArray_t *array = DynamicArray_init(narciaWarEraTowns_count + narciaWarEraLargeTowns_count + narciaWarEraImperalCastle_count);
 
-	for (size_t y = 0; y < map->mapSize; y++) {
-		for (size_t x = 0; x < map->mapSize; x++) {
+	for (int y = 0; y < map->mapSize; y++) {
+		for (int x = 0; x < map->mapSize; x++) {
 			if (map->map[y][x].type == TILE_TOWN_CENTER && map->map[y][x].active) {
 				Coordinate_t *coordinate = (Coordinate_t *)malloc(sizeof(Coordinate_t));
 				coordinate->y = y;
@@ -758,6 +772,8 @@ DynamicArray_t *getAllActiveTown(narciaMap_t *map) {
 			}
 		}
 	}
+
+	return array;
 }
 
 path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end) {

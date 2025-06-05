@@ -47,7 +47,7 @@ typedef struct WidgetList {
 
 void addWidget(DynamicArray_t * array, BaseWidget_t *widget);
 void renderWidgetList(DynamicArray_t * array);
-void updatePosToContainerList(AbsolutePos_t containerPos, DynamicArray_t * array);
+void updatePosToContainerList(DynamicArray_t * array);
 BaseWidget_t *widgetClicked(int x, int y, DynamicArray_t * array);
 
 #endif

@@ -28,7 +28,7 @@ void renderWidgetList(DynamicArray_t * array) {
 	}
 }
 
-void updatePosToContainerList(AbsolutePos_t containerPos, DynamicArray_t * array) {
+void updatePosToContainerList(DynamicArray_t * array) {
 
 	if (!array) {
 		return;
