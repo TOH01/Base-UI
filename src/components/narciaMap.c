@@ -438,7 +438,11 @@ static void drawNarciaMap(BaseWidget_t *base) {
 			if (!path || !path->tiles || path->tileCount < 2)
 				continue;
 
-			drawPathOnMap(map, path->color, path->tiles, path->tileCount);
+			if (path == map->selecetdPath) {
+				drawPathOnMap(map, RGB(255, 255, 255), path->tiles, path->tileCount);
+			} else {
+				drawPathOnMap(map, path->color, path->tiles, path->tileCount);
+			}
 		}
 	}
 }
@@ -489,10 +493,10 @@ bool isAdjacent(Coordinate_t c1, Coordinate_t c2) {
 }
 
 LRESULT buttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	(void) wParam;
-	(void) lParam;
-	(void) msg;
-	
+	(void)wParam;
+	(void)lParam;
+	(void)msg;
+
 	POINT mousePos;
 	GetCursorPos(&mousePos);
 	ScreenToClient(hwnd, &mousePos);
@@ -508,20 +512,17 @@ LRESULT buttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 				Coordinate_t selected1 = map->selected1;
 				Coordinate_t selected2 = map->selected2;
 
-				bool isSameTownAs1 = (selected1.x >= 0 && map->map[clicked.y][clicked.x].townID == map->map[selected1.y][selected1.x].townID);
-				bool isSameTownAs2 = (selected2.x >= 0 && map->map[clicked.y][clicked.x].townID == map->map[selected2.y][selected2.x].townID);
-
-				if (coordinateEqual(selected1, clicked) || isSameTownAs1) {
+				if (coordinateEqual(selected1, townCenter)) {
 					map->selected1 = (Coordinate_t){-1, -1};
-				} else if (coordinateEqual(selected2, clicked) || isSameTownAs2) {
+				} else if (coordinateEqual(selected2, townCenter)) {
 					map->selected2 = (Coordinate_t){-1, -1};
 				} else if (selected1.x == -1) {
-					map->selected1 = clicked;
+					map->selected1 = townCenter;
 				} else if (selected2.x == -1) {
-					map->selected2 = clicked;
+					map->selected2 = townCenter;
 				} else {
 					map->selected1 = selected2;
-					map->selected2 = clicked;
+					map->selected2 = townCenter;
 				}
 			}
 		}
@@ -532,10 +533,10 @@ LRESULT buttonUpCallbackNaricaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 }
 
 LRESULT handleMouseWheelNarcia(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	(void) lParam;
-	(void) hwnd;
-	(void) msg;
-	
+	(void)lParam;
+	(void)hwnd;
+	(void)msg;
+
 	if (focusedNarciaMap) {
 
 		POINT mousePos;
@@ -571,10 +572,10 @@ void goToTile(narciaMap_t *narciaMap, int x, int y) {
 }
 
 LRESULT mouseMoveNarciaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	(void) msg;
-	(void) wParam;
-	(void) hwnd;
-	
+	(void)msg;
+	(void)wParam;
+	(void)hwnd;
+
 	if (activeNaricMap == NULL)
 		return 0;
 
@@ -777,28 +778,37 @@ DynamicArray_t *getAllActiveTown(narciaMap_t *map) {
 }
 
 path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end) {
-	printf("Inside findShortestPath, map=%p start=(%d,%d) end=(%d,%d)\n", (void *)map, start.x, start.y, end.x, end.y);
 	DynamicArray_t *allTowns = getAllActiveTown(map);
 	int townCount = allTowns->size;
-	if (townCount > MAX_TOWN_COUNT)
+	if (townCount > MAX_TOWN_COUNT) {
+		DynamicArray_Free(allTowns);
 		return NULL;
+	}
 
-	// Build lookup table: reachable neighbors
-	float graph[MAX_TOWN_COUNT][MAX_TOWN_COUNT];
+	// Allocate graph on heap
+	float *graph = malloc(sizeof(float) * townCount * townCount);
+	if (!graph) {
+		DynamicArray_Free(allTowns);
+		return NULL;
+	}
+
+#define GRAPH(i, j) graph[(i) * townCount + (j)]
+
+	// Build graph
 	for (int i = 0; i < townCount; i++) {
 		for (int j = 0; j < townCount; j++) {
 			if (i == j) {
-				graph[i][j] = 0;
+				GRAPH(i, j) = 0.0f;
 				continue;
 			}
 			Coordinate_t *a = (Coordinate_t *)allTowns->items[i];
 			Coordinate_t *b = (Coordinate_t *)allTowns->items[j];
 			float dist = getDistance(*a, *b);
-			graph[i][j] = (dist < MAX_DISTANCE) ? (float)getTimeForDistance(dist) : INF_TIME;
+			GRAPH(i, j) = (dist < MAX_DISTANCE) ? (float)getTimeForDistance(dist) : INF_TIME;
 		}
 	}
 
-	// Find indices of start and end
+	// Find start and end indices
 	int startIndex = -1, endIndex = -1;
 	for (int i = 0; i < townCount; i++) {
 		Coordinate_t *t = (Coordinate_t *)allTowns->items[i];
@@ -807,11 +817,15 @@ path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end)
 		if (t->x == end.x && t->y == end.y)
 			endIndex = i;
 	}
-	if (startIndex == -1 || endIndex == -1)
-		return NULL;
 
-	// Initialize Dijkstra nodes
-	TownNode nodes[MAX_TOWN_COUNT];
+	if (startIndex == -1 || endIndex == -1) {
+		free(graph);
+		DynamicArray_Free(allTowns);
+		return NULL;
+	}
+
+	// Dijkstra setup
+	TownNode *nodes = calloc(townCount, sizeof(TownNode));
 	for (int i = 0; i < townCount; i++) {
 		nodes[i].coord = *(Coordinate_t *)allTowns->items[i];
 		nodes[i].time = INF_TIME;
@@ -822,7 +836,6 @@ path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end)
 
 	// Dijkstra's algorithm
 	for (int count = 0; count < townCount; count++) {
-		// Find unvisited node with smallest time
 		int u = -1;
 		float minTime = INF_TIME;
 		for (int i = 0; i < townCount; i++) {
@@ -833,11 +846,12 @@ path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end)
 		}
 		if (u == -1)
 			break;
+
 		nodes[u].visited = true;
 
 		for (int v = 0; v < townCount; v++) {
-			if (!nodes[v].visited && graph[u][v] < INF_TIME) {
-				float alt = nodes[u].time + graph[u][v];
+			if (!nodes[v].visited && GRAPH(u, v) < INF_TIME) {
+				float alt = nodes[u].time + GRAPH(u, v);
 				if (alt < nodes[v].time) {
 					nodes[v].time = alt;
 					nodes[v].previousIndex = u;
@@ -847,29 +861,29 @@ path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end)
 	}
 
 	// Reconstruct path
-	if (nodes[endIndex].previousIndex == -1)
-		return NULL; // No path
+	if (nodes[endIndex].previousIndex == -1) {
+		free(nodes);
+		free(graph);
+		DynamicArray_Free(allTowns);
+		return NULL;
+	}
 
 	int pathSize = 0;
-	int tempIndex = endIndex;
-	while (tempIndex != -1) {
+	for (int i = endIndex; i != -1; i = nodes[i].previousIndex)
 		pathSize++;
-		tempIndex = nodes[tempIndex].previousIndex;
-	}
 
 	Coordinate_t *tileList = malloc(sizeof(Coordinate_t) * pathSize);
 	int index = pathSize - 1;
-	tempIndex = endIndex;
-	while (tempIndex != -1) {
-		tileList[index--] = nodes[tempIndex].coord;
-		tempIndex = nodes[tempIndex].previousIndex;
-	}
+	for (int i = endIndex; i != -1; i = nodes[i].previousIndex)
+		tileList[index--] = nodes[i].coord;
 
 	path_t *path = malloc(sizeof(path_t));
 	path->tiles = tileList;
 	path->tileCount = pathSize;
-	path->color = RGB(255, 255, 0); // Example path color
+	path->color = RGB(255, 255, 0); // Yellow path
 
+	free(nodes);
+	free(graph);
 	DynamicArray_Free(allTowns);
 	return path;
 }

@@ -26,21 +26,22 @@ static void drawButton(BaseWidget_t *baseWidget) {
 
 static void onClickButton(BaseWidget_t *base, int x, int y, ClickType_t clickType) {
 	assert(base->type == WIDGET_TYPE_BUTTON);
-	
-	(void) x;
-	(void) y;
-	(void) clickType;
 
-	buttonWidget_t *button = (buttonWidget_t *)base;
+	(void)x;
+	(void)y;
 
-	if (button->onClickUserCallback != NULL) {
-		button->onClickUserCallback(button->id);
-	}
+	if (clickType == CLICK_TYPE_LDOWN) {
+		buttonWidget_t *button = (buttonWidget_t *)base;
+
+		if (button->onClickUserCallback != NULL) {
+			button->onClickUserCallback(button->id);
+		}
 #ifdef DEBUG
-	else {
-		printf("custom button with ID: %d missing callback\n", button->id);
-	}
+		else {
+			printf("custom button with ID: %d missing callback\n", button->id);
+		}
 #endif
+	}
 }
 
 static void onHoverButton(BaseWidget_t *base) {

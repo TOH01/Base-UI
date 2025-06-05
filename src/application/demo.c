@@ -18,6 +18,9 @@ const char *textDumpMenuButtonNames[] = {
     "Water",
 };
 
+#define PREV_PATH_ID -1
+#define NEXT_PATH_ID 1
+
 const char colorMatrixText[] = "Path Color:";
 const char generatePathText[] = "Generate Path";
 const char previousPathText[] = "< Previous Path";
@@ -33,12 +36,33 @@ submenuGroup_t *textDumpMenuGroup;
 MenuUi_Submenu_t *textDumpSubmenus[3];
 
 narciaMap_t *narciaMap;
+colorMatrix_t *colorMatrix;
 
 inputWidget_t *inputX;
 inputWidget_t *inputY;
 
-Coordinate_t testCoordinate[3] = {{56, 41}, {48, 13}, {12, 23}};
-path_t testPath;
+int selectedPathIdx = 0;
+
+void pathSelectButtonCallback(int id) {
+	if (narciaMap->paths->size) {
+		if (selectedPathIdx + id < 0) {
+			selectedPathIdx = narciaMap->paths->size - 1;
+		} else if (selectedPathIdx + id > narciaMap->paths->size - 1) {
+			selectedPathIdx = 0;
+		} else {
+			selectedPathIdx = selectedPathIdx + id;
+		}
+		narciaMap->selecetdPath = (path_t *)DynamicArray_get(narciaMap->paths, selectedPathIdx);
+		goToTile(narciaMap, narciaMap->selecetdPath->tiles[0].y, narciaMap->selecetdPath->tiles[0].x);
+	}
+}
+
+void clearSelection(int id){
+	(void) id;
+	narciaMap->selecetdPath = NULL;
+	narciaMap->selected1 = (Coordinate_t) {-1, -1};
+	narciaMap->selected2 = (Coordinate_t) {-1, -1};
+}
 
 void goButtonCallback(int id) {
 	(void)id;
@@ -59,13 +83,13 @@ void goButtonCallback(int id) {
 void generatePath(int id) {
 	(void)id;
 
-
-
-	printf("Calling findShortestPath with map=%p start=(%d,%d) end=(%d,%d)\n", (void *)narciaMap, narciaMap->selected1.x, narciaMap->selected1.y, narciaMap->selected2.x, narciaMap->selected2.y);
-
 	path_t *path = findShortestPath(narciaMap, narciaMap->selected1, narciaMap->selected2);
 
-	DynamicArray_Add(narciaMap->paths, &path);
+	if (colorMatrixHasActive(colorMatrix)) {
+		path->color = colorMatrixGetActive(colorMatrix);
+	}
+
+	DynamicArray_Add(narciaMap->paths, path);
 }
 
 void Demo_InitAll(void) {
@@ -149,7 +173,7 @@ void Demo_InitAll(void) {
 	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputY);
 	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)goButton);
 
-	colorMatrix_t *colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
+	colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
 
 	Drawable_t *colorMatrixLabel = drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText, &currentWindowState.activeTheme.label);
 
@@ -163,18 +187,18 @@ void Demo_InitAll(void) {
 	Drawable_t *seperatorLine1 = drawable_initLine((CommonPos_t){0.2, 0.14, 0.14, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine1);
 
-	buttonWidget_t *previousPathButton = customButton_initButton((CommonPos_t){0.3, 0.16, 0.27, 0.7}, NULL, 0);
+	buttonWidget_t *previousPathButton = customButton_initButton((CommonPos_t){0.3, 0.16, 0.27, 0.7}, &pathSelectButtonCallback, PREV_PATH_ID);
 	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)previousPathButton);
 	customButton_setButtonText(previousPathButton, previousPathText);
 
-	buttonWidget_t *nexPathButton = customButton_initButton((CommonPos_t){0.3, 0.29, 0.40, 0.7}, NULL, 0);
+	buttonWidget_t *nexPathButton = customButton_initButton((CommonPos_t){0.3, 0.29, 0.40, 0.7}, &pathSelectButtonCallback, NEXT_PATH_ID);
 	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)nexPathButton);
 	customButton_setButtonText(nexPathButton, nextPathText);
 
 	Drawable_t *seperatorLine2 = drawable_initLine((CommonPos_t){0.2, 0.42, 0.42, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine2);
 
-	buttonWidget_t *clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, NULL, 0);
+	buttonWidget_t *clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, &clearSelection, 0);
 	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)clearSelectionButton);
 	customButton_setButtonText(clearSelectionButton, clearSelectionText);
 

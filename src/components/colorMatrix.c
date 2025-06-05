@@ -1,57 +1,96 @@
 #include "colorMatrix.h"
 #include "UiUtils.h"
 
-COLORREF colormap[5][5] = {
-    { RGB(179,  83,  83),  RGB(102, 153, 102),  RGB(102, 122, 179),  RGB(204, 170, 102),  RGB(102, 170, 170) },
-    { RGB(153, 102, 102),  RGB( 90,  90, 153),  RGB(102, 170, 153),  RGB(179, 153, 102),  RGB(153, 179, 204) },
-    { RGB(204, 136, 136),  RGB(136, 102, 204),  RGB( 90, 179, 153),  RGB(204, 204, 102),  RGB(136, 153, 153) },
-    { RGB(204, 179, 179),  RGB(119, 102, 204),  RGB(102, 153, 170),  RGB(179, 204, 102),  RGB(153, 153, 204) },
-    { RGB(204, 204, 153),  RGB(153, 119, 204),  RGB(102, 153, 204),  RGB(153, 204, 204),  RGB(204, 153, 204) }
-};
+COLORREF colormap[5][5] = {{RGB(166, 94, 94), RGB(146, 114, 146), RGB(94, 114, 166), RGB(166, 140, 94), RGB(94, 146, 166)}, {RGB(130, 80, 100), RGB(120, 100, 150), RGB(100, 130, 160), RGB(180, 130, 90), RGB(140, 160, 190)}, {RGB(190, 120, 120), RGB(160, 120, 190), RGB(100, 160, 190), RGB(200, 190, 100), RGB(130, 140, 160)}, {RGB(180, 160, 160), RGB(140, 120, 200), RGB(110, 140, 170), RGB(180, 190, 110), RGB(160, 160, 200)}, {RGB(210, 180, 140), RGB(170, 130, 200), RGB(120, 150, 200), RGB(160, 200, 210), RGB(200, 160, 200)}};
 
-static void drawColorMatrix(BaseWidget_t * base){
-    
-    colorMatrix_t * colorMatrix = (colorMatrix_t *) base;
-    
+static void drawColorMatrix(BaseWidget_t *base) {
 
-    int cellWidth = (base->pos.right - base->pos.left) / colorMatrix->width;
-    int cellHeight = (base->pos.bottom - base->pos.top) / colorMatrix->height;
+	colorMatrix_t *colorMatrix = (colorMatrix_t *)base;
 
-    int borderSize = 1; // border thickness
-    COLORREF borderColor = RGB(100, 100, 100); // soft gray border
+	int cellWidth = (base->pos.right - base->pos.left) / colorMatrix->width;
+	int cellHeight = (base->pos.bottom - base->pos.top) / colorMatrix->height;
 
-    for (int i = 0; i < colorMatrix->height; i++) {
-        for (int j = 0; j < colorMatrix->width; j++) {
-            AbsolutePos_t cellPos;
-            cellPos.top = base->pos.top + i * cellHeight;
-            cellPos.left = base->pos.left + j * cellWidth;
-            cellPos.bottom = cellPos.top + cellHeight;
-            cellPos.right = cellPos.left + cellWidth;
+	int borderSize = 2;                        // border thickness
+	COLORREF borderColor = RGB(100, 100, 100); // soft gray border
 
-            COLORREF bgColor = colormap[i % 5][j % 5];
+	for (int i = 0; i < colorMatrix->height; i++) {
+		for (int j = 0; j < colorMatrix->width; j++) {
+			AbsolutePos_t cellPos;
+			cellPos.top = base->pos.top + i * cellHeight;
+			cellPos.left = base->pos.left + j * cellWidth;
+			cellPos.bottom = cellPos.top + cellHeight;
+			cellPos.right = cellPos.left + cellWidth;
 
-            UiUtils_DrawColoredRectangle(cellPos, bgColor, borderColor, borderSize);
-        }
-    }
-    
+			COLORREF bgColor = colormap[i % 5][j % 5];
+
+			if (colorMatrix->activeColumn == j && colorMatrix->activeRow == i) {
+				UiUtils_DrawColoredRectangle(cellPos, bgColor, RGB(0, 122, 204), borderSize);
+			} else {
+				UiUtils_DrawColoredRectangle(cellPos, bgColor, borderColor, borderSize);
+			}
+		}
+	}
 }
 
-static void onColorMatrixClick(BaseWidget_t * base, int x, int y, ClickType_t clickType){
-    colorMatrix_t * colorMatrix = (colorMatrix_t *) base;
-    (void) colorMatrix;
-    (void) x;
-    (void) y;
-    (void) clickType;
+static void onColorMatrixClick(BaseWidget_t *base, int x, int y, ClickType_t clickType) {
+	colorMatrix_t *colorMatrix = (colorMatrix_t *)base;
+	(void)x;
+	(void)y;
+	(void)clickType;
+
+	if (clickType == CLICK_TYPE_LUP) {
+		if (colorMatrix && base) {
+			int relativeX = x - base->pos.left;
+			int relativeY = y - base->pos.top;
+			int cellWidth = (base->pos.right - base->pos.left) / colorMatrix->width;
+			int cellHeight = (base->pos.bottom - base->pos.top) / colorMatrix->height;
+
+			if (relativeX > 0 || relativeY > 0) {
+				int col = relativeX / cellWidth;
+				int row = relativeY / cellHeight;
+
+				// max size for now
+				if (col < 5 && row < 5) {
+
+					if (colorMatrix->activeRow == row && colorMatrix->activeColumn == col) {
+						colorMatrix->activeRow = -1;
+						colorMatrix->activeColumn = -1;
+					} else {
+						colorMatrix->activeRow = row;
+						colorMatrix->activeColumn = col;
+					}
+				}
+			}
+		}
+	}
 }
 
-colorMatrix_t * initColorMatrix(CommonPos_t pos, int width, int height){
-    colorMatrix_t *colorMatrix = (colorMatrix_t *)calloc(1, sizeof(colorMatrix_t));
-    
-    colorMatrix->baseWidget.initPos = pos;
-    colorMatrix->height = height;
-    colorMatrix->width = width;
-    colorMatrix->baseWidget.drawHandler = &drawColorMatrix;
-    colorMatrix->baseWidget.onClick = &onColorMatrixClick;
+COLORREF colorMatrixGetActive(colorMatrix_t *colorMatrix) {
 
-    return colorMatrix;
+	if (colorMatrix->activeRow >= 0 && colorMatrix->activeColumn >= 0) {
+		return colormap[colorMatrix->activeRow][colorMatrix->activeColumn];
+	}
+	// fallback color
+	return RGB(255, 255, 255);
+}
+
+bool colorMatrixHasActive(colorMatrix_t *colorMatrix) {
+	if (colorMatrix->activeRow == -1 || colorMatrix->activeColumn == -1) {
+		return false;
+	}
+	return true;
+}
+
+colorMatrix_t *initColorMatrix(CommonPos_t pos, int width, int height) {
+	colorMatrix_t *colorMatrix = (colorMatrix_t *)calloc(1, sizeof(colorMatrix_t));
+
+	colorMatrix->baseWidget.initPos = pos;
+	colorMatrix->height = height;
+	colorMatrix->width = width;
+	colorMatrix->activeRow = -1;
+	colorMatrix->activeColumn = -1;
+	colorMatrix->baseWidget.drawHandler = &drawColorMatrix;
+	colorMatrix->baseWidget.onClick = &onColorMatrixClick;
+
+	return colorMatrix;
 }
