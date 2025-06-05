@@ -84,6 +84,9 @@ static const int narciaWarEraImperalCastle_count = 1;
 
 void goToTile(narciaMap_t * narciaMap, int x, int y);
 path_t * findShortestPath(narciaMap_t * map, Coordinate_t start, Coordinate_t end);
+void pathTimeToTextDump(path_t *path, textDumpWidget_t *textDump);
+void pathWaterToTextDump(path_t *path, textDumpWidget_t *textDump);
+void pathDistanceToTextDump(path_t *path, textDumpWidget_t *textDump);
 
 #define MAX_TOWN_COUNT 1024
 #define MAX_DISTANCE 40.0f

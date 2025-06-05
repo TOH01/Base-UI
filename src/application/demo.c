@@ -25,6 +25,7 @@ const char colorMatrixText[] = "Path Color:";
 const char generatePathText[] = "Generate Path";
 const char previousPathText[] = "< Previous Path";
 const char nextPathText[] = "Next Path >";
+const char deleteText[] = "Delete";
 const char clearSelectionText[] = "Clear Selection";
 const char generateFriendlyTownText[] = "Homebase +";
 const char generateEnemeyTownText[] = "Enemy Homebase +";
@@ -53,15 +54,30 @@ void pathSelectButtonCallback(int id) {
 			selectedPathIdx = selectedPathIdx + id;
 		}
 		narciaMap->selecetdPath = (path_t *)DynamicArray_get(narciaMap->paths, selectedPathIdx);
-		goToTile(narciaMap, narciaMap->selecetdPath->tiles[0].y, narciaMap->selecetdPath->tiles[0].x);
+		goToTile(narciaMap, narciaMap->selecetdPath->tiles[0].x, narciaMap->selecetdPath->tiles[0].y);
 	}
 }
 
-void clearSelection(int id){
-	(void) id;
+void clearSelection(int id) {
+	(void)id;
 	narciaMap->selecetdPath = NULL;
-	narciaMap->selected1 = (Coordinate_t) {-1, -1};
-	narciaMap->selected2 = (Coordinate_t) {-1, -1};
+	narciaMap->selected1 = (Coordinate_t){-1, -1};
+	narciaMap->selected2 = (Coordinate_t){-1, -1};
+}
+
+void deletePathCallback(int id) {
+	(void)id;
+
+	if (narciaMap->selecetdPath != NULL) {
+		path_t *path = DynamicArray_get(narciaMap->paths, selectedPathIdx);
+		free(path->tiles);
+		free(path);
+		DynamicArray_RemoveAt(narciaMap->paths, selectedPathIdx);
+
+		InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+
+		narciaMap->selecetdPath = NULL;
+	}
 }
 
 void goButtonCallback(int id) {
@@ -89,7 +105,12 @@ void generatePath(int id) {
 		path->color = colorMatrixGetActive(colorMatrix);
 	}
 
-	DynamicArray_Add(narciaMap->paths, path);
+	if (path && path->tileCount > 1) {
+		pathWaterToTextDump(path, textDumps[2]);
+		pathDistanceToTextDump(path, textDumps[0]);
+		pathTimeToTextDump(path, textDumps[1]);
+		DynamicArray_Add(narciaMap->paths, path);
+	}
 }
 
 void Demo_InitAll(void) {
@@ -187,13 +208,17 @@ void Demo_InitAll(void) {
 	Drawable_t *seperatorLine1 = drawable_initLine((CommonPos_t){0.2, 0.14, 0.14, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine1);
 
-	buttonWidget_t *previousPathButton = customButton_initButton((CommonPos_t){0.3, 0.16, 0.27, 0.7}, &pathSelectButtonCallback, PREV_PATH_ID);
+	buttonWidget_t *previousPathButton = customButton_initButton((CommonPos_t){0.2, 0.16, 0.27, 0.55}, &pathSelectButtonCallback, PREV_PATH_ID);
 	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)previousPathButton);
 	customButton_setButtonText(previousPathButton, previousPathText);
 
-	buttonWidget_t *nexPathButton = customButton_initButton((CommonPos_t){0.3, 0.29, 0.40, 0.7}, &pathSelectButtonCallback, NEXT_PATH_ID);
+	buttonWidget_t *nexPathButton = customButton_initButton((CommonPos_t){0.2, 0.29, 0.40, 0.55}, &pathSelectButtonCallback, NEXT_PATH_ID);
 	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)nexPathButton);
 	customButton_setButtonText(nexPathButton, nextPathText);
+
+	buttonWidget_t *deleteButton = customButton_initButton((CommonPos_t){0.65, 0.22, 0.34, 0.95}, &deletePathCallback, 0);
+	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)deleteButton);
+	customButton_setButtonText(deleteButton, deleteText);
 
 	Drawable_t *seperatorLine2 = drawable_initLine((CommonPos_t){0.2, 0.42, 0.42, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine2);

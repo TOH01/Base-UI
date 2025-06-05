@@ -1,5 +1,6 @@
 #include "UiUtils.h"
 #include "naricaMap.h"
+#include "textDump.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -749,13 +750,13 @@ narciaMap_t *initNarciaMap(CommonPos_t pos) {
 
 void narciaMapAddPath(narciaMap_t *map, path_t *path) { DynamicArray_Add(map->paths, path); }
 
-int getDistance(Coordinate_t c1, Coordinate_t c2) {
+float getDistance(Coordinate_t c1, Coordinate_t c2) {
 	int dx = c2.x - c1.x;
 	int dy = c2.y - c1.y;
 	return sqrtf((float)(dx * dx + dy * dy));
 }
 
-int getTimeForDistance(float distance) { return (uint32_t)(0.77 * pow(distance, 1.8)); }
+int getTimeForDistance(float distance) { return (uint32_t)(1.108f * powf(distance, 1.926f)); }
 
 int getWaterForDistance(float distance) { return (uint32_t)(60.0 * pow(distance, 1.75)); }
 
@@ -886,4 +887,71 @@ path_t *findShortestPath(narciaMap_t *map, Coordinate_t start, Coordinate_t end)
 	free(graph);
 	DynamicArray_Free(allTowns);
 	return path;
+}
+
+void pathDistanceToTextDump(path_t *path, textDumpWidget_t *textDump) {
+	customTextDump_AddLine(textDump, "Distance for path:");
+
+	//(XXX, XXX) -> (XXX, XXX) - XXXXXXX
+	char buff[40] = "";
+
+	Coordinate_t c1;
+	Coordinate_t c2;
+
+	for (int i = 0; i < path->tileCount - 1; i++) {
+		c1 = (Coordinate_t){path->tiles[i].x, path->tiles[i].y};
+		c2 = (Coordinate_t){path->tiles[i + 1].x, path->tiles[i + 1].y};
+
+		snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %.1f", c1.x, c1.y, c2.x, c2.y, getDistance(c1, c2));
+		customTextDump_AddLine(textDump, buff);
+	}
+
+	customTextDump_AddLine(textDump, "------------------------------");
+	customTextDump_AddLine(textDump, "");
+}
+
+void pathWaterToTextDump(path_t *path, textDumpWidget_t *textDump) {
+	customTextDump_AddLine(textDump, "Water cost (15% decrease) for path:");
+
+	//(XXX, XXX) -> (XXX, XXX) - XXXXXXX
+	char buff[40] = "";
+
+	Coordinate_t c1;
+	Coordinate_t c2;
+
+	for (int i = 0; i < path->tileCount - 1; i++) {
+		c1 = (Coordinate_t){path->tiles[i].x, path->tiles[i].y};
+		c2 = (Coordinate_t){path->tiles[i + 1].x, path->tiles[i + 1].y};
+
+		snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %d", c1.x, c1.y, c2.x, c2.y, getWaterForDistance(getDistance(c1, c2)));
+		customTextDump_AddLine(textDump, buff);
+	}
+
+	customTextDump_AddLine(textDump, "------------------------------");
+	customTextDump_AddLine(textDump, "");
+}
+
+void pathTimeToTextDump(path_t *path, textDumpWidget_t *textDump) {
+	customTextDump_AddLine(textDump, "Time (45% speed) for path:");
+
+	//(XXX, XXX) -> (XXX, XXX) - XXXXXXX
+	char buff[40] = "";
+
+	Coordinate_t c1;
+	Coordinate_t c2;
+
+	for (int i = 0; i < path->tileCount - 1; i++) {
+		c1 = (Coordinate_t){path->tiles[i].x, path->tiles[i].y};
+		c2 = (Coordinate_t){path->tiles[i + 1].x, path->tiles[i + 1].y};
+
+		int totalSeconds = getTimeForDistance(getDistance(c1, c2));
+		int minutes = totalSeconds / 60;
+		int seconds = totalSeconds % 60;
+
+		snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %d:%02d", c1.x, c1.y, c2.x, c2.y, minutes, seconds);
+		customTextDump_AddLine(textDump, buff);
+	}
+
+	customTextDump_AddLine(textDump, "------------------------------");
+	customTextDump_AddLine(textDump, "");
 }
