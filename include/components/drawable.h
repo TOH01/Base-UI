@@ -17,6 +17,8 @@ typedef struct Drawable {
 	AbsolutePos_t pos;
 	bool hidden;
     CommonPos_t initPos;
+	AbsolutePos_t initPosAbs;
+	posType_t posType;
 	union {
 		struct {
 			rectangleTheme_t * theme;
@@ -30,6 +32,8 @@ typedef struct Drawable {
 		} line;
 		struct {
 			HICON icon;
+			bool iconLoaded;
+			int iconID;
 		} img;
 	};
 

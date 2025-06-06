@@ -31,6 +31,8 @@ typedef struct BaseWidget {
 	WidgetType_t type;
 	AbsolutePos_t * parentPos;
 	AbsolutePos_t pos;
+	AbsolutePos_t initPosAbs;
+	posType_t posType;
 	bool hidden;
 } BaseWidget_t;
 

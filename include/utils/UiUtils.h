@@ -34,5 +34,6 @@ RECT UiUtils_absolutePosToRect(AbsolutePos_t pos);
 bool UiUtils_WidgetFitsInContainer(AbsolutePos_t widget, AbsolutePos_t container);
 HFONT getFontForRect(HDC hdc, char text[], RECT box);
 void UiUtils_DrawLineRelative(AbsolutePos_t pos);
+AbsolutePos_t getPosToContainerAbsolute(const AbsolutePos_t *parentAbsPos, AbsolutePos_t widgetAbsPos);
 
 #endif

@@ -166,6 +166,17 @@ AbsolutePos_t getPosToContainer(const AbsolutePos_t *parentAbsPos, CommonPos_t w
 	return absPos;
 }
 
+AbsolutePos_t getPosToContainerAbsolute(const AbsolutePos_t *parentAbsPos, AbsolutePos_t widgetAbsPos){
+	AbsolutePos_t absPos;
+
+	absPos.left = parentAbsPos->left + widgetAbsPos.left;
+	absPos.right = parentAbsPos->left + widgetAbsPos.right;
+	absPos.top = parentAbsPos->top + widgetAbsPos.top;
+	absPos.bottom = parentAbsPos->top + widgetAbsPos.bottom;
+
+	return absPos;
+}
+
 bool UiUtils_WidgetFitsInContainer(AbsolutePos_t widget, AbsolutePos_t container) { return widget.left >= container.left && widget.top >= container.top && widget.right <= container.right && widget.bottom <= container.bottom; }
 
 HFONT getFontForRect(HDC hdc, char text[], RECT box) {

@@ -32,7 +32,7 @@ LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 		updatePosToContainerList(container->widgetList);
 		drawable_updatePosToContainerList(container->drawableList);
-	}
+	} 
 
 #endif
 	InvalidateRect(hwnd, NULL, FALSE);

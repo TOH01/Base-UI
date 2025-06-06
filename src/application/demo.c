@@ -7,10 +7,10 @@
 #include "drawable.h"
 #include "menu.h"
 #include "naricaMap.h"
+#include "resource.h"
 #include "textDump.h"
 #include "widget.h"
 #include <stdio.h>
-#include "resource.h"
 
 buttonWidget_t *textDumpMenuButtons[3];
 const char *textDumpDefaultLines[] = {
@@ -48,6 +48,8 @@ colorMatrix_t *colorMatrix;
 
 inputWidget_t *inputX;
 inputWidget_t *inputY;
+
+Drawable_t *testImg;
 
 int selectedPathIdx = 0;
 
@@ -207,51 +209,51 @@ void Demo_InitAll(void) {
 
 	Drawable_t *colorMatrixLabel = drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText, &currentWindowState.activeTheme.label);
 
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)colorMatrix);
-	containerAddDrawable(mainHeaderContainer, colorMatrixLabel);
+	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)colorMatrix, (AbsolutePos_t){0.2 * 100, 0.85 * 1400, 0.98 * 1400, 0.9 * 100});
+	containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixLabel, (AbsolutePos_t){0.2 * 100, 0.77 * 1400, 0.84 * 1400, 0.9 * 100});
 
 	buttonWidget_t *generatePathButton = customButton_initButton((CommonPos_t){0.3, 0.02, 0.12, 0.7}, &generatePath, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)generatePathButton);
+	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)generatePathButton, (AbsolutePos_t){0.3 * 100, 0.02 * 1400, 0.12 * 1400, 0.7 * 100});
 	customButton_setButtonText(generatePathButton, generatePathText);
 
 	Drawable_t *seperatorLine1 = drawable_initLine((CommonPos_t){0.2, 0.14, 0.14, 0.8}, &currentWindowState.activeTheme.line);
-	containerAddDrawable(mainHeaderContainer, seperatorLine1);
+	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine1, (AbsolutePos_t){0.2 * 100, 0.14 * 1400, 0.14 * 1400, 0.8 * 100});
 
 	buttonWidget_t *previousPathButton = customButton_initButton((CommonPos_t){0.2, 0.16, 0.27, 0.55}, &pathSelectButtonCallback, PREV_PATH_ID);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)previousPathButton);
+	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)previousPathButton, (AbsolutePos_t){0.2 * 100, 0.16 * 1400, 0.27 * 1400, 0.55 * 100});
 	customButton_setButtonText(previousPathButton, previousPathText);
 
 	buttonWidget_t *nexPathButton = customButton_initButton((CommonPos_t){0.2, 0.29, 0.40, 0.55}, &pathSelectButtonCallback, NEXT_PATH_ID);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)nexPathButton);
+	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)nexPathButton, (AbsolutePos_t){0.2 * 100, 0.29 * 1400, 0.40 * 1400, 0.55 * 100});
 	customButton_setButtonText(nexPathButton, nextPathText);
 
 	buttonWidget_t *deleteButton = customButton_initButton((CommonPos_t){0.65, 0.22, 0.34, 0.95}, &deletePathCallback, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)deleteButton);
+	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)deleteButton, (AbsolutePos_t){0.65 * 100, 0.22 * 1400, 0.34 * 1400, 0.95 * 100});
 	customButton_setButtonText(deleteButton, deleteText);
 
 	Drawable_t *seperatorLine2 = drawable_initLine((CommonPos_t){0.2, 0.42, 0.42, 0.8}, &currentWindowState.activeTheme.line);
-	containerAddDrawable(mainHeaderContainer, seperatorLine2);
+	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine2, (AbsolutePos_t){0.2 * 100, 0.42 * 1400, 0.42 * 1400, 0.8 * 100});
 
 	buttonWidget_t *clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, &clearSelection, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)clearSelectionButton);
+	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)clearSelectionButton, (AbsolutePos_t){0.3 * 100, 0.44 * 1400, 0.54 * 1400, 0.7 * 100});
 	customButton_setButtonText(clearSelectionButton, clearSelectionText);
 
-	Drawable_t *testImg = drawable_initImg((CommonPos_t){0.2, 0.56, 0.8, 0.8}, IDI_MYICON);
-	containerAddDrawable(mainHeaderContainer, testImg);
+	testImg = drawable_initImg((CommonPos_t){0, 0, 0, 0}, IDI_MYICON);
+	containerAddDrawableAbsolute(mainHeaderContainer, testImg, (AbsolutePos_t){0, 0, 100, 100});
 
 	Drawable_t *seperatorLine3 = drawable_initLine((CommonPos_t){0.2, 0.56, 0.56, 0.8}, &currentWindowState.activeTheme.line);
-	containerAddDrawable(mainHeaderContainer, seperatorLine3);
+	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine3, (AbsolutePos_t){0.2 * 100, 0.56 * 1400, 0.56 * 1400, 0.8 * 100});
 
 	buttonWidget_t *addEnemyHomebaseButton = customButton_initButton((CommonPos_t){0.2, 0.58, 0.73, 0.53}, NULL, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)addEnemyHomebaseButton);
+	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)addEnemyHomebaseButton, (AbsolutePos_t){0.2 * 100, 0.58 * 1400, 0.73 * 1400, 0.53 * 100});
 	customButton_setButtonText(addEnemyHomebaseButton, generateEnemeyTownText);
 
 	buttonWidget_t *addHomebaseButton = customButton_initButton((CommonPos_t){0.57, 0.58, 0.73, 0.9}, NULL, 0);
-	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)addHomebaseButton);
+	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)addHomebaseButton, (AbsolutePos_t){0.57 * 100, 0.58 * 1400, 0.73 * 1400, 0.9 * 100});
 	customButton_setButtonText(addHomebaseButton, generateFriendlyTownText);
 
 	Drawable_t *seperatorLine4 = drawable_initLine((CommonPos_t){0.2, 0.75, 0.75, 0.8}, &currentWindowState.activeTheme.line);
-	containerAddDrawable(mainHeaderContainer, seperatorLine4);
+	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine4, (AbsolutePos_t){0.2 * 100, 0.75 * 1400, 0.75 * 1400, 0.8 * 100});
 
 	mainHeaderContainer->fixedWidgets = true;
 }

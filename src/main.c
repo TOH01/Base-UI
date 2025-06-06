@@ -19,6 +19,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	(void)hPrevInstance;
 	(void)lpCmdLine;
 
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
 	currentWindowState.handlerTable = WmParamHandlerTable_Init();
 	currentWindowState.hInstance = hInstance;
 
@@ -71,7 +73,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
-	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
 

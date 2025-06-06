@@ -39,8 +39,8 @@ Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t *theme) {
 Drawable_t *drawable_initImg(CommonPos_t pos, int ID) {
 	Drawable_t *drawable = (Drawable_t *)calloc(1, sizeof(Drawable_t));
 	drawable->type = DRAWABLE_IMG;
-	drawable->img.icon = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(ID), IMAGE_ICON, pos.right, pos.bottom, LR_DEFAULTCOLOR);
 	drawable->initPos = pos;
+	drawable->img.iconID = ID;
 
 	return drawable;
 }
@@ -66,7 +66,12 @@ void drawable_draw(Drawable_t *drawable) {
 		UiUtils_DrawColoredRectangle(drawable->pos, themeRectangle->color.fill, themeRectangle->color.border, themeRectangle->borderWidth);
 		break;
 	case DRAWABLE_IMG:
-		DrawIconEx(currentWindowState.memHDC, drawable->pos.left, drawable->pos.top, drawable->img.icon, drawable->pos.right, drawable->pos.bottom, 0, NULL, DI_NORMAL);
+		if (!drawable->img.iconLoaded) {
+			drawable->img.icon = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(drawable->img.iconID), IMAGE_ICON, drawable->pos.right - drawable->pos.left, drawable->pos.bottom - drawable->pos.top, LR_DEFAULTCOLOR);
+			drawable->img.iconLoaded = true;
+		}
+
+		DrawIconEx(currentWindowState.memHDC, drawable->pos.left, drawable->pos.top, drawable->img.icon, drawable->pos.right - drawable->pos.left, drawable->pos.bottom - drawable->pos.top, 0, NULL, DI_NORMAL);
 		break;
 	case DRAWABLE_LABEL:
 
@@ -121,6 +126,13 @@ void drawable_updatePosToContainerList(DynamicArray_t *array) {
 	for (int i = 0; i < array->size; i++) {
 		drawable = (Drawable_t *)DynamicArray_get(array, i);
 
-		drawable->pos = getPosToContainer(drawable->parentPos, drawable->initPos);
+		
+		if(drawable->posType == POS_TYPE_REL){
+			drawable->pos = getPosToContainer(drawable->parentPos, drawable->initPos);
+		}
+		else if(drawable->posType == POS_TYPE_ABS){
+			drawable->pos = getPosToContainerAbsolute(drawable->parentPos, drawable->initPosAbs);
+		}
+
 	}
 }

@@ -4,6 +4,7 @@
 #include "menu.h"
 #include "titlbar.h"
 #include <stdio.h>
+#include "container.h"
 
 int layoutInitialzed = 0;
 
@@ -23,7 +24,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		minMax->ptMinTrackSize.x = CONFIG_MIN_WINDOW_WIDTH;
 		minMax->ptMinTrackSize.y = CONFIG_MIN_WINDOW_Height;
 
-		return 0; 
+		return 0;
 	}
 
 #ifdef CUSTOM_TITLE_BAR
@@ -49,6 +50,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 		return 0;
 	}
+	case WM_DPICHANGED:
+
+		int oldTitlebarHeight = currentWindowState.titlbarHeight;
+		currentWindowState.titlbarHeight = getTitleBarHeight(hwnd);
+
+		for (int i = 1; i < currentWindowState.containers->size; i++) {
+			container_t *container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
+
+			container->absPos.top += currentWindowState.titlbarHeight - oldTitlebarHeight;
+			container->absPos.bottom += currentWindowState.titlbarHeight - oldTitlebarHeight;
+		}
+
+		updateContainersLayoutPos();
+		updateWidgetVisibility();
+		InvalidateRect(hwnd, NULL, FALSE);
+		break;
 	case WM_NCHITTEST: {
 		// Let the default procedure handle resizing areas
 		LRESULT hit = DefWindowProc(hwnd, msg, wParam, lParam);

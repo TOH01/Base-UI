@@ -52,12 +52,12 @@ void updateContainersLayoutPos(void) {
 			if (currContainer->layout.left != LAYOUT_CONTAINER && currContainer->layout.left != LAYOUT_NONE) {
 				currContainer->absPos.left = layoutToBorderHelper(currContainer->layout.left, currContainer->layout.offsetLeft);
 			}
-
-			if (!currContainer->fixedWidgets) {
-				updatePosToContainerList(currContainer->widgetList);
-				drawable_updatePosToContainerList(currContainer->drawableList);
-			}
 		}
+
+
+		updatePosToContainerList(currContainer->widgetList);
+		drawable_updatePosToContainerList(currContainer->drawableList);
+		
 	}
 }
 
@@ -425,12 +425,30 @@ container_t *initContainer(containerPos_t pos) {
 void containerAddWidget(container_t *container, BaseWidget_t *widget) {
 	widget->parentPos = &container->absPos;
 	widget->pos = getPosToContainer(widget->parentPos, widget->initPos);
+	widget->posType = POS_TYPE_REL;
+	addWidget(container->widgetList, widget);
+}
+
+void containerAddWidgetAbsolute(container_t *container, BaseWidget_t *widget, AbsolutePos_t pos) {
+	widget->parentPos = &container->absPos;
+	widget->pos = getPosToContainerAbsolute(widget->parentPos, pos);
+	widget->initPosAbs = pos;
+	widget->posType = POS_TYPE_ABS;
 	addWidget(container->widgetList, widget);
 }
 
 void containerAddDrawable(container_t *container, Drawable_t *drawable) {
 	drawable->parentPos = &container->absPos;
 	drawable->pos = getPosToContainer(drawable->parentPos, drawable->initPos);
+	drawable->posType = POS_TYPE_REL;
+	addDrawable(container->drawableList, drawable);
+}
+
+void containerAddDrawableAbsolute(container_t *container, Drawable_t *drawable, AbsolutePos_t pos) {
+	drawable->parentPos = &container->absPos;
+	drawable->pos = getPosToContainerAbsolute(drawable->parentPos, pos);
+	drawable->initPosAbs = pos;
+	drawable->posType = POS_TYPE_ABS;
 	addDrawable(container->drawableList, drawable);
 }
 
