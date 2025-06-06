@@ -8,7 +8,6 @@ Drawable_t *drawable_initRectangle(CommonPos_t pos, rectangleTheme_t *theme) {
 
 	drawable->rectangle.theme = theme;
 
-
 	drawable->initPos = pos;
 
 	return drawable;
@@ -37,9 +36,18 @@ Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t *theme) {
 	return drawable;
 }
 
+Drawable_t *drawable_initImg(CommonPos_t pos, int ID) {
+	Drawable_t *drawable = (Drawable_t *)calloc(1, sizeof(Drawable_t));
+	drawable->type = DRAWABLE_IMG;
+	drawable->img.icon = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(ID), IMAGE_ICON, pos.right, pos.bottom, LR_DEFAULTCOLOR);
+	drawable->initPos = pos;
+
+	return drawable;
+}
+
 void drawable_draw(Drawable_t *drawable) {
 
-	if(drawable->hidden){
+	if (drawable->hidden) {
 		return;
 	}
 
@@ -56,6 +64,9 @@ void drawable_draw(Drawable_t *drawable) {
 		rectangleTheme_t *themeRectangle = drawable->rectangle.theme;
 
 		UiUtils_DrawColoredRectangle(drawable->pos, themeRectangle->color.fill, themeRectangle->color.border, themeRectangle->borderWidth);
+		break;
+	case DRAWABLE_IMG:
+		DrawIconEx(currentWindowState.memHDC, drawable->pos.left, drawable->pos.top, drawable->img.icon, drawable->pos.right, drawable->pos.bottom, 0, NULL, DI_NORMAL);
 		break;
 	case DRAWABLE_LABEL:
 
@@ -76,13 +87,12 @@ void drawable_draw(Drawable_t *drawable) {
 	}
 }
 
-void addDrawable(DynamicArray_t * array, Drawable_t *drawable) {
+void addDrawable(DynamicArray_t *array, Drawable_t *drawable) {
 	if (!array || !drawable) {
 		return;
 	}
 
 	DynamicArray_Add(array, drawable);
-	
 }
 
 void drawable_drawAll(DynamicArray_t *array) {
@@ -90,31 +100,27 @@ void drawable_drawAll(DynamicArray_t *array) {
 		return;
 	}
 
-	Drawable_t * drawable = NULL;
+	Drawable_t *drawable = NULL;
 
-	for (int i = 0; i < array->size; i++)
-	{
-		
-		drawable = (Drawable_t *) DynamicArray_get(array, i);
+	for (int i = 0; i < array->size; i++) {
+
+		drawable = (Drawable_t *)DynamicArray_get(array, i);
 
 		drawable_draw(drawable);
 	}
-	
 }
 
-void drawable_updatePosToContainerList(DynamicArray_t * array) {
+void drawable_updatePosToContainerList(DynamicArray_t *array) {
 
 	if (!array) {
 		return;
 	}
 
-	Drawable_t * drawable = NULL;
+	Drawable_t *drawable = NULL;
 
-	for (int i = 0; i < array->size; i++)
-	{
-		drawable = (Drawable_t *) DynamicArray_get(array, i);
+	for (int i = 0; i < array->size; i++) {
+		drawable = (Drawable_t *)DynamicArray_get(array, i);
 
 		drawable->pos = getPosToContainer(drawable->parentPos, drawable->initPos);
 	}
-	
 }

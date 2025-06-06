@@ -20,6 +20,7 @@ typedef struct WindowState {
 	DynamicArray_t * containers;
 	bool mouseTrackingActive;
 	bool mouseTrackingTitlebar;
+	HINSTANCE hInstance;
 	#ifdef CUSTOM_TITLE_BAR
 	int titlbarHeight;
 	#endif

@@ -1,6 +1,7 @@
-#for release make BUILD_TYPE=release
+# for release make BUILD_TYPE=release
 # Compiler
 CC = gcc
+WINDRES = windres
 
 # Directories
 SRCDIR = src
@@ -10,6 +11,10 @@ BUILDDIR = build
 # Output executable names
 OUT = $(BUILDDIR)/my_program.exe
 TESTOUT = $(BUILDDIR)/test_program.exe
+
+# Resource files
+RCFILE = $(SRCDIR)/application/resource.rc
+RESFILE = $(BUILDDIR)/resource.res
 
 # Source files
 SRCS = $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/*/*.c) $(wildcard $(SRCDIR)/*/*/*.c)
@@ -38,12 +43,12 @@ endif
 # Default target
 all: $(OUT)
 
-# Build main program
-$(OUT): $(OBJS)
+# Build main program with resource file
+$(OUT): $(OBJS) $(RESFILE)
 	@if not exist "$(BUILDDIR)" mkdir "$(BUILDDIR)"
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-# Build test program
+# Build test program (no resource file)
 $(TESTOUT): $(OBJS) $(TEST_OBJS)
 	@if not exist "$(BUILDDIR)" mkdir "$(BUILDDIR)"
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
@@ -57,6 +62,11 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 $(BUILDDIR)/%.o: $(TESTDIR)/%.c
 	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile the .rc file to .res
+$(RESFILE): $(RCFILE)
+	@if not exist "$(BUILDDIR)" mkdir "$(BUILDDIR)"
+	$(WINDRES) $< -O coff -o $@
 
 # Clean build directory
 clean:

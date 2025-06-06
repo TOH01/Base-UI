@@ -758,7 +758,7 @@ float getDistance(Coordinate_t c1, Coordinate_t c2) {
 
 int getTimeForDistance(float distance) { return (uint32_t)(1.108f * powf(distance, 1.926f)); }
 
-int getWaterForDistance(float distance) { return (uint32_t)(60.0 * pow(distance, 1.75)); }
+int getWaterForDistance(float distance) { return (uint32_t)(54.0 * getTimeForDistance(distance)); }
 
 DynamicArray_t *getAllActiveTown(narciaMap_t *map) {
 
@@ -897,36 +897,44 @@ void pathDistanceToTextDump(path_t *path, textDumpWidget_t *textDump) {
 
 	Coordinate_t c1;
 	Coordinate_t c2;
+	int totalDistance = 0;
 
 	for (int i = 0; i < path->tileCount - 1; i++) {
 		c1 = (Coordinate_t){path->tiles[i].x, path->tiles[i].y};
 		c2 = (Coordinate_t){path->tiles[i + 1].x, path->tiles[i + 1].y};
 
+		totalDistance += getDistance(c1, c2);
 		snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %.1f", c1.x, c1.y, c2.x, c2.y, getDistance(c1, c2));
 		customTextDump_AddLine(textDump, buff);
 	}
 
+	snprintf(buff, sizeof(buff), "Total distance - %d", totalDistance);
+	customTextDump_AddLine(textDump, buff);
 	customTextDump_AddLine(textDump, "------------------------------");
 	customTextDump_AddLine(textDump, "");
 }
 
 void pathWaterToTextDump(path_t *path, textDumpWidget_t *textDump) {
-	customTextDump_AddLine(textDump, "Water cost (15% decrease) for path:");
+	customTextDump_AddLine(textDump, "Water cost (15% decrease, 3 heroes) for path:");
 
 	//(XXX, XXX) -> (XXX, XXX) - XXXXXXX
 	char buff[40] = "";
 
 	Coordinate_t c1;
 	Coordinate_t c2;
+	int totalWater = 0;
 
 	for (int i = 0; i < path->tileCount - 1; i++) {
 		c1 = (Coordinate_t){path->tiles[i].x, path->tiles[i].y};
 		c2 = (Coordinate_t){path->tiles[i + 1].x, path->tiles[i + 1].y};
 
+		totalWater += getWaterForDistance(getDistance(c1, c2));
 		snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %d", c1.x, c1.y, c2.x, c2.y, getWaterForDistance(getDistance(c1, c2)));
 		customTextDump_AddLine(textDump, buff);
 	}
 
+	snprintf(buff, sizeof(buff), "Total water cost - %d", totalWater);
+	customTextDump_AddLine(textDump, buff);
 	customTextDump_AddLine(textDump, "------------------------------");
 	customTextDump_AddLine(textDump, "");
 }
@@ -939,12 +947,14 @@ void pathTimeToTextDump(path_t *path, textDumpWidget_t *textDump) {
 
 	Coordinate_t c1;
 	Coordinate_t c2;
+	int totalTime = 0;
 
 	for (int i = 0; i < path->tileCount - 1; i++) {
 		c1 = (Coordinate_t){path->tiles[i].x, path->tiles[i].y};
 		c2 = (Coordinate_t){path->tiles[i + 1].x, path->tiles[i + 1].y};
 
 		int totalSeconds = getTimeForDistance(getDistance(c1, c2));
+		totalTime += totalSeconds;
 		int minutes = totalSeconds / 60;
 		int seconds = totalSeconds % 60;
 
@@ -952,6 +962,8 @@ void pathTimeToTextDump(path_t *path, textDumpWidget_t *textDump) {
 		customTextDump_AddLine(textDump, buff);
 	}
 
+	snprintf(buff, sizeof(buff), "Total time - %d:%02d", totalTime / 60, totalTime % 60);
+	customTextDump_AddLine(textDump, buff);
 	customTextDump_AddLine(textDump, "------------------------------");
 	customTextDump_AddLine(textDump, "");
 }

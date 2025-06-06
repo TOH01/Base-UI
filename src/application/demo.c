@@ -10,8 +10,15 @@
 #include "textDump.h"
 #include "widget.h"
 #include <stdio.h>
+#include "resource.h"
 
 buttonWidget_t *textDumpMenuButtons[3];
+const char *textDumpDefaultLines[] = {
+    "Euclidian distance, generate a path!",
+    "March time, generate a path!",
+    "Water cost, generate a path!",
+};
+
 const char *textDumpMenuButtonNames[] = {
     "Distance",
     "Time",
@@ -175,7 +182,9 @@ void Demo_InitAll(void) {
 
 		textDumps[i] = (textDumpWidget_t *)customTextDump_initTextDump((CommonPos_t){0, 0.01, 0.99, 0.99});
 		containerAddWidget(textDumpContainers[i], (BaseWidget_t *)textDumps[i]);
-		customTextDump_AddLine(textDumps[i], textDumpMenuButtonNames[i]);
+		customTextDump_AddLine(textDumps[i], textDumpDefaultLines[i]);
+		customTextDump_AddLine(textDumps[i], "-----------------------------------------------");
+		customTextDump_AddLine(textDumps[i], "");
 	}
 
 	inputX = customInput_initInput((CommonPos_t){0.2, 0.05, 0.35, 0.8});
@@ -226,6 +235,9 @@ void Demo_InitAll(void) {
 	buttonWidget_t *clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, &clearSelection, 0);
 	containerAddWidget(mainHeaderContainer, (BaseWidget_t *)clearSelectionButton);
 	customButton_setButtonText(clearSelectionButton, clearSelectionText);
+
+	Drawable_t *testImg = drawable_initImg((CommonPos_t){0.2, 0.56, 0.8, 0.8}, IDI_MYICON);
+	containerAddDrawable(mainHeaderContainer, testImg);
 
 	Drawable_t *seperatorLine3 = drawable_initLine((CommonPos_t){0.2, 0.56, 0.56, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawable(mainHeaderContainer, seperatorLine3);
