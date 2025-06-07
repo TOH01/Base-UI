@@ -8,6 +8,7 @@ typedef enum DrawableType {
 	DRAWABLE_LABEL,
 	DRAWABLE_LINE,
 	DRAWABLE_IMG,
+	DRAWABLE_3_SLICE_IMG_RECT,
 } DrawableType_t;
 
 
@@ -35,6 +36,11 @@ typedef struct Drawable {
 			bool iconLoaded;
 			int iconID;
 		} img;
+		struct {
+			HICON icon[3];
+			bool iconsLoades;
+			int iconID[3];
+		} slice3img;
 	};
 
 } Drawable_t;
@@ -45,6 +51,8 @@ Drawable_t *drawable_initRectangle(CommonPos_t pos, rectangleTheme_t * theme);
 Drawable_t *drawable_initLabel(CommonPos_t pos, const char * text, labelTheme_t * theme);
 Drawable_t *drawable_initLine(CommonPos_t pos, lineTheme_t * theme);
 Drawable_t *drawable_initImg(CommonPos_t pos, int ID);
+Drawable_t *drawable_init3SliceImgRectange(CommonPos_t pos, int ID_LEFT, int ID_CENTER, int ID_RIGHT);
 void drawable_updatePosToContainerList(DynamicArray_t * array);
+
 
 #endif

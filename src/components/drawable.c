@@ -45,6 +45,18 @@ Drawable_t *drawable_initImg(CommonPos_t pos, int ID) {
 	return drawable;
 }
 
+Drawable_t *drawable_init3SliceImgRectange(CommonPos_t pos, int ID_LEFT, int ID_CENTER, int ID_RIGHT) {
+	Drawable_t *drawable = (Drawable_t *)calloc(1, sizeof(Drawable_t));
+	drawable->type = DRAWABLE_3_SLICE_IMG_RECT;
+	drawable->initPos = pos;
+
+	drawable->slice3img.iconID[0] = ID_LEFT;
+	drawable->slice3img.iconID[1] = ID_CENTER;
+	drawable->slice3img.iconID[2] = ID_RIGHT;
+
+	return drawable;
+}
+
 void drawable_draw(Drawable_t *drawable) {
 
 	if (drawable->hidden) {
@@ -72,6 +84,16 @@ void drawable_draw(Drawable_t *drawable) {
 		}
 
 		DrawIconEx(currentWindowState.memHDC, drawable->pos.left, drawable->pos.top, drawable->img.icon, drawable->pos.right - drawable->pos.left, drawable->pos.bottom - drawable->pos.top, 0, NULL, DI_NORMAL);
+		break;
+	case DRAWABLE_3_SLICE_IMG_RECT:
+		if (!drawable->slice3img.iconsLoades) {
+			drawable->slice3img.icon[0] = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(drawable->slice3img.iconID[0]), IMAGE_ICON, drawable->pos.right - drawable->pos.left, drawable->pos.bottom - drawable->pos.top, LR_DEFAULTCOLOR);
+			drawable->slice3img.icon[1] = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(drawable->slice3img.iconID[1]), IMAGE_ICON, drawable->pos.right - drawable->pos.left, drawable->pos.bottom - drawable->pos.top, LR_DEFAULTCOLOR);
+			drawable->slice3img.icon[2] = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(drawable->slice3img.iconID[2]), IMAGE_ICON, drawable->pos.right - drawable->pos.left, drawable->pos.bottom - drawable->pos.top, LR_DEFAULTCOLOR);
+			drawable->slice3img.iconsLoades = true;
+		}
+
+		draw3SliceHelper(drawable->pos, drawable->slice3img.icon[0], drawable->slice3img.icon[1], drawable->slice3img.icon[2]);
 		break;
 	case DRAWABLE_LABEL:
 
@@ -126,13 +148,10 @@ void drawable_updatePosToContainerList(DynamicArray_t *array) {
 	for (int i = 0; i < array->size; i++) {
 		drawable = (Drawable_t *)DynamicArray_get(array, i);
 
-		
-		if(drawable->posType == POS_TYPE_REL){
+		if (drawable->posType == POS_TYPE_REL) {
 			drawable->pos = getPosToContainer(drawable->parentPos, drawable->initPos);
-		}
-		else if(drawable->posType == POS_TYPE_ABS){
+		} else if (drawable->posType == POS_TYPE_ABS) {
 			drawable->pos = getPosToContainerAbsolute(drawable->parentPos, drawable->initPosAbs);
 		}
-
 	}
 }

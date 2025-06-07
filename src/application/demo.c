@@ -205,9 +205,11 @@ void Demo_InitAll(void) {
 	colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
 
 	Drawable_t *colorMatrixLabel = drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText, &currentWindowState.activeTheme.label);
+	Drawable_t *colorMatrixBg = drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT, IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
 
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)colorMatrix, (AbsolutePos_t){0.2 * 100, 0.85 * 1400, 0.98 * 1400, 0.9 * 100});
-	containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixLabel, (AbsolutePos_t){0.2 * 100, 0.77 * 1400, 0.84 * 1400, 0.9 * 100});
+	containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixBg, (AbsolutePos_t){0.4 * 100, 0.75 * 1400, 0.85 * 1400, 0.7 * 100});
+	containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixLabel, (AbsolutePos_t){0.4 * 100, 0.765 * 1400, 0.835 * 1400, 0.7 * 100});
 
 	buttonWidget_t *generatePathButton = customButton_initButton((CommonPos_t){0.3, 0.02, 0.12, 0.7}, &generatePath, 0);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)generatePathButton, (AbsolutePos_t){0.3 * 100, 0.02 * 1400, 0.12 * 1400, 0.7 * 100});

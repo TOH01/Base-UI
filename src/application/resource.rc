@@ -1,6 +1,11 @@
 #include "resource.h"
 
 IDI_GOBUTTON ICON "assets/btn_GO.ico"
+
 IDI_LEFT_BTN ICON "assets/left_btn.ico"
 IDI_CENTER_BTN ICON "assets/center_btn.ico"
 IDI_RIGHT_BTN ICON "assets/right_btn.ico"
+
+IDI_TEXT_BG_LEFT ICON "assets/text_bg_left.ico"
+IDI_TEXT_BG_CENTER ICON "assets/text_bg_center.ico"
+IDI_TEXT_BG_RIGHT ICON "assets/text_bg_right.ico"
