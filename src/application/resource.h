@@ -12,6 +12,11 @@
 #define IDI_9_SLICE_1_TOP_LEFT 111
 #define IDI_9_SLICE_1_BOTTOM_LEFT 112
 
+#define IDI_9_SLICE_1_TOP 122
+#define IDI_9_SLICE_1_RIGHT 123
+#define IDI_9_SLICE_1_LEFT 124
+#define IDI_9_SLICE_1_BOTTOM 125
+
 #define IDI_9_SLICE_2_TOP_LEFT        113
 #define IDI_9_SLICE_2_TOP             114
 #define IDI_9_SLICE_2_TOP_RIGHT       115
@@ -23,3 +28,7 @@
 #define IDI_9_SLICE_2_BOTTOM_LEFT     119
 #define IDI_9_SLICE_2_BOTTOM          120
 #define IDI_9_SLICE_2_BOTTOM_RIGHT    121
+
+#define IDI_ARROW_LEFT 126
+#define IDI_ARROW_RIGHT 127
+#define IDI_CROSS 128

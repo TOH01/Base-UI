@@ -36,6 +36,7 @@ const char deleteText[] = "Delete";
 const char clearSelectionText[] = "Clear Selection";
 const char generateFriendlyTownText[] = "Homebase +";
 const char generateEnemeyTownText[] = "Enemy Homebase +";
+const char tileSearchLabelText[] = "Tile Finder";
 
 container_t *textDumpContainers[3];
 textDumpWidget_t *textDumps[3];
@@ -162,7 +163,7 @@ void Demo_InitAll(void) {
 	tileSearchBarContainer->layout.offsetRight = -425;
 	tileSearchBarContainer->layout.offsetLeft = -650;
 	tileSearchBarContainer->layout.offsetBottom = -30;
-	tileSearchBarContainer->layout.offsetTop = -90;
+	tileSearchBarContainer->layout.offsetTop = -125;
 
 	textDumpMenuGroup = initSubmenuGroup();
 
@@ -201,12 +202,22 @@ void Demo_InitAll(void) {
 	buttonWidget_t *goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
 	customButton_setToIcon(goButton, IDI_GOBUTTON);
 
-	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputX);
-	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputY);
-	containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t *)goButton, (AbsolutePos_t){10, 170, 210, 50});
+	Drawable_t * tileSearchBarBg = drawable_init9SliceImgRectangle((CommonPos_t){0,0,1,1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP, IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT, IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 30);
+	Drawable_t *tileSearchBarLabelBg = drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT, IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
+	Drawable_t * tileSearchBarLabel = drawable_initLabel((CommonPos_t){0, 0, 0,0}, tileSearchLabelText, &currentWindowState.activeTheme.label);
+
+	containerAddDrawable(tileSearchBarContainer, tileSearchBarBg);
+	containerAddDrawableAbsolute(tileSearchBarContainer, tileSearchBarLabelBg, (AbsolutePos_t){5, 25, 200, 35});
+	containerAddDrawableAbsolute(tileSearchBarContainer, tileSearchBarLabel, (AbsolutePos_t){5, 65, 160, 35});
+	containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t *)inputX, (AbsolutePos_t){50, 0.05 * 225, 0.35 * 225, 80});
+	containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t *)inputY, (AbsolutePos_t){50, 0.4 * 225, 0.7 * 225, 80});
+	containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t *)goButton, (AbsolutePos_t){45, 170, 210, 85});
 
 	colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
 
+	Drawable_t * mainHeaderBg = drawable_init9SliceImgRectangle((CommonPos_t){0,0,1,1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP, IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT, IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 50);
+	containerAddDrawable(mainHeaderContainer, mainHeaderBg);
+	
 	Drawable_t *colorMatrixLabel = drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText, &currentWindowState.activeTheme.label);
 	Drawable_t *colorMatrixBg = drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT, IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
 

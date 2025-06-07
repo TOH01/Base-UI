@@ -47,6 +47,7 @@ typedef struct container_t {
 	bool resizable;
 	bool fixed;				// only set true, if this container is not dependent on other containers for sizing
 	bool fixedWidgets;
+	bool disableRectRender;
 	Layout_t layout;
 } container_t;
 

@@ -54,10 +54,8 @@ void updateContainersLayoutPos(void) {
 			}
 		}
 
-
 		updatePosToContainerList(currContainer->widgetList);
 		drawable_updatePosToContainerList(currContainer->drawableList);
-		
 	}
 }
 
@@ -90,7 +88,11 @@ void updateWidgetVisibility(void) {
 	}
 }
 
-void redrawContainer(container_t *container) { UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth); }
+void redrawContainer(container_t *container) {
+	if (!container->disableRectRender) {
+		UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth);
+	}
+}
 
 void redrawContainerList(void) {
 

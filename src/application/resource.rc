@@ -25,3 +25,12 @@ IDI_9_SLICE_1_TOP_RIGHT     ICON "assets/9_slice_bg_1/top_right.ico"
 IDI_9_SLICE_1_BOTTOM_LEFT   ICON "assets/9_slice_bg_1/bottom_left.ico"  
 IDI_9_SLICE_1_BOTTOM_RIGHT  ICON "assets/9_slice_bg_1/bottom_right.ico"  
 IDI_9_SLICE_1_CENTER        ICON "assets/9_slice_bg_1/center.ico"       
+IDI_9_SLICE_1_LEFT          ICON "assets/9_slice_bg_1/left.ico"      
+IDI_9_SLICE_1_TOP           ICON "assets/9_slice_bg_1/top.ico"    
+IDI_9_SLICE_1_BOTTOM        ICON "assets/9_slice_bg_1/bottom.ico"  
+IDI_9_SLICE_1_RIGHT         ICON "assets/9_slice_bg_1/right.ico"  
+
+IDI_ARROW_LEFT ICON "assets/cross.ico"
+IDI_ARROW_RIGHT ICON "assets/arrow_left.ico"
+IDI_CROSS ICON "assets/arrow_right.ico"
+ 

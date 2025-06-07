@@ -897,7 +897,7 @@ void pathDistanceToTextDump(path_t *path, textDumpWidget_t *textDump) {
 
 	Coordinate_t c1;
 	Coordinate_t c2;
-	int totalDistance = 0;
+	float totalDistance = 0;
 
 	for (int i = 0; i < path->tileCount - 1; i++) {
 		c1 = (Coordinate_t){path->tiles[i].x, path->tiles[i].y};
@@ -908,7 +908,7 @@ void pathDistanceToTextDump(path_t *path, textDumpWidget_t *textDump) {
 		customTextDump_AddLine(textDump, buff);
 	}
 
-	snprintf(buff, sizeof(buff), "Total distance - %d", totalDistance);
+	snprintf(buff, sizeof(buff), "Total distance - %.1f", totalDistance);
 	customTextDump_AddLine(textDump, buff);
 	customTextDump_AddLine(textDump, "------------------------------");
 	customTextDump_AddLine(textDump, "");
