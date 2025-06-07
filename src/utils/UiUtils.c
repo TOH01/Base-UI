@@ -1,6 +1,7 @@
 #include "UiUtils.h"
 #include "common.h"
 #include "string.h"
+#include <stdio.h>
 #include <windows.h>
 
 RECT UiUtils_absolutePosToRect(AbsolutePos_t pos) {
@@ -166,7 +167,7 @@ AbsolutePos_t getPosToContainer(const AbsolutePos_t *parentAbsPos, CommonPos_t w
 	return absPos;
 }
 
-AbsolutePos_t getPosToContainerAbsolute(const AbsolutePos_t *parentAbsPos, AbsolutePos_t widgetAbsPos){
+AbsolutePos_t getPosToContainerAbsolute(const AbsolutePos_t *parentAbsPos, AbsolutePos_t widgetAbsPos) {
 	AbsolutePos_t absPos;
 
 	absPos.left = parentAbsPos->left + widgetAbsPos.left;
@@ -212,4 +213,71 @@ HFONT getFontForRect(HDC hdc, char text[], RECT box) {
 	hFont = CreateFontA(-maxSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
 
 	return hFont;
+}
+
+void draw3SliceHelper(AbsolutePos_t pos, HICON left, HICON center, HICON right) {
+	int height = pos.bottom - pos.top;
+	int width = pos.right - pos.left;
+
+	int canDraw = (width >= height * 2);
+
+	int fullTiles = 0;
+	int remainder = 0;
+	int centerStartX = pos.left + height;
+
+	if (canDraw) {
+		fullTiles = (width - 2 * height) / height;
+		remainder = (width - 2 * height) % height;
+	}
+
+	// Draw full center tiles
+	if (canDraw) {
+		for (int i = 0; i < fullTiles; ++i) {
+			int x = centerStartX + i * height;
+			DrawIconEx(currentWindowState.memHDC, x, pos.top, center, height, height, 0, NULL, DI_NORMAL);
+		}
+	}
+
+	// Draw partial center tile if needed (with alpha support)
+	if (canDraw && remainder > 0) {
+		HDC screenDC = GetDC(NULL);
+		HDC iconDC = CreateCompatibleDC(screenDC);
+		HBITMAP bmp = CreateCompatibleBitmap(screenDC, remainder, height);
+		HBITMAP oldBmp = (HBITMAP)SelectObject(iconDC, bmp);
+
+		// Clear background
+		RECT clearRect = {0, 0, remainder, height};
+		HBRUSH clearBrush = CreateSolidBrush(RGB(0, 0, 0));
+		FillRect(iconDC, &clearRect, clearBrush);
+		DeleteObject(clearBrush);
+
+		// Draw center icon into temp DC
+		DrawIconEx(iconDC, 0, 0, center, height, height, 0, NULL, DI_NORMAL);
+
+		// Alpha blend to screen
+		BLENDFUNCTION blendFunc = {0};
+		blendFunc.BlendOp = AC_SRC_OVER;
+		blendFunc.SourceConstantAlpha = 255;
+		blendFunc.AlphaFormat = AC_SRC_ALPHA;
+
+		AlphaBlend(currentWindowState.memHDC, centerStartX + fullTiles * height, pos.top, remainder, height, iconDC, 0, 0, remainder, height, blendFunc);
+
+		// Cleanup
+		SelectObject(iconDC, oldBmp);
+		DeleteObject(bmp);
+		DeleteDC(iconDC);
+		ReleaseDC(NULL, screenDC);
+	}
+
+	// Draw left and right caps
+	if (canDraw) {
+		DrawIconEx(currentWindowState.memHDC, pos.left, pos.top, left, height, height, 0, NULL, DI_NORMAL);
+		DrawIconEx(currentWindowState.memHDC, pos.right - height, pos.top, right, height, height, 0, NULL, DI_NORMAL);
+	}
+
+#ifdef DEBUG
+	if (!canDraw) {
+		printf("3-slice bounding box too small!\n");
+	}
+#endif
 }

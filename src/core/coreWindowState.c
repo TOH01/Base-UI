@@ -10,7 +10,7 @@ WindowState_t currentWindowState = {
     .hPen = NULL,
     .ps = NULL,
     .hdc = NULL,
-    .activeTheme = DARKMODE_THEME(),
+    .activeTheme = CASTLE_CLASH_THEME(),
 };
 
 LRESULT CoreWindowState_WmCreateHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {

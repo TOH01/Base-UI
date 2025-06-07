@@ -1,3 +1,6 @@
 #include "resource.h"
 
-IDI_MYICON ICON "assets/myicon.ico"
+IDI_GOBUTTON ICON "assets/btn_GO.ico"
+IDI_LEFT_BTN ICON "assets/left_btn.ico"
+IDI_CENTER_BTN ICON "assets/center_btn.ico"
+IDI_RIGHT_BTN ICON "assets/right_btn.ico"

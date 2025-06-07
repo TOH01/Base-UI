@@ -1,1 +1,4 @@
-#define IDI_MYICON 101
+#define IDI_GOBUTTON 101
+#define IDI_LEFT_BTN 102
+#define IDI_CENTER_BTN 103
+#define IDI_RIGHT_BTN 104

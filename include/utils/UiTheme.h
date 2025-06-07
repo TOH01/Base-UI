@@ -296,6 +296,68 @@ typedef struct UiTheme {
 #define IFDEF_TITLEBAR_OCEAN
 #endif
 
+#define CASTLE_CLASH_THEME() ((UiTheme_t){ \
+    .backgroundColor = RGB(214, 186, 148),\
+    .button = { \
+        .color = {RGB(66, 78, 126), RGB(107, 125, 197), RGB(130, 150, 220)}, \
+        .text = {RGB(247, 247, 255), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \
+        .borderWidth = 2.0f, \
+    }, \
+    .input = { \
+        .inputText = {RGB(238, 219, 197), NULL, DT_LEFT | DT_VCENTER | DT_NOCLIP}, \
+        .emptyText = {RGB(192, 168, 136), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \
+        .color = {RGB(115, 85, 58), RGB(115, 85, 58), RGB(140, 110, 80)}, \
+        .active = {RGB(107, 125, 197), RGB(115, 85, 58), RGB(66, 78, 126)}, \
+        .borderWidth = 2.0f, \
+    }, \
+    .checkbox = { \
+        .inner = {RGB(107, 125, 197), RGB(107, 125, 197), RGB(130, 150, 220)}, \
+        .outer = {RGB(115, 85, 58), RGB(214, 186, 148), RGB(140, 110, 80)}, \
+        .borderWidth = 1, \
+        .spacing = 0.2f, \
+    }, \
+    .slider = { \
+        .thumb = {RGB(107, 125, 197), RGB(214, 186, 148), RGB(130, 150, 220)}, \
+        .bar = {RGB(156, 130, 102), RGB(214, 186, 148), RGB(178, 152, 124)}, \
+        .thumbBorderWidth = 2, \
+        .barBorderWidht = 1.0f, \
+        .barSpacingTop = 0.4f, \
+        .barSpacingBottom = 0.4f, \
+        .thumbSpacingTop = 0.1f, \
+        .thumbSpacingBottom = 0.1f, \
+    }, \
+    .container = { \
+        .color = {RGB(115, 85, 58), RGB(214, 186, 148), RGB(140, 110, 80)}, \
+        .borderWidth = 2, \
+    }, \
+    .textDump = { \
+        .text = {RGB(238, 219, 197), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
+    }, \
+    .label = { \
+        .text = {RGB(123, 85, 58), NULL, DT_LEFT | DT_VCENTER | DT_NOCLIP}, \
+    }, \
+    .rectangel = { \
+        .color = {RGB(140, 110, 80), RGB(214, 186, 148), RGB(156, 130, 102)}, \
+        .borderWidth = 1, \
+    }, \
+    .line = { \
+        .color = {RGB(156, 130, 102), RGB(156, 130, 102), RGB(178, 152, 124)}, \
+        .width = 1, \
+    } \
+    /* Titlebar customization below */ \
+    IFDEF_TITLEBAR_CASTLECLASH \
+})
+
+#ifdef CUSTOM_TITLE_BAR
+#define IFDEF_TITLEBAR_CASTLECLASH \
+    , .titlebar = {RGB(156, 130, 102)}, \
+    .close = {RGB(180, 50, 50), RGB(255, 255, 255)}, \
+    .restore = {RGB(123, 85, 58), RGB(255, 255, 255)}, \
+    .minimize = {RGB(123, 85, 58), RGB(255, 255, 255)}
+#else
+#define IFDEF_TITLEBAR_CASTLECLASH
+#endif
+
 void UiTheme_initFonts(void);
 
 #endif

@@ -44,6 +44,29 @@ static void onClickButton(BaseWidget_t *base, int x, int y, ClickType_t clickTyp
 	}
 }
 
+static void drawImageButton(BaseWidget_t *baseWidget) {
+	buttonWidget_t *button = (buttonWidget_t *)baseWidget;
+	AbsolutePos_t pos = baseWidget->pos;
+	DrawIconEx(currentWindowState.memHDC, pos.left, pos.top, button->images[0], pos.right - pos.left, pos.bottom - pos.top, 0, NULL, DI_NORMAL);
+}
+
+static void draw3SliceButton(BaseWidget_t *baseWidget) {
+	buttonWidget_t *button = (buttonWidget_t *)baseWidget;
+	draw3SliceHelper(baseWidget->pos, button->images[0], button->images[1], button->images[2]);
+
+	if (button->theme != NULL) {
+
+		if (UiUtils_TextFitsBoxTheme(button->name, baseWidget->pos, button->theme->text.font)) {
+			UiUtils_DrawTextTheme(baseWidget->pos, button->name, button->theme->text.formatFlags, button->theme->text.font, button->theme->text.color);
+		}
+	}
+#ifdef DEBUG
+	else {
+		printf("custom button with ID: %d missing theme\n", button->id);
+	}
+#endif
+}
+
 static void onHoverButton(BaseWidget_t *base) {
 	assert(base->type == WIDGET_TYPE_BUTTON);
 	buttonWidget_t *button = (buttonWidget_t *)base;
@@ -91,4 +114,18 @@ void customButton_setButtonText(buttonWidget_t *button, const char *name) {
 	}
 	strncpy(button->name, name, BUTTON_MAX_NAME_LENGTH);
 	button->name[BUTTON_MAX_NAME_LENGTH - 1] = '\0';
+}
+
+void customButton_setToIcon(buttonWidget_t *button, int iconID) {
+	AbsolutePos_t pos = button->baseWidget.pos;
+	button->images[0] = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(iconID), IMAGE_ICON, pos.right - pos.left, pos.bottom - pos.top, LR_DEFAULTCOLOR);
+	button->baseWidget.drawHandler = &drawImageButton;
+}
+
+void customButton_setTo3SliceBackground(buttonWidget_t *button, int iconIDleft, int iconIDcenter, int iconIDright) {
+	AbsolutePos_t pos = button->baseWidget.pos;
+	button->images[0] = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(iconIDleft), IMAGE_ICON, pos.right - pos.left, pos.bottom - pos.top, LR_DEFAULTCOLOR);
+	button->images[1] = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(iconIDcenter), IMAGE_ICON, pos.right - pos.left, pos.bottom - pos.top, LR_DEFAULTCOLOR);
+	button->images[2] = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(iconIDright), IMAGE_ICON, pos.right - pos.left, pos.bottom - pos.top, LR_DEFAULTCOLOR);
+	button->baseWidget.drawHandler = &draw3SliceButton;
 }

@@ -49,8 +49,6 @@ colorMatrix_t *colorMatrix;
 inputWidget_t *inputX;
 inputWidget_t *inputY;
 
-Drawable_t *testImg;
-
 int selectedPathIdx = 0;
 
 void pathSelectButtonCallback(int id) {
@@ -198,12 +196,11 @@ void Demo_InitAll(void) {
 	strncpy(inputY->defaultText, "Y", 2);
 
 	buttonWidget_t *goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
-
-	customButton_setButtonText(goButton, "GO");
+	customButton_setToIcon(goButton, IDI_GOBUTTON);
 
 	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputX);
 	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)inputY);
-	containerAddWidget(tileSearchBarContainer, (BaseWidget_t *)goButton);
+	containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t *)goButton, (AbsolutePos_t){10, 170, 210, 50});
 
 	colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
 
@@ -215,6 +212,7 @@ void Demo_InitAll(void) {
 	buttonWidget_t *generatePathButton = customButton_initButton((CommonPos_t){0.3, 0.02, 0.12, 0.7}, &generatePath, 0);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)generatePathButton, (AbsolutePos_t){0.3 * 100, 0.02 * 1400, 0.12 * 1400, 0.7 * 100});
 	customButton_setButtonText(generatePathButton, generatePathText);
+	customButton_setTo3SliceBackground(generatePathButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
 	Drawable_t *seperatorLine1 = drawable_initLine((CommonPos_t){0.2, 0.14, 0.14, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine1, (AbsolutePos_t){0.2 * 100, 0.14 * 1400, 0.14 * 1400, 0.8 * 100});
@@ -237,9 +235,6 @@ void Demo_InitAll(void) {
 	buttonWidget_t *clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, &clearSelection, 0);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)clearSelectionButton, (AbsolutePos_t){0.3 * 100, 0.44 * 1400, 0.54 * 1400, 0.7 * 100});
 	customButton_setButtonText(clearSelectionButton, clearSelectionText);
-
-	testImg = drawable_initImg((CommonPos_t){0, 0, 0, 0}, IDI_MYICON);
-	containerAddDrawableAbsolute(mainHeaderContainer, testImg, (AbsolutePos_t){0, 0, 100, 100});
 
 	Drawable_t *seperatorLine3 = drawable_initLine((CommonPos_t){0.2, 0.56, 0.56, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine3, (AbsolutePos_t){0.2 * 100, 0.56 * 1400, 0.56 * 1400, 0.8 * 100});
