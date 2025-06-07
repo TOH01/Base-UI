@@ -166,6 +166,8 @@ void Demo_InitAll(void) {
 
 	textDumpMenuGroup = initSubmenuGroup();
 
+	Drawable_t *textDumpBG = drawable_init9SliceImgRectangle((CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_2_TOP_LEFT, IDI_9_SLICE_2_TOP, IDI_9_SLICE_2_TOP_RIGHT, IDI_9_SLICE_2_LEFT, IDI_9_SLICE_2_CENTER, IDI_9_SLICE_2_RIGHT, IDI_9_SLICE_2_BOTTOM_LEFT, IDI_9_SLICE_2_BOTTOM, IDI_9_SLICE_2_BOTTOM_RIGHT, 60);
+	
 	for (int i = 0; i < 3; i++) {
 
 		textDumpMenuButtons[i] = (buttonWidget_t *)customButton_initButton((CommonPos_t){0, i / 3.0f, (i + 1) / 3.0f, 1}, NULL, 1);
@@ -180,10 +182,11 @@ void Demo_InitAll(void) {
 		textDumpContainers[i]->layout.bottom = LAYOUT_BORDER_BOTTOM;
 		textDumpContainers[i]->layout.offsetLeft = -400;
 
-		textDumps[i] = (textDumpWidget_t *)customTextDump_initTextDump((CommonPos_t){0, 0.01, 0.99, 0.99});
+		textDumps[i] = (textDumpWidget_t *)customTextDump_initTextDump((CommonPos_t){0.02, 0.05, 0.95, 0.98});
 		containerAddWidget(textDumpContainers[i], (BaseWidget_t *)textDumps[i]);
+		containerAddDrawable(textDumpContainers[i], textDumpBG);
 		customTextDump_AddLine(textDumps[i], textDumpDefaultLines[i]);
-		customTextDump_AddLine(textDumps[i], "-----------------------------------------------");
+		customTextDump_AddLine(textDumps[i], "---------------------------------------");
 		customTextDump_AddLine(textDumps[i], "");
 	}
 

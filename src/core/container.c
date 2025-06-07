@@ -103,8 +103,8 @@ void redrawContainerList(void) {
 		if (container && container->visible) {
 			redrawContainer(DynamicArray_get(currentWindowState.containers, i));
 			if (!(movingContainer.action && container == movingContainer.container)) {
-				renderWidgetList(container->widgetList);
 				drawable_drawAll(container->drawableList);
+				renderWidgetList(container->widgetList);
 			}
 		}
 	}

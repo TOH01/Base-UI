@@ -331,7 +331,7 @@ typedef struct UiTheme {
         .borderWidth = 2, \
     }, \
     .textDump = { \
-        .text = {RGB(238, 219, 197), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
+        .text = {RGB(123, 85, 58), NULL, DT_LEFT | DT_SINGLELINE | DT_NOCLIP}, \
     }, \
     .label = { \
         .text = {RGB(123, 85, 58), NULL, DT_LEFT | DT_VCENTER | DT_NOCLIP}, \

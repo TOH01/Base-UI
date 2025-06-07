@@ -57,6 +57,25 @@ Drawable_t *drawable_init3SliceImgRectange(CommonPos_t pos, int ID_LEFT, int ID_
 	return drawable;
 }
 
+Drawable_t *drawable_init9SliceImgRectangle(CommonPos_t pos, int ID_TOP_LEFT, int ID_TOP_CENTER, int ID_TOP_RIGHT, int ID_MID_LEFT, int ID_CENTER, int ID_MID_RIGHT, int ID_BOTTOM_LEFT, int ID_BOTTOM_CENTER, int ID_BOTTOM_RIGHT, int slizeSize) {
+	Drawable_t *drawable = (Drawable_t *)calloc(1, sizeof(Drawable_t));
+	drawable->type = DRAWABLE_9_SLICE_IMG_RECT;
+	drawable->initPos = pos;
+
+	drawable->slice9img.iconID[0] = ID_TOP_LEFT;
+	drawable->slice9img.iconID[1] = ID_TOP_CENTER;
+	drawable->slice9img.iconID[2] = ID_TOP_RIGHT;
+	drawable->slice9img.iconID[3] = ID_MID_LEFT;
+	drawable->slice9img.iconID[4] = ID_CENTER;
+	drawable->slice9img.iconID[5] = ID_MID_RIGHT;
+	drawable->slice9img.iconID[6] = ID_BOTTOM_LEFT;
+	drawable->slice9img.iconID[7] = ID_BOTTOM_CENTER;
+	drawable->slice9img.iconID[8] = ID_BOTTOM_RIGHT;
+	drawable->slice9img.sliceSize = slizeSize;
+
+	return drawable;
+}
+
 void drawable_draw(Drawable_t *drawable) {
 
 	if (drawable->hidden) {
@@ -94,6 +113,20 @@ void drawable_draw(Drawable_t *drawable) {
 		}
 
 		draw3SliceHelper(drawable->pos, drawable->slice3img.icon[0], drawable->slice3img.icon[1], drawable->slice3img.icon[2]);
+		break;
+	case DRAWABLE_9_SLICE_IMG_RECT:
+		if (!drawable->slice9img.iconsLoades) {
+			int width = drawable->pos.right - drawable->pos.left;
+			int height = drawable->pos.bottom - drawable->pos.top;
+
+			for (int i = 0; i < 9; ++i) {
+				drawable->slice9img.icon[i] = (HICON)LoadImage(currentWindowState.hInstance, MAKEINTRESOURCE(drawable->slice9img.iconID[i]), IMAGE_ICON, width, height, LR_DEFAULTCOLOR);
+			}
+
+			drawable->slice9img.iconsLoades = true;
+		}
+
+		draw9SliceHelper(drawable->pos, drawable->slice9img.icon[0], drawable->slice9img.icon[1], drawable->slice9img.icon[2], drawable->slice9img.icon[3], drawable->slice9img.icon[4], drawable->slice9img.icon[5], drawable->slice9img.icon[6], drawable->slice9img.icon[7], drawable->slice9img.icon[8], drawable->slice9img.sliceSize, drawable->slice9img.sliceSize);
 		break;
 	case DRAWABLE_LABEL:
 

@@ -281,3 +281,143 @@ void draw3SliceHelper(AbsolutePos_t pos, HICON left, HICON center, HICON right) 
 	}
 #endif
 }
+
+// Helper function to draw a partial tile using alpha blending
+static void drawPartialTile(HDC targetHDC, int x, int y, int width, int height, HICON icon, int iconWidth, int iconHeight) {
+	HDC screenDC = GetDC(NULL);
+	HDC iconDC = CreateCompatibleDC(screenDC);
+	HBITMAP bmp = CreateCompatibleBitmap(screenDC, width, height);
+	HBITMAP oldBmp = (HBITMAP)SelectObject(iconDC, bmp);
+
+	// Clear background
+	RECT clearRect = {0, 0, width, height};
+	HBRUSH clearBrush = CreateSolidBrush(RGB(0, 0, 0));
+	FillRect(iconDC, &clearRect, clearBrush);
+	DeleteObject(clearBrush);
+
+	// Draw icon into temp DC
+	DrawIconEx(iconDC, 0, 0, icon, iconWidth, iconHeight, 0, NULL, DI_NORMAL);
+
+	// Alpha blend to target
+	BLENDFUNCTION blendFunc = {0};
+	blendFunc.BlendOp = AC_SRC_OVER;
+	blendFunc.SourceConstantAlpha = 255;
+	blendFunc.AlphaFormat = AC_SRC_ALPHA;
+	AlphaBlend(targetHDC, x, y, width, height, iconDC, 0, 0, width, height, blendFunc);
+
+	// Cleanup
+	SelectObject(iconDC, oldBmp);
+	DeleteObject(bmp);
+	DeleteDC(iconDC);
+	ReleaseDC(NULL, screenDC);
+}
+
+// Helper to draw horizontal edge (top or bottom)
+static void drawHorizontalEdge(HDC hdc, int startX, int y, int centerWidth, HICON edgeIcon, int sliceWidth, int sliceHeight) {
+	if (centerWidth <= 0)
+		return;
+
+	int tilesX = centerWidth / sliceWidth;
+	int remainderX = centerWidth % sliceWidth;
+
+	// Draw full tiles
+	for (int i = 0; i < tilesX; i++) {
+		int x = startX + i * sliceWidth;
+		DrawIconEx(hdc, x, y, edgeIcon, sliceWidth, sliceHeight, 0, NULL, DI_NORMAL);
+	}
+
+	// Draw partial tile if needed
+	if (remainderX > 0) {
+		int x = startX + tilesX * sliceWidth;
+		drawPartialTile(hdc, x, y, remainderX, sliceHeight, edgeIcon, sliceWidth, sliceHeight);
+	}
+}
+
+// Helper to draw vertical edge (left or right)
+static void drawVerticalEdge(HDC hdc, int x, int startY, int centerHeight, HICON edgeIcon, int sliceWidth, int sliceHeight) {
+	if (centerHeight <= 0)
+		return;
+
+	int tilesY = centerHeight / sliceHeight;
+	int remainderY = centerHeight % sliceHeight;
+
+	// Draw full tiles
+	for (int i = 0; i < tilesY; i++) {
+		int y = startY + i * sliceHeight;
+		DrawIconEx(hdc, x, y, edgeIcon, sliceWidth, sliceHeight, 0, NULL, DI_NORMAL);
+	}
+
+	// Draw partial tile if needed
+	if (remainderY > 0) {
+		int y = startY + tilesY * sliceHeight;
+		drawPartialTile(hdc, x, y, sliceWidth, remainderY, edgeIcon, sliceWidth, sliceHeight);
+	}
+}
+
+// Helper to draw center area
+static void drawCenterArea(HDC hdc, int startX, int startY, int centerWidth, int centerHeight, HICON centerIcon, int sliceWidth, int sliceHeight) {
+	if (centerWidth <= 0 || centerHeight <= 0)
+		return;
+
+	int tilesX = centerWidth / sliceWidth;
+	int tilesY = centerHeight / sliceHeight;
+	int remainderX = centerWidth % sliceWidth;
+	int remainderY = centerHeight % sliceHeight;
+
+	// Draw full center tiles
+	for (int y = 0; y < tilesY; y++) {
+		for (int x = 0; x < tilesX; x++) {
+			int drawX = startX + x * sliceWidth;
+			int drawY = startY + y * sliceHeight;
+			DrawIconEx(hdc, drawX, drawY, centerIcon, sliceWidth, sliceHeight, 0, NULL, DI_NORMAL);
+		}
+	}
+
+	// Draw partial tiles on right edge
+	if (remainderX > 0) {
+		for (int y = 0; y < tilesY; y++) {
+			int drawX = startX + tilesX * sliceWidth;
+			int drawY = startY + y * sliceHeight;
+			drawPartialTile(hdc, drawX, drawY, remainderX, sliceHeight, centerIcon, sliceWidth, sliceHeight);
+		}
+	}
+
+	// Draw partial tiles on bottom edge
+	if (remainderY > 0) {
+		for (int x = 0; x < tilesX; x++) {
+			int drawX = startX + x * sliceWidth;
+			int drawY = startY + tilesY * sliceHeight;
+			drawPartialTile(hdc, drawX, drawY, sliceWidth, remainderY, centerIcon, sliceWidth, sliceHeight);
+		}
+	}
+
+	// Draw corner partial tile
+	if (remainderX > 0 && remainderY > 0) {
+		int drawX = startX + tilesX * sliceWidth;
+		int drawY = startY + tilesY * sliceHeight;
+		drawPartialTile(hdc, drawX, drawY, remainderX, remainderY, centerIcon, sliceWidth, sliceHeight);
+	}
+}
+
+void draw9SliceHelper(AbsolutePos_t pos, HICON topLeft, HICON topCenter, HICON topRight, HICON midLeft, HICON center, HICON midRight, HICON bottomLeft, HICON bottomCenter, HICON bottomRight, int sliceWidth, int sliceHeight) {
+	int width = pos.right - pos.left;
+	int height = pos.bottom - pos.top;
+	int centerWidth = width - 2 * sliceWidth;
+	int centerHeight = height - 2 * sliceHeight;
+	HDC hdc = currentWindowState.memHDC;
+
+	// Draw corners
+	DrawIconEx(hdc, pos.left, pos.top, topLeft, sliceWidth, sliceHeight, 0, NULL, DI_NORMAL);
+	DrawIconEx(hdc, pos.right - sliceWidth, pos.top, topRight, sliceWidth, sliceHeight, 0, NULL, DI_NORMAL);
+	DrawIconEx(hdc, pos.left, pos.bottom - sliceHeight, bottomLeft, sliceWidth, sliceHeight, 0, NULL, DI_NORMAL);
+	DrawIconEx(hdc, pos.right - sliceWidth, pos.bottom - sliceHeight, bottomRight, sliceWidth, sliceHeight, 0, NULL, DI_NORMAL);
+
+	// Draw edges
+	drawHorizontalEdge(hdc, pos.left + sliceWidth, pos.top, centerWidth, topCenter, sliceWidth, sliceHeight);
+	drawHorizontalEdge(hdc, pos.left + sliceWidth, pos.bottom - sliceHeight, centerWidth, bottomCenter, sliceWidth, sliceHeight);
+	drawVerticalEdge(hdc, pos.left, pos.top + sliceHeight, centerHeight, midLeft, sliceWidth, sliceHeight);
+	drawVerticalEdge(hdc, pos.right - sliceWidth, pos.top + sliceHeight, centerHeight, midRight, sliceWidth, sliceHeight);
+
+	// Draw center
+	drawCenterArea(hdc, pos.left + sliceWidth, pos.top + sliceHeight, centerWidth, centerHeight, center, sliceWidth, sliceHeight);
+}

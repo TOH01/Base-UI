@@ -5,3 +5,21 @@
 #define IDI_TEXT_BG_LEFT 105
 #define IDI_TEXT_BG_CENTER 106
 #define IDI_TEXT_BG_RIGHT 107
+
+#define IDI_9_SLICE_1_CENTER 108
+#define IDI_9_SLICE_1_TOP_RIGHT 109
+#define IDI_9_SLICE_1_BOTTOM_RIGHT 110
+#define IDI_9_SLICE_1_TOP_LEFT 111
+#define IDI_9_SLICE_1_BOTTOM_LEFT 112
+
+#define IDI_9_SLICE_2_TOP_LEFT        113
+#define IDI_9_SLICE_2_TOP             114
+#define IDI_9_SLICE_2_TOP_RIGHT       115
+
+#define IDI_9_SLICE_2_LEFT            116
+#define IDI_9_SLICE_2_CENTER          117
+#define IDI_9_SLICE_2_RIGHT           118
+
+#define IDI_9_SLICE_2_BOTTOM_LEFT     119
+#define IDI_9_SLICE_2_BOTTOM          120
+#define IDI_9_SLICE_2_BOTTOM_RIGHT    121

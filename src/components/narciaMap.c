@@ -915,7 +915,7 @@ void pathDistanceToTextDump(path_t *path, textDumpWidget_t *textDump) {
 }
 
 void pathWaterToTextDump(path_t *path, textDumpWidget_t *textDump) {
-	customTextDump_AddLine(textDump, "Water cost (15% decrease, 3 heroes) for path:");
+	customTextDump_AddLine(textDump, "Water cost (3 heroes) for path:");
 
 	//(XXX, XXX) -> (XXX, XXX) - XXXXXXX
 	char buff[40] = "";
