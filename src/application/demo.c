@@ -28,15 +28,15 @@ const char *textDumpMenuButtonNames[] = {
 #define PREV_PATH_ID -1
 #define NEXT_PATH_ID 1
 
-const char colorMatrixText[] = "Path Color:";
-const char generatePathText[] = "Generate Path";
-const char previousPathText[] = "< Previous Path";
-const char nextPathText[] = "Next Path >";
-const char deleteText[] = "Delete";
-const char clearSelectionText[] = "Clear Selection";
-const char generateFriendlyTownText[] = "Homebase +";
-const char generateEnemeyTownText[] = "Enemy Homebase +";
-const char tileSearchLabelText[] = "Tile Finder";
+const char colorMatrixText[] = "Path color";
+const char generatePathText[] = "Generate path";
+const char previousPathText[] = "< Previous path";
+const char nextPathText[] = "Next path >";
+const char deleteText[] = "Delete path";
+const char clearSelectionText[] = "Clear selection";
+const char generateFriendlyTownText[] = "homebase +";
+const char generateEnemeyTownText[] = "Enemy homebase +";
+const char tileSearchLabelText[] = "Tile finder";
 
 container_t *textDumpContainers[3];
 textDumpWidget_t *textDumps[3];
@@ -168,7 +168,7 @@ void Demo_InitAll(void) {
 	textDumpMenuGroup = initSubmenuGroup();
 
 	Drawable_t *textDumpBG = drawable_init9SliceImgRectangle((CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_2_TOP_LEFT, IDI_9_SLICE_2_TOP, IDI_9_SLICE_2_TOP_RIGHT, IDI_9_SLICE_2_LEFT, IDI_9_SLICE_2_CENTER, IDI_9_SLICE_2_RIGHT, IDI_9_SLICE_2_BOTTOM_LEFT, IDI_9_SLICE_2_BOTTOM, IDI_9_SLICE_2_BOTTOM_RIGHT, 60);
-	
+
 	for (int i = 0; i < 3; i++) {
 
 		textDumpMenuButtons[i] = (buttonWidget_t *)customButton_initButton((CommonPos_t){0, i / 3.0f, (i + 1) / 3.0f, 1}, NULL, 1);
@@ -202,9 +202,9 @@ void Demo_InitAll(void) {
 	buttonWidget_t *goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
 	customButton_setToIcon(goButton, IDI_GOBUTTON);
 
-	Drawable_t * tileSearchBarBg = drawable_init9SliceImgRectangle((CommonPos_t){0,0,1,1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP, IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT, IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 30);
+	Drawable_t *tileSearchBarBg = drawable_init9SliceImgRectangle((CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP, IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT, IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 30);
 	Drawable_t *tileSearchBarLabelBg = drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT, IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
-	Drawable_t * tileSearchBarLabel = drawable_initLabel((CommonPos_t){0, 0, 0,0}, tileSearchLabelText, &currentWindowState.activeTheme.label);
+	Drawable_t *tileSearchBarLabel = drawable_initLabel((CommonPos_t){0, 0, 0, 0}, tileSearchLabelText, &currentWindowState.activeTheme.label);
 
 	containerAddDrawable(tileSearchBarContainer, tileSearchBarBg);
 	containerAddDrawableAbsolute(tileSearchBarContainer, tileSearchBarLabelBg, (AbsolutePos_t){5, 25, 200, 35});
@@ -215,14 +215,14 @@ void Demo_InitAll(void) {
 
 	colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
 
-	Drawable_t * mainHeaderBg = drawable_init9SliceImgRectangle((CommonPos_t){0,0,1,1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP, IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT, IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 50);
+	Drawable_t *mainHeaderBg = drawable_init9SliceImgRectangle((CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP, IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT, IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 50);
 	containerAddDrawable(mainHeaderContainer, mainHeaderBg);
-	
+
 	Drawable_t *colorMatrixLabel = drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText, &currentWindowState.activeTheme.label);
 	Drawable_t *colorMatrixBg = drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT, IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
 
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)colorMatrix, (AbsolutePos_t){0.2 * 100, 0.85 * 1400, 0.98 * 1400, 0.9 * 100});
-	containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixBg, (AbsolutePos_t){0.4 * 100, 0.75 * 1400, 0.85 * 1400, 0.7 * 100});
+	containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixBg, (AbsolutePos_t){0.4 * 100, 0.75 * 1400, 0.845 * 1400, 0.7 * 100});
 	containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixLabel, (AbsolutePos_t){0.4 * 100, 0.765 * 1400, 0.835 * 1400, 0.7 * 100});
 
 	buttonWidget_t *generatePathButton = customButton_initButton((CommonPos_t){0.3, 0.02, 0.12, 0.7}, &generatePath, 0);
@@ -236,14 +236,17 @@ void Demo_InitAll(void) {
 	buttonWidget_t *previousPathButton = customButton_initButton((CommonPos_t){0.2, 0.16, 0.27, 0.55}, &pathSelectButtonCallback, PREV_PATH_ID);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)previousPathButton, (AbsolutePos_t){0.2 * 100, 0.16 * 1400, 0.27 * 1400, 0.55 * 100});
 	customButton_setButtonText(previousPathButton, previousPathText);
+	customButton_setTo3SliceBackground(previousPathButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
 	buttonWidget_t *nexPathButton = customButton_initButton((CommonPos_t){0.2, 0.29, 0.40, 0.55}, &pathSelectButtonCallback, NEXT_PATH_ID);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)nexPathButton, (AbsolutePos_t){0.2 * 100, 0.29 * 1400, 0.40 * 1400, 0.55 * 100});
 	customButton_setButtonText(nexPathButton, nextPathText);
+	customButton_setTo3SliceBackground(nexPathButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
 	buttonWidget_t *deleteButton = customButton_initButton((CommonPos_t){0.65, 0.22, 0.34, 0.95}, &deletePathCallback, 0);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)deleteButton, (AbsolutePos_t){0.65 * 100, 0.22 * 1400, 0.34 * 1400, 0.95 * 100});
 	customButton_setButtonText(deleteButton, deleteText);
+	customButton_setTo3SliceBackground(deleteButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
 	Drawable_t *seperatorLine2 = drawable_initLine((CommonPos_t){0.2, 0.42, 0.42, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine2, (AbsolutePos_t){0.2 * 100, 0.42 * 1400, 0.42 * 1400, 0.8 * 100});
@@ -251,6 +254,7 @@ void Demo_InitAll(void) {
 	buttonWidget_t *clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, &clearSelection, 0);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)clearSelectionButton, (AbsolutePos_t){0.3 * 100, 0.44 * 1400, 0.54 * 1400, 0.7 * 100});
 	customButton_setButtonText(clearSelectionButton, clearSelectionText);
+	customButton_setTo3SliceBackground(clearSelectionButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
 	Drawable_t *seperatorLine3 = drawable_initLine((CommonPos_t){0.2, 0.56, 0.56, 0.8}, &currentWindowState.activeTheme.line);
 	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine3, (AbsolutePos_t){0.2 * 100, 0.56 * 1400, 0.56 * 1400, 0.8 * 100});
@@ -258,13 +262,15 @@ void Demo_InitAll(void) {
 	buttonWidget_t *addEnemyHomebaseButton = customButton_initButton((CommonPos_t){0.2, 0.58, 0.73, 0.53}, NULL, 0);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)addEnemyHomebaseButton, (AbsolutePos_t){0.2 * 100, 0.58 * 1400, 0.73 * 1400, 0.53 * 100});
 	customButton_setButtonText(addEnemyHomebaseButton, generateEnemeyTownText);
+	customButton_setTo3SliceBackground(addEnemyHomebaseButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
 	buttonWidget_t *addHomebaseButton = customButton_initButton((CommonPos_t){0.57, 0.58, 0.73, 0.9}, NULL, 0);
 	containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t *)addHomebaseButton, (AbsolutePos_t){0.57 * 100, 0.58 * 1400, 0.73 * 1400, 0.9 * 100});
 	customButton_setButtonText(addHomebaseButton, generateFriendlyTownText);
+	customButton_setTo3SliceBackground(addHomebaseButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
 	Drawable_t *seperatorLine4 = drawable_initLine((CommonPos_t){0.2, 0.75, 0.75, 0.8}, &currentWindowState.activeTheme.line);
-	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine4, (AbsolutePos_t){0.2 * 100, 0.75 * 1400, 0.75 * 1400, 0.8 * 100});
+	containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine4, (AbsolutePos_t){0.2 * 100, 0.745 * 1400, 0.745 * 1400, 0.8 * 100});
 
 	mainHeaderContainer->fixedWidgets = true;
 }

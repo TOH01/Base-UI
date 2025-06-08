@@ -68,15 +68,6 @@ void UiUtils_DrawTextTheme(AbsolutePos_t pos, const char *name, UINT format, HFO
 
 	HFONT oldFont = SelectObject(currentWindowState.memHDC, font);
 
-	SIZE textSize;
-	GetTextExtentPoint32A(currentWindowState.memHDC, name, strlen(name), &textSize);
-
-	int boxHeight = pos.bottom - pos.top;
-	int offsetY = (boxHeight - textSize.cy) / 2;
-
-	pos.top += offsetY;
-	pos.bottom += pos.top + textSize.cy;
-
 	UiUtils_DrawText(pos, name, format);
 
 	SelectObject(currentWindowState.memHDC, oldFont);
@@ -420,4 +411,57 @@ void draw9SliceHelper(AbsolutePos_t pos, HICON topLeft, HICON topCenter, HICON t
 
 	// Draw center
 	drawCenterArea(hdc, pos.left + sliceWidth, pos.top + sliceHeight, centerWidth, centerHeight, center, sliceWidth, sliceHeight);
+}
+
+void UiUtils_DrawHoverOverlay(AbsolutePos_t pos) {
+	HDC overlayDC = CreateCompatibleDC(currentWindowState.memHDC);
+	HBITMAP overlayBitmap = CreateCompatibleBitmap(currentWindowState.memHDC, pos.right - pos.left, pos.bottom - pos.top);
+	HBITMAP oldBmp = SelectObject(overlayDC, overlayBitmap);
+
+	// white overlay
+	HBRUSH hoverBrush = CreateSolidBrush(RGB(255, 255, 255));
+	RECT overlayRect = {0, 0, pos.right - pos.left, pos.bottom - pos.top};
+	FillRect(overlayDC, &overlayRect, hoverBrush);
+	DeleteObject(hoverBrush);
+
+	// Blend onto main HDC with 15% opacity
+	BLENDFUNCTION blend = {AC_SRC_OVER, 0, 40, 0};
+	AlphaBlend(currentWindowState.memHDC, pos.left, pos.top, overlayRect.right, overlayRect.bottom, overlayDC, 0, 0, overlayRect.right, overlayRect.bottom, blend);
+
+	SelectObject(overlayDC, oldBmp);
+	DeleteObject(overlayBitmap);
+	DeleteDC(overlayDC);
+}
+
+HFONT shrinkFont(HFONT originalFont, float scale) {
+	if (originalFont == NULL || scale <= 0.0f) {
+		return NULL;
+	}
+
+	LOGFONT lf;
+
+	if (GetObject(originalFont, sizeof(LOGFONT), &lf) == 0) {
+		return NULL;
+	}
+
+	// If height is 0, we need to get the actual font size
+	if (lf.lfHeight == 0) {
+		HDC hdc = GetDC(NULL);
+		HFONT oldFont = SelectObject(hdc, originalFont);
+
+		TEXTMETRIC tm;
+		GetTextMetrics(hdc, &tm);
+
+		// Use the character height as our base size
+		lf.lfHeight = -(tm.tmHeight - tm.tmInternalLeading); // Negative for character height
+
+		SelectObject(hdc, oldFont);
+		ReleaseDC(NULL, hdc);
+	}
+
+	lf.lfHeight = (LONG)(lf.lfHeight * scale);
+
+	HFONT newFont = CreateFontIndirect(&lf);
+
+	return newFont;
 }

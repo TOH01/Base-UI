@@ -36,5 +36,7 @@ void UiUtils_DrawLineRelative(AbsolutePos_t pos);
 AbsolutePos_t getPosToContainerAbsolute(const AbsolutePos_t *parentAbsPos, AbsolutePos_t widgetAbsPos);
 void draw3SliceHelper(AbsolutePos_t pos, HICON left, HICON center, HICON right);
 void draw9SliceHelper(AbsolutePos_t pos, HICON topLeft, HICON topCenter, HICON topRight, HICON midLeft, HICON center, HICON midRight, HICON bottomLeft, HICON bottomCenter, HICON bottomRight, int sliceWidth, int sliceHeight);
+void UiUtils_DrawHoverOverlay(AbsolutePos_t pos);
+HFONT shrinkFont(HFONT originalFont, float scaleFactor);
 
 #endif

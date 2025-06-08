@@ -13,6 +13,7 @@ typedef struct ButtonWidget {
 	void (*onClickUserCallback)(int);
 	char name[BUTTON_MAX_NAME_LENGTH];
 	bool beingHovered;
+	bool beingPressed;
 	ButtonTheme_t *theme;
 	HICON images[3];
 } buttonWidget_t;

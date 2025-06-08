@@ -30,7 +30,7 @@ IDI_9_SLICE_1_TOP           ICON "assets/9_slice_bg_1/top.ico"
 IDI_9_SLICE_1_BOTTOM        ICON "assets/9_slice_bg_1/bottom.ico"  
 IDI_9_SLICE_1_RIGHT         ICON "assets/9_slice_bg_1/right.ico"  
 
-IDI_ARROW_LEFT ICON "assets/cross.ico"
-IDI_ARROW_RIGHT ICON "assets/arrow_left.ico"
-IDI_CROSS ICON "assets/arrow_right.ico"
+IDI_ARROW_LEFT  ICON "assets/arrow_left.ico"
+IDI_ARROW_RIGHT ICON "assets/arrow_right.ico"
+IDI_CROSS ICON "assets/cross.ico"
  

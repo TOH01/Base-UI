@@ -300,11 +300,11 @@ typedef struct UiTheme {
     .backgroundColor = RGB(214, 186, 148),\
     .button = { \
         .color = {RGB(66, 78, 126), RGB(107, 125, 197), RGB(130, 150, 220)}, \
-        .text = {RGB(247, 247, 255), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \
+        .text = {RGB(247, 247, 255), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_SINGLELINE}, \
         .borderWidth = 2.0f, \
     }, \
     .input = { \
-        .inputText = {RGB(238, 219, 197), NULL, DT_LEFT | DT_VCENTER | DT_NOCLIP}, \
+        .inputText = {RGB(238, 219, 197), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \
         .emptyText = {RGB(192, 168, 136), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \
         .color = {RGB(115, 85, 58), RGB(115, 85, 58), RGB(140, 110, 80)}, \
         .active = {RGB(107, 125, 197), RGB(115, 85, 58), RGB(66, 78, 126)}, \
