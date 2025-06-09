@@ -87,6 +87,7 @@ path_t * findShortestPath(narciaMap_t * map, Coordinate_t start, Coordinate_t en
 void pathTimeToTextDump(path_t *path, textDumpWidget_t *textDump);
 void pathWaterToTextDump(path_t *path, textDumpWidget_t *textDump);
 void pathDistanceToTextDump(path_t *path, textDumpWidget_t *textDump);
+void invalidateNarciaMap(narciaMap_t *map);
 
 #define MAX_TOWN_COUNT 1024
 #define MAX_DISTANCE 40.0f

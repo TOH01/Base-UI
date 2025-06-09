@@ -30,6 +30,13 @@ HPEN largeTownPen = NULL;
 HPEN smallTownPen = NULL;
 HPEN imperialCastlePen = NULL;
 
+void invalidateNarciaMap(narciaMap_t *map) {
+
+	RECT rect = UiUtils_absolutePosToRect(map->baseWidget.pos);
+
+	InvalidateRect(currentWindowState.hwnd, &rect, FALSE);
+}
+
 POINT TileToScreenCenter(narciaMap_t *map, Coordinate_t tile) {
 	BaseWidget_t base = map->baseWidget;
 
@@ -457,7 +464,7 @@ void RbuttonDownCallbackNaricaMap(int x, int y, narciaMap_t *map) {
 			map->map[center.y][center.x].active = !map->map[center.y][center.x].active;
 		}
 	}
-	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+	invalidateNarciaMap(map);
 }
 
 static void onClickNarciaMap(BaseWidget_t *base, int x, int y, ClickType_t clickType) {
@@ -551,13 +558,13 @@ LRESULT handleMouseWheelNarcia(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			if (delta > 0) {
 				if (focusedNarciaMap->tileSize < focusedNarciaMap->maxTileSize) {
 					focusedNarciaMap->tileSize += focusedNarciaMap->zoomStep;
-					InvalidateRect(hwnd, NULL, FALSE);
+					invalidateNarciaMap(focusedNarciaMap);
 				}
 			} else {
 
 				if (focusedNarciaMap->tileSize > focusedNarciaMap->minTileSize) {
 					focusedNarciaMap->tileSize -= focusedNarciaMap->zoomStep;
-					InvalidateRect(hwnd, NULL, FALSE);
+					invalidateNarciaMap(focusedNarciaMap);
 				}
 			}
 		}
@@ -569,7 +576,7 @@ LRESULT handleMouseWheelNarcia(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 void goToTile(narciaMap_t *narciaMap, int x, int y) {
 	narciaMap->middleX = x;
 	narciaMap->middleY = y;
-	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+	invalidateNarciaMap(narciaMap);
 }
 
 LRESULT mouseMoveNarciaMap(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {

@@ -52,6 +52,42 @@ inputWidget_t *inputY;
 
 int selectedPathIdx = 0;
 
+LRESULT textDumpWaterMenuCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
+	(void)lParam;
+	customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+	customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+	customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2_ACTIVE, IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
+	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+	return 0;
+}
+
+LRESULT textDumpTimeMenuCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
+	(void)lParam;
+	customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+	customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+	customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2_ACTIVE, IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
+	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+	return 0;
+}
+
+LRESULT textDumpDistanceMenuCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
+	(void)lParam;
+	customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+	customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+	customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2_ACTIVE, IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
+	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+	return 0;
+}
+
 void pathSelectButtonCallback(int id) {
 	if (narciaMap->paths->size) {
 		if (selectedPathIdx + id < 0) {
@@ -173,6 +209,7 @@ void Demo_InitAll(void) {
 
 		textDumpMenuButtons[i] = (buttonWidget_t *)customButton_initButton((CommonPos_t){0, i / 3.0f, (i + 1) / 3.0f, 1}, NULL, 1);
 		containerAddWidget(textDumpHeaderContainer, (BaseWidget_t *)textDumpMenuButtons[i]);
+		customButton_setTo3SliceBackground(textDumpMenuButtons[i], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
 
 		textDumpSubmenus[i] = MenuUi_SubmenuInit(textDumpMenuButtonNames[i], textDumpMenuButtons[i], textDumpMenuGroup);
 		textDumpContainers[i] = MenuUi_SubmenuAddContainer(textDumpSubmenus[i], textDump);
@@ -190,6 +227,10 @@ void Demo_InitAll(void) {
 		customTextDump_AddLine(textDumps[i], "---------------------------------------");
 		customTextDump_AddLine(textDumps[i], "");
 	}
+
+	MenuUi_SubmenuAddLoadHandler(&textDumpDistanceMenuCallback, textDumpSubmenus[0]);
+	MenuUi_SubmenuAddLoadHandler(&textDumpTimeMenuCallback, textDumpSubmenus[1]);
+	MenuUi_SubmenuAddLoadHandler(&textDumpWaterMenuCallback, textDumpSubmenus[2]);
 
 	inputX = customInput_initInput((CommonPos_t){0.2, 0.05, 0.35, 0.8});
 

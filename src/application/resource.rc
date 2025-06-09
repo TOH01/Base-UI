@@ -33,4 +33,13 @@ IDI_9_SLICE_1_RIGHT         ICON "assets/9_slice_bg_1/right.ico"
 IDI_ARROW_LEFT  ICON "assets/arrow_left.ico"
 IDI_ARROW_RIGHT ICON "assets/arrow_right.ico"
 IDI_CROSS ICON "assets/cross.ico"
+
+
+IDI_LEFT_BTN_2 ICON "assets/left_btn_2.ico"
+IDI_RIGHT_BTN_2 ICON "assets/right_btn_2.ico"
+IDI_CENTER_BTN_2 ICON "assets/center_btn_2.ico"
+
+IDI_LEFT_BTN_2_ACTIVE ICON "assets/left_btn_2_active.ico"
+IDI_RIGHT_BTN_2_ACTIVE ICON "assets/right_btn_2_active.ico"
+IDI_CENTER_BTN_2_ACTIVE ICON "assets/center_btn_2_active.ico"
  
