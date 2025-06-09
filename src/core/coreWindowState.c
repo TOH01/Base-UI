@@ -54,8 +54,14 @@ LRESULT CoreWindowState_WmSizeHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	if (LOWORD(lParam) > CONFIG_MIN_WINDOW_WIDTH) {
 		currentWindowState.width = LOWORD(lParam);
 	}
+	else{
+		currentWindowState.width = CONFIG_MIN_WINDOW_WIDTH;
+	}
 	if (HIWORD(lParam) > CONFIG_MIN_WINDOW_Height) {
 		currentWindowState.height = HIWORD(lParam);
+	}
+	else{
+		currentWindowState.height = CONFIG_MIN_WINDOW_Height;
 	}
 
 	return 0;

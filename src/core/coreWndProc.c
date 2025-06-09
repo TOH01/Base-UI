@@ -1,10 +1,10 @@
 #include "coreWndProc.h"
 #include "Common.h"
 #include "WmParamHashTable.h"
+#include "container.h"
 #include "menu.h"
 #include "titlbar.h"
 #include <stdio.h>
-#include "container.h"
 
 int layoutInitialzed = 0;
 
@@ -21,8 +21,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_GETMINMAXINFO: {
 		MINMAXINFO *minMax = (MINMAXINFO *)lParam;
 
-		minMax->ptMinTrackSize.x = CONFIG_MIN_WINDOW_WIDTH;
-		minMax->ptMinTrackSize.y = CONFIG_MIN_WINDOW_Height;
+		RECT rect = {0, 0, CONFIG_MIN_WINDOW_WIDTH, CONFIG_MIN_WINDOW_Height};
+		AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+
+		minMax->ptMinTrackSize.x = rect.right - rect.left;
+		minMax->ptMinTrackSize.y = rect.bottom - rect.top;
 
 		return 0;
 	}
