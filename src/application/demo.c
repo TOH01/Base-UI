@@ -228,6 +228,8 @@ void Demo_InitAll(void) {
 		customTextDump_AddLine(textDumps[i], "");
 	}
 
+	customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2_ACTIVE, IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
+
 	MenuUi_SubmenuAddLoadHandler(&textDumpDistanceMenuCallback, textDumpSubmenus[0]);
 	MenuUi_SubmenuAddLoadHandler(&textDumpTimeMenuCallback, textDumpSubmenus[1]);
 	MenuUi_SubmenuAddLoadHandler(&textDumpWaterMenuCallback, textDumpSubmenus[2]);

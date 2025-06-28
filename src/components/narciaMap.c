@@ -356,6 +356,8 @@ static void drawNarciaMap(BaseWidget_t *base) {
 	FillRect(currentWindowState.memHDC, &backgroundRect, checkerBrush);
 	SelectObject(currentWindowState.memHDC, oldBrush);
 
+	DeleteObject(cachedFontCoordinates);
+	DeleteObject(cachedFontTownName);
 	cachedFontCoordinates = NULL;
 	cachedFontTownName = NULL;
 
