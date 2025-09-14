@@ -46,6 +46,28 @@ void updatePosToContainerList(DynamicArray_t *array) {
 			else if (widget->posType == POS_TYPE_ABS) {
 				widget->pos = getPosToContainerAbsolute(widget->parentPos, widget->initPosAbs);
 			}
+			else if(widget->posType == POS_TYPE_ANCHOR){
+				widget->pos = getPosToContainerAbsolute(widget->parentPos, widget->initPosAbs);
+				int width = widget->pos.right - widget->pos.left;
+				switch (widget->anchor)
+				{
+				case WIDGET_ANCHOR_CENTER:
+					int containerCenter = widget->parentPos->left + ((widget->parentPos->right - widget->parentPos->left) / 2);
+					widget->pos.left = containerCenter - (int) (width / 2);
+					widget->pos.right = widget->pos.left + width;
+					break;
+				case WIDGET_ANCHOR_LEFT:
+					widget->pos.left = widget->parentPos->left + widget->anchorOffset;
+					widget->pos.right = widget->pos.left + width;
+					break;
+				case WIDGET_ANCHOR_RIGHT:
+					widget->pos.right = widget->parentPos->right - widget->anchorOffset;
+					widget->pos.left = widget->pos.right - width;
+					break;
+				default:
+					break;
+				}
+			}
 		}
 	}
 }

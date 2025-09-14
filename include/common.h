@@ -31,6 +31,7 @@ typedef struct AbsolutePos {
 typedef enum posType {
 	POS_TYPE_REL,
 	POS_TYPE_ABS,
+	POS_TYPE_ANCHOR,
 } posType_t;
 
 #ifndef GET_X_PARAM

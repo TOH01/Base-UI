@@ -14,6 +14,12 @@ typedef enum {
 } WidgetType_t;
 
 typedef enum {
+	WIDGET_ANCHOR_CENTER,
+	WIDGET_ANCHOR_RIGHT,
+	WIDGET_ANCHOR_LEFT
+} AnchorPos_t;
+
+typedef enum {
 	CLICK_TYPE_LDOWN,
 	CLICK_TYPE_LUP,
 	CLICK_TYPE_RDOWN,
@@ -34,6 +40,8 @@ typedef struct BaseWidget {
 	AbsolutePos_t initPosAbs;
 	posType_t posType;
 	bool hidden;
+	AnchorPos_t anchor;
+	int anchorOffset;
 } BaseWidget_t;
 
 typedef struct WidgetNode WidgetNode_t;

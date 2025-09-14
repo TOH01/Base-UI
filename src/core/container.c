@@ -439,6 +439,16 @@ void containerAddWidgetAbsolute(container_t *container, BaseWidget_t *widget, Ab
 	addWidget(container->widgetList, widget);
 }
 
+void containerAddWidgetAnchored(container_t *container, BaseWidget_t *widget, AbsolutePos_t pos, AnchorPos_t anchor, int anchorOffset){
+	widget->parentPos = &container->absPos;
+	widget->pos = getPosToContainerAbsolute(widget->parentPos, pos);
+	widget->initPosAbs = pos;
+	widget->posType = POS_TYPE_ANCHOR;
+	widget->anchor = anchor;
+	widget->anchorOffset = anchorOffset;
+	addWidget(container->widgetList, widget);
+}
+
 void containerAddDrawable(container_t *container, Drawable_t *drawable) {
 	drawable->parentPos = &container->absPos;
 	drawable->pos = getPosToContainer(drawable->parentPos, drawable->initPos);

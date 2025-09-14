@@ -71,6 +71,7 @@ void rootContainerAddWidget(BaseWidget_t *widget);
 void setContainerFixed(container_t * container);
 void containerAddWidgetAbsolute(container_t * container, BaseWidget_t * widget, AbsolutePos_t pos);
 void containerAddDrawableAbsolute(container_t * container, Drawable_t *drawable, AbsolutePos_t pos);
+void containerAddWidgetAnchored(container_t *container, BaseWidget_t *widget, AbsolutePos_t pos, AnchorPos_t anchor, int anchorOffset);
 void updateContainersLayoutPos(void);
 void updateWidgetVisibility(void);
 
