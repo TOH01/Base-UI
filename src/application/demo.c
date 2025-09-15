@@ -1,6 +1,51 @@
 #include "common.h"
 #include "container.h"
 #include "customButton.h"
+#include "calendar.h"
+#include <stdio.h>
+#include "grid.h"
+#include "customCheckbox.h"
+
+int activeYear = 2025;
+int activeMonth = 9;
+bool value = false;
+
+calendarWidget_t * calendar;
+buttonWidget_t * currentMonth;
+
+char * monthNames[12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
+static void updateTitle(void){
+    char buf[50];
+    sprintf(buf, "%s %d", monthNames[activeMonth-1], activeYear);
+    customButton_setButtonText(currentMonth, buf);
+}
+
+static void leftArrowCallback(int id){
+    (void) id;
+    if(activeMonth == 1){
+        activeMonth = 12;
+        activeYear--;
+    }
+    else{
+        activeMonth--;
+    }
+    updateVisibleCalendar(calendar, activeYear, activeMonth);
+    updateTitle();
+}
+
+static void rightArrowCallback(int id){
+    (void) id;
+    if(activeMonth == 12){
+        activeMonth = 1;
+        activeYear++;
+    }
+    else{
+        activeMonth++;
+    }
+    updateVisibleCalendar(calendar, activeYear, activeMonth);
+    updateTitle();
+}
 
 void Calendar_InitUI(void) {
 
@@ -17,15 +62,15 @@ void Calendar_InitUI(void) {
     mainHeader->layout.offsetRight = -400;
     mainHeader->fixedWidgets = true;
 
-    buttonWidget_t * leftArrow = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
+    buttonWidget_t * leftArrow = customButton_initButton((CommonPos_t){0, 0, 0, 0}, &leftArrowCallback, 0);
     customButton_setButtonText(leftArrow, "<");
     containerAddWidgetAnchored(mainHeader, (BaseWidget_t*) leftArrow, (AbsolutePos_t){25, 0, 50, 75}, WIDGET_ANCHOR_LEFT, 10);
 
-    buttonWidget_t * rightArrow = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
+    buttonWidget_t * rightArrow = customButton_initButton((CommonPos_t){0, 0, 0, 0}, &rightArrowCallback, 0);
     customButton_setButtonText(rightArrow, ">");
     containerAddWidgetAnchored(mainHeader, (BaseWidget_t*) rightArrow, (AbsolutePos_t){25, 0, 50, 75}, WIDGET_ANCHOR_RIGHT, 10);
 
-    buttonWidget_t * currentMonth = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
+    currentMonth = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
     customButton_setButtonText(currentMonth, "September 2025");
     containerAddWidgetAnchored(mainHeader, (BaseWidget_t*) currentMonth, (AbsolutePos_t){25, 0, 500, 75}, WIDGET_ANCHOR_CENTER, 0);
 
@@ -40,6 +85,9 @@ void Calendar_InitUI(void) {
     calendarContainer->layout.right = LAYOUT_BORDER_RIGHT;
     calendarContainer->layout.bottom = LAYOUT_BORDER_BOTTOM;
     calendarContainer->layout.offsetRight = -400;
+
+    calendar = initCalendarWidget((CommonPos_t){0.1, 0.1, 0.9, 0.9}, activeYear, activeMonth);
+    containerAddWidget(calendarContainer, (BaseWidget_t*) calendar);
 
     AbsolutePos_t sidebarHeaderPos = {
         UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_HEIGTH),
@@ -64,12 +112,15 @@ void Calendar_InitUI(void) {
         UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_WIDTH),
         UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_HEIGTH)
     };
-    container_t *sidebarContent = windowAddContainer(sidebarContentPos);
+    container_t *sidebarContent = windowAddGridContainer(sidebarContentPos, 5, 2);
     sidebarContent->fixed = true;
     sidebarContent->layout.right = LAYOUT_BORDER_RIGHT;
     sidebarContent->layout.left = LAYOUT_BORDER_RIGHT;
     sidebarContent->layout.bottom = LAYOUT_BORDER_BOTTOM;
     sidebarContent->layout.offsetLeft = -400;
+
+    checkboxWidget_t * checkbox = customCheckbox_initCheckbox((CommonPos_t){0, 0, 0, 0}, &value);
+    addWidgetToGridContainer(sidebarContent,(BaseWidget_t *) checkbox, 1, 1);
     
 }
 

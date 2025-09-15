@@ -29,12 +29,6 @@ typedef struct Layout {
 	int offsetLeft;
 	int offsetRight;
 	int offsetBottom;
-
-	AbsolutePos_t * topElement;
-	AbsolutePos_t * leftElement;
-	AbsolutePos_t * rightElement;
-	AbsolutePos_t * bottomElement;
-
 } Layout_t;
 
 typedef struct container_t {
@@ -49,6 +43,10 @@ typedef struct container_t {
 	bool fixedWidgets;
 	bool disableRectRender;
 	Layout_t layout;
+	bool grid;
+	int cols;
+	int rows;
+	BaseWidget_t ** gridPositions;
 } container_t;
 
 typedef struct movingContainer_t {
@@ -74,5 +72,7 @@ void containerAddDrawableAbsolute(container_t * container, Drawable_t *drawable,
 void containerAddWidgetAnchored(container_t *container, BaseWidget_t *widget, AbsolutePos_t pos, AnchorPos_t anchor, int anchorOffset);
 void updateContainersLayoutPos(void);
 void updateWidgetVisibility(void);
+container_t *windowAddGridContainer(AbsolutePos_t pos, int rows, int cols); 
+void addWidgetToGridContainer(container_t * container, BaseWidget_t * widget, int row, int col);
 
 #endif

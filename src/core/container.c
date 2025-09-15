@@ -31,6 +31,33 @@ int layoutToBorderHelper(LayoutType_t type, int offset) {
 	}
 }
 
+static void updateGridPositions(container_t *currContainer){
+    
+    int width = currContainer->absPos.right - currContainer->absPos.left;
+    int height = currContainer->absPos.bottom -currContainer->absPos.top;
+
+    int cellWidth  = width  / currContainer->cols;
+    int cellHeight = height / currContainer->rows;
+
+    for (int i = 0; i < currContainer->cols * currContainer->rows; i++)
+    {
+       BaseWidget_t * widget = currContainer->gridPositions[i];
+       if (widget != NULL){
+            
+            int row = i / currContainer->cols;
+            int col = i % currContainer->cols;
+        
+            AbsolutePos_t pos;
+            pos.left   = currContainer->absPos.left + col * cellWidth;
+            pos.top    = currContainer->absPos.top  + row * cellHeight;
+            pos.right  = pos.left + cellWidth;
+            pos.bottom = pos.top  + cellHeight;
+
+            widget->pos = pos;
+       }
+    }
+}
+
 void updateContainersLayoutPos(void) {
 
 	container_t *currContainer = NULL;
@@ -54,8 +81,14 @@ void updateContainersLayoutPos(void) {
 			}
 		}
 
-		updatePosToContainerList(currContainer->widgetList);
-		drawable_updatePosToContainerList(currContainer->drawableList);
+		if(!currContainer->grid){
+			updatePosToContainerList(currContainer->widgetList);
+			drawable_updatePosToContainerList(currContainer->drawableList);
+		}
+		else {
+			updateGridPositions(currContainer);
+		}
+
 	}
 }
 
@@ -424,6 +457,25 @@ container_t *initContainer(containerPos_t pos) {
 	return container;
 }
 
+container_t * initGridContainer(containerPos_t pos, int rows, int cols){
+	container_t * gridContainer = initContainer(pos);
+	gridContainer->rows = rows;
+	gridContainer->cols = cols;
+	gridContainer->grid = true;
+	gridContainer->gridPositions = malloc(sizeof(BaseWidget_t *) * rows * cols);
+    for (int i = 0; i < cols * rows; i++)
+    {
+        gridContainer->gridPositions[i] = NULL;
+    }
+	return gridContainer;
+}
+
+void addWidgetToGridContainer(container_t * container, BaseWidget_t * widget, int row, int col){
+	widget->parentPos = &container->absPos;
+	addWidget(container->widgetList, widget);
+	container->gridPositions[row * container->cols + col] = widget;
+}
+
 void containerAddWidget(container_t *container, BaseWidget_t *widget) {
 	widget->parentPos = &container->absPos;
 	widget->pos = getPosToContainer(widget->parentPos, widget->initPos);
@@ -493,6 +545,22 @@ void initRootContainer(void) {
 	rootContainer->resizable = 0;
 	rootContainer->theme->color.fill = currentWindowState.activeTheme.backgroundColor;
 }
+
+container_t *windowAddGridContainer(AbsolutePos_t pos, int rows, int cols) {
+
+	container_t *container = initGridContainer(pos, rows, cols);
+
+	container->visible = 1;
+
+	if (currentWindowState.containers == NULL) {
+		currentWindowState.containers = DynamicArray_init(50);
+	}
+
+	DynamicArray_Add(currentWindowState.containers, container);
+
+	return container;
+}
+
 
 void rootContainerAddWidget(BaseWidget_t *widget) {
 	container_t *rootContainer = (container_t *)DynamicArray_get(currentWindowState.containers, 0);

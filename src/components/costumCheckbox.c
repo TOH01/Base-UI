@@ -58,8 +58,9 @@ static void onClickCheckbox(BaseWidget_t *baseWidget, int x, int y, ClickType_t 
 	checkboxWidget_t *checkbox = (checkboxWidget_t *)baseWidget;
 	(void) x;
 	(void) y;
-	(void) clickType;
-	*(checkbox->value) = !*(checkbox->value);
+	if(clickType == CLICK_TYPE_LUP){
+		*(checkbox->value) = !*(checkbox->value);
+	}
 }
 
 checkboxWidget_t *customCheckbox_initCheckbox(CommonPos_t pos, bool *value) {
