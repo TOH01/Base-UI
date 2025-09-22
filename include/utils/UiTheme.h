@@ -108,7 +108,7 @@ typedef struct UiTheme {
     .backgroundColor = RGB(30, 30, 30),\
     .button = { \
         .color = {RGB(60, 60, 60), RGB(37, 37, 38), RGB(75, 75, 75)}, \
-        .text = {RGB(220, 220, 220), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP}, \
+        .text = {RGB(220, 220, 220), NULL, DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_SINGLELINE}, \
         .borderWidth = 2.0f, \
     }, \
     .input = { \

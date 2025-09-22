@@ -46,6 +46,11 @@ typedef struct container_t {
 	bool grid;
 	int cols;
 	int rows;
+	bool limitGrid;
+	int cellMinWidth;
+	int cellMaxWidth;
+	int cellMaxHeight;
+	int cellMinHeight;
 	BaseWidget_t ** gridPositions;
 } container_t;
 
@@ -74,5 +79,6 @@ void updateContainersLayoutPos(void);
 void updateWidgetVisibility(void);
 container_t *windowAddGridContainer(AbsolutePos_t pos, int rows, int cols); 
 void addWidgetToGridContainer(container_t * container, BaseWidget_t * widget, int row, int col);
+void destroyContainerContent(container_t * container);
 
 #endif

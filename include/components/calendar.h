@@ -17,6 +17,9 @@ typedef struct {
     int todayYear;
 
     int selectedDay;
+
+    void (*dateChangeCallback)(void);
+
 } calendarWidget_t;
 
 calendarWidget_t *initCalendarWidget(CommonPos_t pos, int year, int month);

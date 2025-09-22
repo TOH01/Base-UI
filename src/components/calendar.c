@@ -111,8 +111,12 @@ static void onCalendarClick(BaseWidget_t *base, int x, int y, ClickType_t clickT
     int dayNum = idx - cal->startWeekday + 1;
     if (dayNum > 0 && dayNum <= cal->daysInMonth) {
         cal->selectedDay = dayNum;
+        
+        if(cal->dateChangeCallback != NULL){      
+            cal->dateChangeCallback();
+        }
+
         InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
-        // Later: notify parent about selection
     }
 }
 

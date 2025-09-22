@@ -44,7 +44,7 @@ endif
 all: $(OUT)
 
 # Build main program with resource file
-$(OUT): $(OBJS) $(RESFILE)
+$(OUT): $(OBJS) #$(RESFILE)
 	@if not exist "$(BUILDDIR)" mkdir "$(BUILDDIR)"
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 

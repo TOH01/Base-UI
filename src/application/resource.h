@@ -1,1 +1,0 @@
-#define IDI_CROSS 1
