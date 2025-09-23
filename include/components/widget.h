@@ -34,6 +34,7 @@ typedef struct BaseWidget {
 	void (*onClick)(BaseWidget_t *, int, int, ClickType_t);
 	void (*onHover)(BaseWidget_t *);
 	void (*onHoverEnd)(BaseWidget_t *);
+	void (*destroy)(BaseWidget_t *);
 	WidgetType_t type;
 	AbsolutePos_t * parentPos;
 	AbsolutePos_t pos;
@@ -59,5 +60,7 @@ void addWidget(DynamicArray_t * array, BaseWidget_t *widget);
 void renderWidgetList(DynamicArray_t * array);
 void updatePosToContainerList(DynamicArray_t * array);
 BaseWidget_t *widgetClicked(int x, int y, DynamicArray_t * array);
+void freeWidgetList(DynamicArray_t * array);
+bool widgetArrayContains(DynamicArray_t *array, BaseWidget_t *widget);
 
 #endif

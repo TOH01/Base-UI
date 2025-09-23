@@ -110,6 +110,12 @@ static void onClickInput(BaseWidget_t *baseWidget, int x, int y, ClickType_t cli
 	activeInput = input;
 }
 
+static void freeInput(BaseWidget_t * baseWidget){
+	assert(baseWidget->type == WIDGET_TYPE_INPUT);
+	inputWidget_t *input = (inputWidget_t *)baseWidget;
+	free(input);
+}
+
 inputWidget_t *customInput_initInput(CommonPos_t pos) {
 	inputWidget_t *input = (inputWidget_t *)calloc(1, sizeof(inputWidget_t));
 
@@ -128,6 +134,7 @@ inputWidget_t *customInput_initInput(CommonPos_t pos) {
 	input->baseWidget.onClick = &onClickInput;
 	input->baseWidget.onHover = &onHoverInput;
 	input->baseWidget.onHoverEnd = &onHoverEndInput;
+	input->baseWidget.destroy = &freeInput;
 
 	strncpy(input->defaultText, "Input ...", INPUT_MAX_DEFAULT_STRING_SIZE);
 

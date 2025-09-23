@@ -64,4 +64,6 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
 
     // Update the container's row count if needed
     grid->rows = currentRow; 
+
+    InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }

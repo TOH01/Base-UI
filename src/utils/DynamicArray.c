@@ -45,9 +45,7 @@ void DynamicArray_Free(DynamicArray_t *array) {
 	}
 
 	free(array->items);
-	array->items = NULL;
-	array->size = 0;
-	array->capacity = 0;
+	free(array);
 }
 
 /**

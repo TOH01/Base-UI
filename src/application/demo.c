@@ -8,12 +8,7 @@
 #include "UiTheme.h"
 #include "calendar_entry.h"
 #include "persistance.h"
-
-calender_entry_t entries[] = {
-    { ENTRY_CHECKBOX, "Did Workout", { .state = true } },
-    { ENTRY_NUM,      "Water (ml)",  { .count = 500 } },
-    { ENTRY_CHECKBOX, "Take Vitamins", { .state = false } },
-};
+#include "DynamicArray.h"
 
 int activeYear = 2025;
 int activeMonth = 9;
@@ -36,7 +31,50 @@ static void updateTitle(void){
     customButton_setButtonText(currentMonth, buf);
 }
 
-static void calendarDayChange(void){}
+static void calendarDayChange(void){
+    int day = calendar->selectedDay;
+    int month = calendar->month;
+    int year = calendar->year;
+
+    // try to load existing data for this day
+    day_save_data_t *loaded = loadDay(day, month, year);
+
+    day_save_data_t dayData;
+    if (loaded) {
+        // copy loaded data
+        dayData.elements = loaded->elements;
+        dayData.entries = malloc(sizeof(calender_entry_t) * dayData.elements);
+        memcpy(dayData.entries, loaded->entries, sizeof(calender_entry_t) * dayData.elements);
+        free(loaded->entries);
+        free(loaded);
+    } else {
+        // create a few example entries for demonstration
+        static calender_entry_t demoEntries[] = {
+            { ENTRY_CHECKBOX, "Did Workout", { .state = false } },
+            { ENTRY_NUM,      "Water (ml)",  { .count = 0 } },
+            { ENTRY_CHECKBOX, "Take Vitamins", { .state = false } },
+        };
+        int numEntries = sizeof(demoEntries)/sizeof(demoEntries[0]);
+        dayData.elements = numEntries;
+        dayData.entries = malloc(sizeof(calender_entry_t) * numEntries);
+        memcpy(dayData.entries, demoEntries, sizeof(calender_entry_t) * numEntries);
+    }
+
+    // save the day data immediately
+    saveDay(&dayData, day, month, year);
+
+    // render entries in sidebar
+    destroyContainerContent(sidebarContent);
+
+    sidebarContent->widgetList = DynamicArray_init(10);
+    sidebarContent->drawableList = DynamicArray_init(10);
+
+    renderCalendarEntries(sidebarContent, dayData.entries, dayData.elements);
+
+    // free heap after rendering (for demo simplicity)
+    free(dayData.entries);
+
+}
 
 static void leftArrowCallback(int id){
     (void) id;
@@ -155,10 +193,6 @@ void Calendar_InitUI(void) {
     sidebarContent->cellMinHeight = 75;
     sidebarContent->cellMaxWidth = 9999;
     sidebarContent->cellMinWidth = 0;
-
-    int numEntries = sizeof(entries)/sizeof(entries[0]);
-
-    renderCalendarEntries(sidebarContent, entries, numEntries);
  
 }
 

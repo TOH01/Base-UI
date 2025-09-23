@@ -1,6 +1,7 @@
 #include "widget.h"
 #include "UiUtils.h"
 #include "common.h"
+#include <stdio.h>
 
 void addWidget(DynamicArray_t *array, BaseWidget_t *widget) {
 	if (!array) {
@@ -8,6 +9,18 @@ void addWidget(DynamicArray_t *array, BaseWidget_t *widget) {
 	}
 
 	DynamicArray_Add(array, widget);
+}
+
+bool widgetArrayContains(DynamicArray_t *array, BaseWidget_t *widget) {
+    if (!array || !array->items) return false;
+
+    for (int i = 0; i < array->size; i++) {
+        if (array->items[i] == widget) {
+            return true;
+        }
+    }
+
+    return false; 
 }
 
 void renderWidgetList(DynamicArray_t *array) {
@@ -27,6 +40,31 @@ void renderWidgetList(DynamicArray_t *array) {
 	}
 }
 
+void freeWidgetList(DynamicArray_t *array) {
+	if (!array) {
+		return;
+	}
+
+	for (int i = 0; i < array->size; ++i) {
+
+		if (DynamicArray_get(array, i) != NULL) {
+
+			BaseWidget_t *baseWidget = (BaseWidget_t *)DynamicArray_get(array, i);
+
+			if (baseWidget->destroy != NULL) {
+				baseWidget->destroy(baseWidget);
+				DynamicArray_Insert(array, NULL, i);
+			} else {
+				printf("WIDGET COULDNT BE FREED, MEMORY LEAK\n");
+			}
+		}
+	}
+
+	free(array->items);
+	free(array);
+
+}
+
 void updatePosToContainerList(DynamicArray_t *array) {
 
 	if (!array) {
@@ -42,18 +80,15 @@ void updatePosToContainerList(DynamicArray_t *array) {
 
 			if (widget->posType == POS_TYPE_REL) {
 				widget->pos = getPosToContainer(widget->parentPos, widget->initPos);
-			}
-			else if (widget->posType == POS_TYPE_ABS) {
+			} else if (widget->posType == POS_TYPE_ABS) {
 				widget->pos = getPosToContainerAbsolute(widget->parentPos, widget->initPosAbs);
-			}
-			else if(widget->posType == POS_TYPE_ANCHOR){
+			} else if (widget->posType == POS_TYPE_ANCHOR) {
 				widget->pos = getPosToContainerAbsolute(widget->parentPos, widget->initPosAbs);
 				int width = widget->pos.right - widget->pos.left;
-				switch (widget->anchor)
-				{
+				switch (widget->anchor) {
 				case WIDGET_ANCHOR_CENTER:
 					int containerCenter = widget->parentPos->left + ((widget->parentPos->right - widget->parentPos->left) / 2);
-					widget->pos.left = containerCenter - (int) (width / 2);
+					widget->pos.left = containerCenter - (int)(width / 2);
 					widget->pos.right = widget->pos.left + width;
 					break;
 				case WIDGET_ANCHOR_LEFT:

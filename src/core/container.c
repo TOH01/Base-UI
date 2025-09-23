@@ -518,18 +518,24 @@ container_t * initGridContainer(containerPos_t pos, int rows, int cols){
 
 void addWidgetToGridContainer(container_t * container, BaseWidget_t * widget, int row, int col){
 	widget->parentPos = &container->absPos;
-	addWidget(container->widgetList, widget);
+	
+	if(!widgetArrayContains(container->widgetList, widget)){
+		addWidget(container->widgetList, widget);
+	}
+	
 	container->gridPositions[row * container->cols + col] = widget;
+
+	updateGridPositions(container);
 }
 
 void destroyContainerContent(container_t * container){
 	DynamicArray_Free(container->drawableList);
-	DynamicArray_Free(container->widgetList);
+	freeWidgetList(container->widgetList);
 
 	if(container->grid){
 		for (int i = 0; i < container->rows * container->cols; i++)
 		{
-			container->gridPositions = NULL;
+			container->gridPositions[i] = NULL;
 		}
 	}
 }

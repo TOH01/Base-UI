@@ -9,6 +9,8 @@
 
 #define MAGIC 0x52444C43u  // CLDR
 
+#define NULL_TERMINATOR_BYTE 1
+
 typedef struct version{
     unsigned char major;
     unsigned char minor;
@@ -21,6 +23,18 @@ typedef struct file_header{
     version_t version;
 } file_header_t;
 
+typedef struct idx_entry{
+    int key; 
+    int offset;
+} idx_entry_t;
+
+typedef struct day_save_data{
+    int elements;
+    calender_entry_t * entries;
+} day_save_data_t;
+
 void create_file_system(void);
+void saveDay(day_save_data_t *day, int day_num, int month, int year);
+day_save_data_t *loadDay(int day_num, int month, int year);
 
 #endif

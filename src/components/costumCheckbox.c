@@ -53,6 +53,12 @@ static void onHoverEndCheckbox(BaseWidget_t *base) {
 	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
+static void freeCheckbox(BaseWidget_t *base){
+	assert(base->type == WIDGET_TYPE_CHECKBOX);
+	checkboxWidget_t * checkbox = (checkboxWidget_t *)base;
+	free(checkbox);
+}
+
 static void onClickCheckbox(BaseWidget_t *baseWidget, int x, int y, ClickType_t clickType) {
 	assert(baseWidget->type == WIDGET_TYPE_CHECKBOX);
 	checkboxWidget_t *checkbox = (checkboxWidget_t *)baseWidget;
@@ -74,6 +80,7 @@ checkboxWidget_t *customCheckbox_initCheckbox(CommonPos_t pos, bool *value) {
 	checkbox->baseWidget.onClick = &onClickCheckbox;
 	checkbox->baseWidget.onHover = &onHoverCheckbox;
 	checkbox->baseWidget.onHoverEnd = &onHoverEndCheckbox;
+	checkbox->baseWidget.destroy = &freeCheckbox;
 
 	checkbox->theme = &currentWindowState.activeTheme.checkbox;
 

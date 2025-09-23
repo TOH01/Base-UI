@@ -136,6 +136,13 @@ static void onHoverEndButton(BaseWidget_t *base) {
 	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }
 
+static void buttonFree(BaseWidget_t * base){
+	assert(base->type == WIDGET_TYPE_BUTTON);
+	buttonWidget_t *button = (buttonWidget_t *)base;
+
+	free(button);
+}
+
 buttonWidget_t *customButton_initButton(CommonPos_t pos, void (*onClickUserCallback)(int), int id) {
 	buttonWidget_t *button = (buttonWidget_t *)calloc(1, sizeof(buttonWidget_t));
 
@@ -145,6 +152,7 @@ buttonWidget_t *customButton_initButton(CommonPos_t pos, void (*onClickUserCallb
 	button->baseWidget.onHover = &onHoverButton;
 	button->baseWidget.onHoverEnd = &onHoverEndButton;
 	button->baseWidget.onClick = &onClickButton;
+	button->baseWidget.destroy = &buttonFree;
 
 	button->onClickUserCallback = onClickUserCallback;
 

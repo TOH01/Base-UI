@@ -17,7 +17,7 @@ typedef union {
 
 typedef struct {
     entry_type_t type;
-    char * text;
+    char text[64];
     entry_data_t data;
 } calender_entry_t;
 
