@@ -17,5 +17,6 @@ typedef struct InputWidget {
 
 inputWidget_t *customInput_initInput(CommonPos_t pos);
 void customInput_clearInput(inputWidget_t *input);
+void setDefaultText(inputWidget_t * input, char * defaultText);
 
 #endif

@@ -3,6 +3,7 @@
 #include "customInput.h"
 #include "string.h"
 #include <stdio.h>
+#include <string.h>
 
 bool handlerInit = 0;
 inputWidget_t *activeInput = NULL;
@@ -142,3 +143,8 @@ inputWidget_t *customInput_initInput(CommonPos_t pos) {
 }
 
 void customInput_clearInput(inputWidget_t *input) { input->buffer[0] = '\0'; }
+
+void setDefaultText(inputWidget_t * input, char * defaultText){
+	strncpy(input->defaultText, defaultText, INPUT_MAX_DEFAULT_STRING_SIZE);
+	input->defaultText[INPUT_MAX_DEFAULT_STRING_SIZE - 1] = '\0';
+}

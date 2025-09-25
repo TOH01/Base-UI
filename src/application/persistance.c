@@ -230,54 +230,75 @@ void write_save_idx(int key, int offset, char *filename) {
 }
 
 int save_day_data_raw(day_save_data_t *day, const char *data_filename) {
-    FILE *fp = fopen(data_filename, "rb+");
-    if (!fp) return -1;
+	FILE *fp = fopen(data_filename, "rb+");
+	if (!fp)
+		return -1;
 
-    fseek(fp, 0, SEEK_END);
-    int offset = ftell(fp);
+	fseek(fp, 0, SEEK_END);
+	int offset = ftell(fp);
+
+	fwrite(&day->elements, sizeof(int), 1, fp);
+	fwrite(day->entries, sizeof(calender_entry_t), day->elements, fp);
+
+	fclose(fp);
+	return offset;
+}
+
+int save_day_data_raw_at(day_save_data_t *day, const char *data_filename, int offset) {
+    FILE *fp = fopen(data_filename, "rb+");
+    if (!fp)
+        return -1;
+
+    fseek(fp, offset, SEEK_SET);
 
     fwrite(&day->elements, sizeof(int), 1, fp);
     fwrite(day->entries, sizeof(calender_entry_t), day->elements, fp);
 
     fclose(fp);
-    return offset;
+    return 0;
 }
 
 day_save_data_t *load_day_data_raw(long offset, const char *data_filename) {
-    FILE *fp = fopen(data_filename, "rb");
-    if (!fp) return NULL;
+	FILE *fp = fopen(data_filename, "rb");
+	if (!fp)
+		return NULL;
 
-    fseek(fp, offset, SEEK_SET);
+	fseek(fp, offset, SEEK_SET);
 
-    day_save_data_t *day = malloc(sizeof(day_save_data_t));
-    fread(&day->elements, sizeof(int), 1, fp);
+	day_save_data_t *day = malloc(sizeof(day_save_data_t));
+	fread(&day->elements, sizeof(int), 1, fp);
 
-    day->entries = malloc(sizeof(calender_entry_t) * day->elements);
-    fread(day->entries, sizeof(calender_entry_t), day->elements, fp);
+	day->entries = malloc(sizeof(calender_entry_t) * day->elements);
+	fread(day->entries, sizeof(calender_entry_t), day->elements, fp);
 
-    fclose(fp);
-    return day;
+	fclose(fp);
+	return day;
 }
 
-// -------------------- Save a day's data --------------------
-void saveDay(day_save_data_t *day, int day_num, int month, int year) {
-    int key = create_save_key(day_num, month, year);
-
-    // save to data file and get offset
-    long offset = save_day_data_raw(day, "saves/date.dat");
-
-    // update index
-    write_save_idx(key, (int)offset, "saves/date.idx");
-}
-
-// -------------------- Load a day's data --------------------
 day_save_data_t *loadDay(int day_num, int month, int year) {
-    int key = create_save_key(day_num, month, year);
+	int key = create_save_key(day_num, month, year);
 
-    // get offset from index file
-    int offset = get_day_data_offset(key, "saves/date.idx");
-    if (offset == -1) return NULL; // no data for that day
+	int offset = get_day_data_offset(key, "saves/date.idx");
+	if (offset == -1) {
+		return NULL;
+	}
 
-    // load day data from data file
-    return load_day_data_raw(offset, "saves/date.dat");
+	return load_day_data_raw(offset, "saves/date.dat");
+}
+
+void saveDay(day_save_data_t *day, int day_num, int month, int year) {
+	int key = create_save_key(day_num, month, year);
+	day_save_data_t *data = loadDay(day_num, month, year);
+
+	if (data != NULL) {
+		if (day->elements <= data->elements) {
+			save_day_data_raw_at(day, "saved/date.dat", get_day_data_offset(key, "saved/date.idx"));
+		}
+
+	} else {
+
+		long offset = save_day_data_raw(day, "saves/date.dat");
+
+		write_save_idx(key, (int)offset, "saves/date.idx");
+	}
 }

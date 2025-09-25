@@ -35,9 +35,7 @@ submenuGroup_t *initSubmenuGroup(void) {
 	return group;
 }
 
-container_t *MenuUi_SubmenuAddContainer(MenuUi_Submenu_t *submenu, containerPos_t pos) {
-
-	container_t *container = windowAddContainer(pos);
+void MenuUi_SubmenuAddContainer(MenuUi_Submenu_t *submenu, container_t * container) {
 
 	// we want first initialized menu to be visibile
 	if (MENU_ID_GET_SUBMENU(submenu->SubmenuID) == 0) {
@@ -51,8 +49,7 @@ container_t *MenuUi_SubmenuAddContainer(MenuUi_Submenu_t *submenu, containerPos_
 	}
 
 	DynamicArray_Add(submenu->containers, container);
-
-	return container;
+	
 }
 
 void MenuUi_SubmenuSwap(int menuId) {
@@ -75,23 +72,27 @@ void MenuUi_SubmenuSwap(int menuId) {
 	MenuUi_Submenu_t *submenu = (MenuUi_Submenu_t *)DynamicArray_get(group->submenus, group->activeSubmenuID);
 	container_t *container = NULL;
 
-	for (int i = 0; i < submenu->containers->size; i++) {
-		container = DynamicArray_get(submenu->containers, i);
+	if (submenu->containers != NULL) {
+		for (int i = 0; i < submenu->containers->size; i++) {
+			container = DynamicArray_get(submenu->containers, i);
 
-		if (container) {
-			container->visible = 0;
+			if (container) {
+				container->visible = 0;
+			}
 		}
 	}
-
+	
 	MenuUi_SubmenuCommandHandler(currentWindowState.hwnd, MENU_UI_SUBMENU_DESTROY_ID, 0, 0);
 
 	submenu = (MenuUi_Submenu_t *)DynamicArray_get(group->submenus, submenuID);
 
-	for (int i = 0; i < submenu->containers->size; i++) {
-		container = DynamicArray_get(submenu->containers, i);
+	if (submenu->containers != NULL) {
+		for (int i = 0; i < submenu->containers->size; i++) {
+			container = DynamicArray_get(submenu->containers, i);
 
-		if (container) {
-			container->visible = 1;
+			if (container) {
+				container->visible = 1;
+			}
 		}
 	}
 
@@ -111,7 +112,7 @@ void MenuUi_CallAllActiveHandlers(HWND hwnd, int msg, WPARAM wparam, LPARAM lpar
 	}
 }
 
-MenuUi_Submenu_t * MenuUi_SubmenuInit(const char name[MENU_UI_MAX_NAME_LENGTH], buttonWidget_t *button, submenuGroup_t *group) {
+MenuUi_Submenu_t *MenuUi_SubmenuInit(const char name[MENU_UI_MAX_NAME_LENGTH], buttonWidget_t *button, submenuGroup_t *group) {
 
 	if (group->submenus->size >= MENU_UI_SUBMENU_MAX) {
 		return NULL;
@@ -137,10 +138,10 @@ MenuUi_Submenu_t * MenuUi_SubmenuInit(const char name[MENU_UI_MAX_NAME_LENGTH], 
 
 void MenuUi_SubmenuCommandHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
-	if(submenuGroups == NULL){
+	if (submenuGroups == NULL) {
 		return;
 	}
-	
+
 	for (int i = 0; i < submenuGroups->size; i++) {
 		if (getActiveFromGroup(i)->WmParamHashTable != NULL) {
 
@@ -156,3 +157,7 @@ void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, MenuUi_S
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, MenuUi_Submenu_t *submenu) { WmParamHanderTable_Insert(submenu->WmParamHashTable, MENU_UI_SUBMENU_LOAD_ID, handler); }
 
 void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, MenuUi_Submenu_t *submenu) { WmParamHanderTable_Insert(submenu->WmParamHashTable, MENU_UI_SUBMENU_DESTROY_ID, handler); }
+
+void MenuUi_SetSubmenuActive(MenuUi_Submenu_t * menu){
+	MenuUi_SubmenuSwap(menu->SubmenuID);
+}

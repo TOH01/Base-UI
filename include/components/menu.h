@@ -43,7 +43,8 @@ void MenuUi_SubmenuAddHandler(MessageHandler_t handler, int WmParamKey, MenuUi_S
 void MenuUi_SubmenuAddLoadHandler(MessageHandler_t handler, MenuUi_Submenu_t * submenu);
 void MenuUi_SubmenuAddDestroyHandler(MessageHandler_t handler, MenuUi_Submenu_t * submenu);
 void MenuUi_CallAllActiveHandlers(HWND hwnd, int id, WPARAM wparam, LPARAM lparam);
-container_t *MenuUi_SubmenuAddContainer(MenuUi_Submenu_t * submenu, containerPos_t pos);
+void MenuUi_SubmenuAddContainer(MenuUi_Submenu_t * submenu, container_t * container);
 submenuGroup_t *initSubmenuGroup(void);
+void MenuUi_SetSubmenuActive(MenuUi_Submenu_t * menu);
 
 #endif

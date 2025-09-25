@@ -66,6 +66,9 @@ static void onClickCheckbox(BaseWidget_t *baseWidget, int x, int y, ClickType_t 
 	(void) y;
 	if(clickType == CLICK_TYPE_LUP){
 		*(checkbox->value) = !*(checkbox->value);
+		if(checkbox->onStateChange != NULL){
+			checkbox->onStateChange();
+		}
 	}
 }
 
@@ -87,4 +90,8 @@ checkboxWidget_t *customCheckbox_initCheckbox(CommonPos_t pos, bool *value) {
 	checkbox->value = value;
 
 	return checkbox;
+}
+
+void customCheckbox_setStateChangeCallback(checkboxWidget_t * checkbox, void * onStateChange){
+	checkbox->onStateChange = onStateChange;
 }

@@ -31,77 +31,82 @@ int layoutToBorderHelper(LayoutType_t type, int offset) {
 	}
 }
 
-static void updateGridPositions(container_t *currContainer)
-{
-    int width  = currContainer->absPos.right  - currContainer->absPos.left;
-    int height = currContainer->absPos.bottom - currContainer->absPos.top;
+static void updateGridPositions(container_t *currContainer) {
+	int width = currContainer->absPos.right - currContainer->absPos.left;
+	int height = currContainer->absPos.bottom - currContainer->absPos.top;
 
-    int cellWidth  = width  / currContainer->cols;
-    int cellHeight = height / currContainer->rows;
-	
-    if (currContainer->limitGrid) {
+	int cellWidth = width / currContainer->cols;
+	int cellHeight = height / currContainer->rows;
 
-        if (cellWidth < currContainer->cellMinWidth) 
-            cellWidth = currContainer->cellMinWidth;
-        else if (currContainer->cellMaxWidth > 0 && cellWidth > currContainer->cellMaxWidth) 
-            cellWidth = currContainer->cellMaxWidth;
+	if (currContainer->limitGrid) {
 
-        if (cellHeight < currContainer->cellMinHeight) 
-            cellHeight = currContainer->cellMinHeight;
-        else if (currContainer->cellMaxHeight > 0 && cellHeight > currContainer->cellMaxHeight) 
-            cellHeight = currContainer->cellMaxHeight;
-    }
+		if (cellWidth < currContainer->cellMinWidth)
+			cellWidth = currContainer->cellMinWidth;
+		else if (currContainer->cellMaxWidth > 0 && cellWidth > currContainer->cellMaxWidth)
+			cellWidth = currContainer->cellMaxWidth;
 
-    bool *visited = calloc(currContainer->rows * currContainer->cols, sizeof(bool));
+		if (cellHeight < currContainer->cellMinHeight)
+			cellHeight = currContainer->cellMinHeight;
+		else if (currContainer->cellMaxHeight > 0 && cellHeight > currContainer->cellMaxHeight)
+			cellHeight = currContainer->cellMaxHeight;
+	}
 
-    for (int i = 0; i < currContainer->cols * currContainer->rows; i++) {
-        if (visited[i]) continue;
+	bool *visited = calloc(currContainer->rows * currContainer->cols, sizeof(bool));
 
-        BaseWidget_t *widget = currContainer->gridPositions[i];
-        if (widget == NULL) continue;
+	for (int i = 0; i < currContainer->cols * currContainer->rows; i++) {
+		if (visited[i])
+			continue;
 
-        int row = i / currContainer->cols;
-        int col = i % currContainer->cols;
+		BaseWidget_t *widget = currContainer->gridPositions[i];
+		if (widget == NULL)
+			continue;
 
-        int spanCols = 1;
-        int spanRows = 1;
+		int row = i / currContainer->cols;
+		int col = i % currContainer->cols;
 
-        for (int c = col + 1; c < currContainer->cols; c++) {
-            int idx = row * currContainer->cols + c;
-            if (currContainer->gridPositions[idx] == widget) spanCols++;
-            else break;
-        }
+		int spanCols = 1;
+		int spanRows = 1;
 
-        for (int r = row + 1; r < currContainer->rows; r++) {
-            bool fullRow = true;
-            for (int c = 0; c < spanCols; c++) {
-                int idx = r * currContainer->cols + (col + c);
-                if (currContainer->gridPositions[idx] != widget) {
-                    fullRow = false;
-                    break;
-                }
-            }
-            if (fullRow) spanRows++;
-            else break;
-        }
+		for (int c = col + 1; c < currContainer->cols; c++) {
+			int idx = row * currContainer->cols + c;
+			if (currContainer->gridPositions[idx] == widget)
+				spanCols++;
+			else
+				break;
+		}
 
-        AbsolutePos_t pos;
-        pos.left   = currContainer->absPos.left + col * cellWidth;
-        pos.top    = currContainer->absPos.top  + row * cellHeight;
-        pos.right  = pos.left + spanCols * cellWidth;
-        pos.bottom = pos.top  + spanRows * cellHeight;
+		for (int r = row + 1; r < currContainer->rows; r++) {
+			bool fullRow = true;
+			for (int c = 0; c < spanCols; c++) {
+				int idx = r * currContainer->cols + (col + c);
+				if (currContainer->gridPositions[idx] != widget) {
+					fullRow = false;
+					break;
+				}
+			}
+			if (fullRow)
+				spanRows++;
+			else
+				break;
+		}
 
-        widget->pos = pos;
+		AbsolutePos_t pos;
+		pos.left = currContainer->absPos.left + col * cellWidth;
+		pos.top = currContainer->absPos.top + row * cellHeight;
+		pos.right = pos.left + spanCols * cellWidth;
+		pos.bottom = pos.top + spanRows * cellHeight;
 
-        for (int r = 0; r < spanRows; r++) {
-            for (int c = 0; c < spanCols; c++) {
-                int idx = (row + r) * currContainer->cols + (col + c);
-                visited[idx] = true;
-            }
-        }
-    }
+		widget->pos = pos;
 
-    free(visited);
+		for (int r = 0; r < spanRows; r++) {
+			for (int c = 0; c < spanCols; c++) {
+				int idx = (row + r) * currContainer->cols + (col + c);
+				visited[idx] = true;
+			}
+		}
+	}
+
+	free(visited);
 }
 
 void updateContainersLayoutPos(void) {
@@ -127,14 +132,12 @@ void updateContainersLayoutPos(void) {
 			}
 		}
 
-		if(!currContainer->grid){
+		if (!currContainer->grid) {
 			updatePosToContainerList(currContainer->widgetList);
 			drawable_updatePosToContainerList(currContainer->drawableList);
-		}
-		else {
+		} else {
 			updateGridPositions(currContainer);
 		}
-
 	}
 }
 
@@ -228,7 +231,6 @@ void containerListClick(int x, int y, ClickType_t clickType) {
 				if (widget && !widget->hidden) {
 					widget->onClick(widget, x, y, clickType);
 					InvalidateRect(currentWindowState.hwnd, NULL, FALSE); // redraw for interactive widgets like checkboxes, which need redraw on click
-					break;
 				} else if (!movingContainer.action && container->movable && clickType == CLICK_TYPE_LDOWN) {
 					movingContainer.startPos = container->absPos;
 					movingContainer.action = CONTAINER_MOVE_ACTION;
@@ -236,8 +238,8 @@ void containerListClick(int x, int y, ClickType_t clickType) {
 					movingContainer.mouseStartX = x;
 					movingContainer.mouseStartY = y;
 					moveContainerOnTop(i);
-					break;
 				}
+				break;
 			}
 		}
 	}
@@ -329,8 +331,13 @@ LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (movingContainer.action) {
 
 		if (!movingContainer.container->fixedWidgets) {
-			updatePosToContainerList(movingContainer.container->widgetList);
-			drawable_updatePosToContainerList(movingContainer.container->drawableList);
+
+			if (movingContainer.container->grid) {
+				updateGridPositions(movingContainer.container);
+			} else {
+				updatePosToContainerList(movingContainer.container->widgetList);
+				drawable_updatePosToContainerList(movingContainer.container->drawableList);
+			}
 		}
 
 		movingContainer.action = 0;
@@ -503,41 +510,77 @@ container_t *initContainer(containerPos_t pos) {
 	return container;
 }
 
-container_t * initGridContainer(containerPos_t pos, int rows, int cols){
-	container_t * gridContainer = initContainer(pos);
+container_t *initGridContainer(containerPos_t pos, int rows, int cols) {
+	container_t *gridContainer = initContainer(pos);
 	gridContainer->rows = rows;
 	gridContainer->cols = cols;
 	gridContainer->grid = true;
 	gridContainer->gridPositions = malloc(sizeof(BaseWidget_t *) * rows * cols);
-    for (int i = 0; i < cols * rows; i++)
-    {
-        gridContainer->gridPositions[i] = NULL;
-    }
+	for (int i = 0; i < cols * rows; i++) {
+		gridContainer->gridPositions[i] = NULL;
+	}
 	return gridContainer;
 }
 
-void addWidgetToGridContainer(container_t * container, BaseWidget_t * widget, int row, int col){
-	widget->parentPos = &container->absPos;
+void addWidgetToGridContainer(container_t *container, BaseWidget_t *widget, int row, int col) {
 	
-	if(!widgetArrayContains(container->widgetList, widget)){
+
+	if (!widgetArrayContains(container->widgetList, widget)) {
+		widget->parentPos = &container->absPos;
 		addWidget(container->widgetList, widget);
 	}
-	
+
 	container->gridPositions[row * container->cols + col] = widget;
 
 	updateGridPositions(container);
+	updateWidgetVisibility(); // TODO: ONLY UPDATE THIS CONTAINER
 }
 
-void destroyContainerContent(container_t * container){
+void addWidgetToGridContainerSpan(container_t *container, BaseWidget_t *widget,
+                                  int startRow, int endRow, int startCol, int endCol) {
+    if (!container || !widget)
+        return;
+
+    // Clamp values to grid bounds (inclusive)
+    if (startRow < 0) startRow = 0;
+    if (startCol < 0) startCol = 0;
+    if (endRow >= container->rows) endRow = container->rows - 1;
+    if (endCol >= container->cols) endCol = container->cols - 1;
+
+    if (startRow > endRow || startCol > endCol)
+        return;
+
+    // Set parent position
+    widget->parentPos = &container->absPos;
+
+    // Add to container list if not already present
+    if (!widgetArrayContains(container->widgetList, widget)) {
+        addWidget(container->widgetList, widget);
+    }
+
+    // Fill all target cells (inclusive)
+    for (int r = startRow; r <= endRow; r++) {
+        for (int c = startCol; c <= endCol; c++) {
+            container->gridPositions[r * container->cols + c] = widget;
+        }
+    }
+
+    updateGridPositions(container);
+    updateWidgetVisibility(); // TODO: restrict update to this container
+}
+
+void destroyContainerContent(container_t *container) {
 	DynamicArray_Free(container->drawableList);
 	freeWidgetList(container->widgetList);
 
-	if(container->grid){
-		for (int i = 0; i < container->rows * container->cols; i++)
-		{
+	if (container->grid) {
+		for (int i = 0; i < container->rows * container->cols; i++) {
 			container->gridPositions[i] = NULL;
 		}
 	}
+
+	container->widgetList = DynamicArray_init(10);
+	container->drawableList = DynamicArray_init(10);
 }
 
 void containerAddWidget(container_t *container, BaseWidget_t *widget) {
@@ -555,7 +598,7 @@ void containerAddWidgetAbsolute(container_t *container, BaseWidget_t *widget, Ab
 	addWidget(container->widgetList, widget);
 }
 
-void containerAddWidgetAnchored(container_t *container, BaseWidget_t *widget, AbsolutePos_t pos, AnchorPos_t anchor, int anchorOffset){
+void containerAddWidgetAnchored(container_t *container, BaseWidget_t *widget, AbsolutePos_t pos, AnchorPos_t anchor, int anchorOffset) {
 	widget->parentPos = &container->absPos;
 	widget->pos = getPosToContainerAbsolute(widget->parentPos, pos);
 	widget->initPosAbs = pos;
@@ -624,7 +667,6 @@ container_t *windowAddGridContainer(AbsolutePos_t pos, int rows, int cols) {
 
 	return container;
 }
-
 
 void rootContainerAddWidget(BaseWidget_t *widget) {
 	container_t *rootContainer = (container_t *)DynamicArray_get(currentWindowState.containers, 0);

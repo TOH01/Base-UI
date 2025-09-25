@@ -6,7 +6,7 @@
 #include "customInput.h"
 
 void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int numEntries) {
-    if (grid->cols < 5) return; // need at least: left padding, widget, spacer, label, right padding
+    if (grid->cols < 5) return;
 
     int leftPadding   = 1;
     int rightPadding  = 1;
@@ -17,13 +17,11 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
 
     int currentRow = 0;
 
-    // Optional: top padding
-    currentRow++; // leave first row empty
+    currentRow++;
 
     for (int i = 0; i < numEntries; i++, currentRow++) {
         calender_entry_t *entry = &entries[i];
 
-        // --- WIDGET ---
         BaseWidget_t *widget = NULL;
         switch (entry->type) {
             case ENTRY_CHECKBOX:
@@ -46,9 +44,6 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
             }
         }
 
-        // --- SPACER --- leave cells empty
-
-        // --- LABEL ---
         buttonWidget_t *label = customButton_initButton((CommonPos_t){0,0,0,0}, NULL, 0);
         customButton_setButtonText(label, entry->text);
 
@@ -58,11 +53,9 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
             addWidgetToGridContainer(grid, (BaseWidget_t*)label, currentRow, c);
         }
 
-        // Optional: extra row spacing between entries
         currentRow++;
     }
 
-    // Update the container's row count if needed
     grid->rows = currentRow; 
 
     InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
