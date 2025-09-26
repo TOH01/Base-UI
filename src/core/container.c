@@ -31,7 +31,7 @@ int layoutToBorderHelper(LayoutType_t type, int offset) {
 	}
 }
 
-static void updateGridPositions(container_t *currContainer) {
+void updateGridPositions(container_t *currContainer) {
 	int width = currContainer->absPos.right - currContainer->absPos.left;
 	int height = currContainer->absPos.bottom - currContainer->absPos.top;
 
@@ -524,7 +524,6 @@ container_t *initGridContainer(containerPos_t pos, int rows, int cols) {
 
 void addWidgetToGridContainer(container_t *container, BaseWidget_t *widget, int row, int col) {
 	
-
 	if (!widgetArrayContains(container->widgetList, widget)) {
 		widget->parentPos = &container->absPos;
 		addWidget(container->widgetList, widget);
@@ -532,8 +531,6 @@ void addWidgetToGridContainer(container_t *container, BaseWidget_t *widget, int 
 
 	container->gridPositions[row * container->cols + col] = widget;
 
-	updateGridPositions(container);
-	updateWidgetVisibility(); // TODO: ONLY UPDATE THIS CONTAINER
 }
 
 void addWidgetToGridContainerSpan(container_t *container, BaseWidget_t *widget,

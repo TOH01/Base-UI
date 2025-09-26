@@ -245,23 +245,26 @@ int save_day_data_raw(day_save_data_t *day, const char *data_filename) {
 }
 
 int save_day_data_raw_at(day_save_data_t *day, const char *data_filename, int offset) {
-    FILE *fp = fopen(data_filename, "rb+");
-    if (!fp)
-        return -1;
+	FILE *fp = fopen(data_filename, "rb+");
+	if (!fp)
+		return -1;
 
-    fseek(fp, offset, SEEK_SET);
+	fseek(fp, offset, SEEK_SET);
 
-    fwrite(&day->elements, sizeof(int), 1, fp);
-    fwrite(day->entries, sizeof(calender_entry_t), day->elements, fp);
+	fwrite(&day->elements, sizeof(int), 1, fp);
+	fwrite(day->entries, sizeof(calender_entry_t), day->elements, fp);
 
-    fclose(fp);
-    return 0;
+	fclose(fp);
+	return 0;
 }
 
 day_save_data_t *load_day_data_raw(long offset, const char *data_filename) {
 	FILE *fp = fopen(data_filename, "rb");
-	if (!fp)
-		return NULL;
+	if (!fp){
+		printf("FP NULL");
+		return NULL; 
+	}
+		
 
 	fseek(fp, offset, SEEK_SET);
 
@@ -291,14 +294,32 @@ void saveDay(day_save_data_t *day, int day_num, int month, int year) {
 	day_save_data_t *data = loadDay(day_num, month, year);
 
 	if (data != NULL) {
-		if (day->elements <= data->elements) {
-			save_day_data_raw_at(day, "saved/date.dat", get_day_data_offset(key, "saved/date.idx"));
+		int original_count = data->elements;
+		int new_count = original_count + day->elements;
+
+		// grow entries array
+		data->entries = realloc(data->entries, sizeof(calender_entry_t) * new_count);
+
+		// append new entries
+		for (int j = 0; j < day->elements; j++) {
+			data->entries[original_count + j] = day->entries[j];
 		}
 
+		data->elements = new_count;
+
+		// append merged block and update index
+		long offset = save_day_data_raw(data, "saves/date.dat");
+		if (offset >= 0) {
+			write_save_idx(key, (int)offset, "saves/date.idx");
+		}
+
+		free(data->entries);
+		free(data);
 	} else {
-
+		// first entry for this day
 		long offset = save_day_data_raw(day, "saves/date.dat");
-
-		write_save_idx(key, (int)offset, "saves/date.idx");
+		if (offset >= 0) {
+			write_save_idx(key, (int)offset, "saves/date.idx");
+		}
 	}
 }

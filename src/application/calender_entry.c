@@ -58,5 +58,8 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
 
     grid->rows = currentRow; 
 
+    updateGridPositions(grid);
+	updateWidgetVisibility(); // TODO: ONLY UPDATE THIS CONTAINER
+ 
     InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }

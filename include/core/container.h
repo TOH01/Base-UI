@@ -81,5 +81,6 @@ container_t *windowAddGridContainer(AbsolutePos_t pos, int rows, int cols);
 void addWidgetToGridContainer(container_t * container, BaseWidget_t * widget, int row, int col);
 void destroyContainerContent(container_t * container);
 void addWidgetToGridContainerSpan(container_t *container, BaseWidget_t *widget, int startRow, int endRow, int startCol, int endCol);
+void updateGridPositions(container_t *currContainer);
 
 #endif
