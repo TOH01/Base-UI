@@ -4,7 +4,7 @@
 #include <string.h>
 
 char *save_dir = "saves/";
-char *files_names[4] = {"date.idx", "date.dat", "rules.idx", "rules.dat"};
+char *files_names[2] = {"date.idx", "date.dat"};
 
 bool dir_exists(const char *path) {
 	DWORD attribs = GetFileAttributesA(path);
@@ -22,22 +22,20 @@ bool file_exists(char *filename) {
 	return false;
 }
 
-void create_save_file(char *filename) {
+void create_save_file(const char *filename) {
 	FILE *fp = fopen(filename, "wb");
+	if (!fp)
+		return;
 
-	file_header_t header = {.magic = MAGIC,
-	                        .version = (version_t){
-	                            .major = MAJOR_VERSION,
-	                            .minor = MINOR_VERSION,
-	                            .counter = COUNT_VERSION,
-	                        }};
-
-	if (fp != NULL) {
-		fwrite(&header, sizeof(file_header_t), 1, fp);
-		fclose(fp);
-	}
+	file_header_t header = {0};
+	header.magic = MAGIC;
+	header.version.major = MAJOR_VERSION;
+	header.version.minor = MINOR_VERSION;
+	header.version.counter = COUNT_VERSION;
+	header.last_offset = 0;
+	fwrite(&header, sizeof(file_header_t), 1, fp);
+	fclose(fp);
 }
-
 void create_file_system(void) {
 
 	if (!dir_exists(save_dir)) {
@@ -63,6 +61,36 @@ int create_save_key(int day, int month, int year) {
 	save_key += month * 100;
 	save_key += year * 10000;
 	return save_key;
+}
+
+static void save_entry(FILE *fp, const calender_entry_t *entry) {
+    // write type as 1 byte
+    unsigned char type = (unsigned char)entry->type;
+    fwrite(&type, sizeof(type), 1, fp);
+
+    // write string length + data
+    unsigned char len = (unsigned char)strnlen(entry->text, sizeof(entry->text));
+    fwrite(&len, sizeof(len), 1, fp);
+    fwrite(entry->text, sizeof(char), len, fp);
+
+    // write the rest of entry data (always 4 bytes)
+    fwrite(&entry->data, sizeof(entry->data), 1, fp);
+}
+
+static void load_entry(FILE *fp, calender_entry_t *entry) {
+    // read type as 1 byte
+    unsigned char type;
+    fread(&type, sizeof(type), 1, fp);
+    entry->type = (entry_type_t)type;
+
+    // read string length + data
+    unsigned char len;
+    fread(&len, sizeof(len), 1, fp);
+    fread(entry->text, sizeof(char), len, fp);
+    entry->text[len] = '\0'; // null-terminate
+
+    // read rest of entry data
+    fread(&entry->data, sizeof(entry->data), 1, fp);
 }
 
 /*
@@ -238,10 +266,33 @@ int save_day_data_raw(day_save_data_t *day, const char *data_filename) {
 	int offset = ftell(fp);
 
 	fwrite(&day->elements, sizeof(int), 1, fp);
-	fwrite(day->entries, sizeof(calender_entry_t), day->elements, fp);
+	for (int i = 0; i < day->elements; i++) {
+		save_entry(fp, &day->entries[i]);
+	}
+
+	file_header_t header;
+
+	fseek(fp, 0, SEEK_SET);
+	fread(&header, sizeof(file_header_t), 1, fp);
+
+	header.last_offset = offset;
+
+	fseek(fp, 0, SEEK_SET);
+	fwrite(&header, sizeof(file_header_t), 1, fp);
 
 	fclose(fp);
 	return offset;
+}
+
+int get_last_offset(const char *filename) {
+	FILE *fp = fopen(filename, "rb+");
+
+	file_header_t header;
+
+	fseek(fp, 0, SEEK_SET);
+	fread(&header, sizeof(file_header_t), 1, fp);
+
+	return header.last_offset;
 }
 
 int save_day_data_raw_at(day_save_data_t *day, const char *data_filename, int offset) {
@@ -252,7 +303,9 @@ int save_day_data_raw_at(day_save_data_t *day, const char *data_filename, int of
 	fseek(fp, offset, SEEK_SET);
 
 	fwrite(&day->elements, sizeof(int), 1, fp);
-	fwrite(day->entries, sizeof(calender_entry_t), day->elements, fp);
+	for (int i = 0; i < day->elements; i++) {
+		save_entry(fp, &day->entries[i]);
+	}
 
 	fclose(fp);
 	return 0;
@@ -260,11 +313,10 @@ int save_day_data_raw_at(day_save_data_t *day, const char *data_filename, int of
 
 day_save_data_t *load_day_data_raw(long offset, const char *data_filename) {
 	FILE *fp = fopen(data_filename, "rb");
-	if (!fp){
+	if (!fp) {
 		printf("FP NULL");
-		return NULL; 
+		return NULL;
 	}
-		
 
 	fseek(fp, offset, SEEK_SET);
 
@@ -272,7 +324,9 @@ day_save_data_t *load_day_data_raw(long offset, const char *data_filename) {
 	fread(&day->elements, sizeof(int), 1, fp);
 
 	day->entries = malloc(sizeof(calender_entry_t) * day->elements);
-	fread(day->entries, sizeof(calender_entry_t), day->elements, fp);
+	for (int i = 0; i < day->elements; i++) {
+		load_entry(fp, &day->entries[i]);
+	}
 
 	fclose(fp);
 	return day;
@@ -297,19 +351,21 @@ void saveDay(day_save_data_t *day, int day_num, int month, int year) {
 		int original_count = data->elements;
 		int new_count = original_count + day->elements;
 
-		// grow entries array
 		data->entries = realloc(data->entries, sizeof(calender_entry_t) * new_count);
 
-		// append new entries
 		for (int j = 0; j < day->elements; j++) {
 			data->entries[original_count + j] = day->entries[j];
 		}
 
 		data->elements = new_count;
 
-		// append merged block and update index
-		long offset = save_day_data_raw(data, "saves/date.dat");
-		if (offset >= 0) {
+		int data_day_offset = get_day_data_offset(key, "saves/date.idx");
+
+		// if data of the day is last element, overwrite
+		if (get_last_offset("saves/date.dat") == data_day_offset) {
+			save_day_data_raw_at(data, "saves/date.dat", data_day_offset);
+		} else {
+			int offset = save_day_data_raw(data, "saves/date.dat");
 			write_save_idx(key, (int)offset, "saves/date.idx");
 		}
 
@@ -320,6 +376,18 @@ void saveDay(day_save_data_t *day, int day_num, int month, int year) {
 		long offset = save_day_data_raw(day, "saves/date.dat");
 		if (offset >= 0) {
 			write_save_idx(key, (int)offset, "saves/date.idx");
+		}
+	}
+}
+
+void overwriteDayData(day_save_data_t *day, int day_num, int month, int year){
+	int key = create_save_key(day_num, month, year);
+	day_save_data_t *data = loadDay(day_num, month, year);
+
+	if (data != NULL){
+		if(!(data->elements < day->elements)){
+			int offset = get_day_data_offset(key, "saves/date.idx");
+			save_day_data_raw_at(day, "saves/data.dat", offset);
 		}
 	}
 }

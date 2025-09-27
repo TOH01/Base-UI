@@ -4,19 +4,16 @@
 #include "common.h"
 #include "widget.h"
 
-#define INPUT_MAX_STRING_SIZE 256
-#define INPUT_MAX_DEFAULT_STRING_SIZE 20
-
 typedef struct InputWidget {
 	BaseWidget_t baseWidget;
-	char buffer[INPUT_MAX_STRING_SIZE];
+	char * buffer ;
+	int max_size;
 	bool beingHovered;
-	char defaultText[INPUT_MAX_DEFAULT_STRING_SIZE];
 	InputTheme_t *theme;
+	void (*onDataChange)(void);
 } inputWidget_t;
 
-inputWidget_t *customInput_initInput(CommonPos_t pos);
+inputWidget_t *customInput_initInput(CommonPos_t pos, char * buffer);
 void customInput_clearInput(inputWidget_t *input);
-void setDefaultText(inputWidget_t * input, char * defaultText);
 
 #endif

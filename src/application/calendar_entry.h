@@ -21,6 +21,6 @@ typedef struct {
     entry_data_t data;
 } calender_entry_t;
 
-void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int numEntries); 
+void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int numEntries, void *onDataChangeCallback);
 
 #endif

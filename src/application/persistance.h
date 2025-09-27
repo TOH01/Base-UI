@@ -21,6 +21,7 @@ typedef struct version{
 typedef struct file_header{
     unsigned int magic;
     version_t version;
+    int last_offset; // the latest offset saved in .data file
 } file_header_t;
 
 typedef struct idx_entry{
@@ -36,5 +37,6 @@ typedef struct day_save_data{
 void create_file_system(void);
 void saveDay(day_save_data_t *day, int day_num, int month, int year);
 day_save_data_t *loadDay(int day_num, int month, int year);
+void overwriteDayData(day_save_data_t *day, int day_num, int month, int year);
 
 #endif

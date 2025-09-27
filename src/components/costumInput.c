@@ -1,8 +1,8 @@
 #include "UiUtils.h"
 #include "assert.h"
 #include "customInput.h"
-#include "string.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 bool handlerInit = 0;
@@ -18,16 +18,14 @@ static void drawInput(BaseWidget_t *baseWidget) {
 
 		UiUtils_DrawColoredRectangle(baseWidget->pos, fill, border, input->theme->borderWidth);
 
-		if (strlen(input->buffer) >= 1) {
+		if (input->buffer && strlen(input->buffer) >= 1) {
 			if (UiUtils_TextFitsBoxTheme(input->buffer, baseWidget->pos, input->theme->inputText.font)) {
 				UiUtils_DrawTextTheme(baseWidget->pos, input->buffer, input->theme->inputText.formatFlags, input->theme->inputText.font, input->theme->inputText.color);
 			} else {
-				int lastElementIdx = strlen(input->buffer) - 1;
-
-				while (UiUtils_TextFitsBoxTheme(&input->buffer[lastElementIdx], baseWidget->pos, input->theme->inputText.font)) {
+				int lastElementIdx = (int)strlen(input->buffer) - 1;
+				while (lastElementIdx >= 0 && UiUtils_TextFitsBoxTheme(&input->buffer[lastElementIdx], baseWidget->pos, input->theme->inputText.font)) {
 					lastElementIdx--;
 				}
-
 				if (lastElementIdx >= 0) {
 					UiUtils_DrawTextTheme(baseWidget->pos, &input->buffer[lastElementIdx], input->theme->inputText.formatFlags, input->theme->inputText.font, input->theme->inputText.color);
 				}
@@ -38,7 +36,7 @@ static void drawInput(BaseWidget_t *baseWidget) {
 #endif
 			}
 		} else {
-			UiUtils_DrawTextTheme(baseWidget->pos, input->defaultText, input->theme->emptyText.formatFlags, input->theme->emptyText.font, input->theme->emptyText.color);
+			// empty input: nothing to draw
 		}
 	}
 #ifdef DEBUG
@@ -66,37 +64,37 @@ static void onHoverEndInput(BaseWidget_t *base) {
 }
 
 static LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-
 	(void)hwnd;
 	(void)msg;
 	(void)lParam;
 
-	if (activeInput) {
-
-		int buffLen = strlen(activeInput->buffer);
+	if (activeInput && activeInput->buffer) {
+		int buffLen = (int)strlen(activeInput->buffer);
 
 		if (wParam == VK_ESCAPE) {
 			activeInput = NULL;
-
 			return 1;
 		}
 
 		if (wParam == VK_DELETE || wParam == VK_BACK) {
 			if (buffLen >= 1) {
 				activeInput->buffer[buffLen - 1] = '\0';
+				if (activeInput->onDataChange != NULL) {
+					activeInput->onDataChange();
+				}
 				InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 			}
-
 			return 1;
 		}
 
-		if (buffLen < INPUT_MAX_STRING_SIZE - 1 && wParam >= 32 && wParam <= 126) {
+		if (buffLen < activeInput->max_size - 1 && wParam >= 32 && wParam <= 126) {
 			activeInput->buffer[buffLen] = (char)wParam;
 			activeInput->buffer[buffLen + 1] = '\0';
+			if (activeInput->onDataChange != NULL) {
+				activeInput->onDataChange();
+			}
+			InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 		}
-
-		// trigger redraw to show new letters
-		InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 	}
 
 	return 0;
@@ -104,20 +102,19 @@ static LRESULT keystoreCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 static void onClickInput(BaseWidget_t *baseWidget, int x, int y, ClickType_t clickType) {
 	assert(baseWidget->type == WIDGET_TYPE_INPUT);
-	inputWidget_t *input = (inputWidget_t *)baseWidget;
 	(void)x;
 	(void)y;
 	(void)clickType;
-	activeInput = input;
+	activeInput = (inputWidget_t *)baseWidget;
 }
 
-static void freeInput(BaseWidget_t * baseWidget){
+static void freeInput(BaseWidget_t *baseWidget) {
 	assert(baseWidget->type == WIDGET_TYPE_INPUT);
 	inputWidget_t *input = (inputWidget_t *)baseWidget;
 	free(input);
 }
 
-inputWidget_t *customInput_initInput(CommonPos_t pos) {
+inputWidget_t *customInput_initInput(CommonPos_t pos, char *buffer) {
 	inputWidget_t *input = (inputWidget_t *)calloc(1, sizeof(inputWidget_t));
 
 	if (!handlerInit) {
@@ -126,8 +123,9 @@ inputWidget_t *customInput_initInput(CommonPos_t pos) {
 	}
 
 	input->baseWidget.initPos = pos;
-
 	input->baseWidget.type = WIDGET_TYPE_INPUT;
+
+	input->buffer = buffer;
 
 	input->theme = &currentWindowState.activeTheme.input;
 
@@ -137,14 +135,10 @@ inputWidget_t *customInput_initInput(CommonPos_t pos) {
 	input->baseWidget.onHoverEnd = &onHoverEndInput;
 	input->baseWidget.destroy = &freeInput;
 
-	strncpy(input->defaultText, "Input ...", INPUT_MAX_DEFAULT_STRING_SIZE);
-
 	return input;
 }
 
-void customInput_clearInput(inputWidget_t *input) { input->buffer[0] = '\0'; }
-
-void setDefaultText(inputWidget_t * input, char * defaultText){
-	strncpy(input->defaultText, defaultText, INPUT_MAX_DEFAULT_STRING_SIZE);
-	input->defaultText[INPUT_MAX_DEFAULT_STRING_SIZE - 1] = '\0';
+void customInput_clearInput(inputWidget_t *input) {
+	if (input->buffer)
+		input->buffer[0] = '\0';
 }

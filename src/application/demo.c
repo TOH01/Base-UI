@@ -35,6 +35,8 @@ inputWidget_t *monthInput;
 inputWidget_t *dayInput;
 inputWidget_t *nameInput;
 
+day_save_data_t *day;
+
 char *monthNames[12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
 char addGoalStr[30] = "Add goal";
@@ -60,20 +62,27 @@ static void updateTitle(void) {
 	customButton_setButtonText(currentMonth, buf);
 }
 
+static void onDataUpdate(void){
+	overwriteDayData(day, calendar->selectedDay, calendar->month, calendar->year);
+}
+
 static void calendarDayChange(void) {
     int day_num = calendar->selectedDay;
     int month = calendar->month;
     int year = calendar->year;
 
+	if(day != NULL){
+		free(day->entries);
+        free(day);
+		day = NULL;
+	}
+	
 	destroyContainerContent(sidebarContent);
 
-    day_save_data_t *day = loadDay(day_num, month, year);
+    day = loadDay(day_num, month, year);
 
     if (day) {
-        renderCalendarEntries(sidebarContent, day->entries, day->elements);
-
-        free(day->entries);
-        free(day);
+        renderCalendarEntries(sidebarContent, day->entries, day->elements, &onDataUpdate);
     }
 }
 
