@@ -62,33 +62,38 @@ static void updateTitle(void) {
 	customButton_setButtonText(currentMonth, buf);
 }
 
-static void onDataUpdate(void){
-	overwriteDayData(day, calendar->selectedDay, calendar->month, calendar->year);
-}
+static void onDataUpdate(void);
 
 static void calendarDayChange(void) {
-    int day_num = calendar->selectedDay;
-    int month = calendar->month;
-    int year = calendar->year;
+	int day_num = calendar->selectedDay;
+	int month = calendar->month;
+	int year = calendar->year;
 
-	if(day != NULL){
+	if (day != NULL) {
 		free(day->entries);
-        free(day);
+		free(day);
 		day = NULL;
 	}
-	
+
 	destroyContainerContent(sidebarContent);
 
-    day = loadDay(day_num, month, year);
+	day = loadDay(day_num, month, year);
 
-    if (day) {
-        renderCalendarEntries(sidebarContent, day->entries, day->elements, &onDataUpdate);
-    }
+	if (day) {
+		renderCalendarEntries(sidebarContent, day->entries, day->elements, &onDataUpdate);
+	}
+}
+
+static void onDataUpdate(void) {
+	if (activeInput == NULL) {
+		overwriteDayData(day, calendar->selectedDay, calendar->month, calendar->year);
+		calendarDayChange();
+	}
 }
 
 static void saveButtonCallback(int id) {
-	(void) id;
-	
+	(void)id;
+
 	int day_num = atoi(dayInput->buffer);
 	int month = atoi(monthInput->buffer);
 	int year = atoi(yearInput->buffer);
@@ -99,10 +104,9 @@ static void saveButtonCallback(int id) {
 	strncpy(entry.text, nameInput->buffer, sizeof(entry.text) - 1);
 	entry.text[sizeof(entry.text) - 1] = '\0';
 
-	if(*(numericCheckbox->value)){
+	if (*(numericCheckbox->value)) {
 		entry.type = ENTRY_NUM;
-	}
-	else{
+	} else {
 		entry.type = ENTRY_CHECKBOX;
 	}
 
@@ -267,4 +271,6 @@ void Calendar_InitUI(void) {
 void Demo_InitAll(void) {
 	create_file_system();
 	Calendar_InitUI();
+
+	setOnActiveInputEndCbk(&onDataUpdate);
 }

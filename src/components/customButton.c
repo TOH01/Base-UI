@@ -139,7 +139,7 @@ static void onHoverEndButton(BaseWidget_t *base) {
 static void buttonFree(BaseWidget_t * base){
 	assert(base->type == WIDGET_TYPE_BUTTON);
 	buttonWidget_t *button = (buttonWidget_t *)base;
-
+	memset(button, 0, sizeof(buttonWidget_t));
 	free(button);
 }
 

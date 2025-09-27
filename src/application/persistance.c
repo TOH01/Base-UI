@@ -387,7 +387,7 @@ void overwriteDayData(day_save_data_t *day, int day_num, int month, int year){
 	if (data != NULL){
 		if(!(data->elements < day->elements)){
 			int offset = get_day_data_offset(key, "saves/date.idx");
-			save_day_data_raw_at(day, "saves/data.dat", offset);
+			save_day_data_raw_at(day, "saves/date.dat", offset);
 		}
 	}
 }

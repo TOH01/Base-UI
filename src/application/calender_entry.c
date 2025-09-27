@@ -36,10 +36,8 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
 			widget = (BaseWidget_t *)checkbox;
 			break;
 		case ENTRY_NUM: {
-			inputWidget_t *input = customInput_initInput((CommonPos_t){0, 0, 0, 0}, &entry->data.count);
+			inputWidget_t *input = customInput_initInputNumeric((CommonPos_t){0, 0, 0, 0}, &entry->data.count);
             input->onDataChange = onDataChangeCallback;
-			char buf[32];
-			snprintf(buf, sizeof(buf), "%d", entry->data.count);
 			widget = (BaseWidget_t *)input;
 		} break;
 		}

@@ -56,6 +56,7 @@ static void onHoverEndCheckbox(BaseWidget_t *base) {
 static void freeCheckbox(BaseWidget_t *base){
 	assert(base->type == WIDGET_TYPE_CHECKBOX);
 	checkboxWidget_t * checkbox = (checkboxWidget_t *)base;
+	memset(checkbox, 0, sizeof(checkboxWidget_t));
 	free(checkbox);
 }
 

@@ -3,6 +3,7 @@
 #include "menu.h"
 #include <assert.h>
 #include <stdio.h>
+#include "customInput.h"
 
 movingContainer_t movingContainer;
 BaseWidget_t *hoverCandidate = NULL;
@@ -208,7 +209,7 @@ void moveContainerOnTop(int idx) {
 void containerListClick(int x, int y, ClickType_t clickType) {
 
 	// reset selected input, has to be done before widget callback
-	activeInput = NULL;
+	endActiveInput();
 	activeTextDump = NULL;
 	container_t *container = NULL;
 
@@ -423,7 +424,9 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (hoverCandidate != lastHoverCandidate) {
 			// If there was a previous hover, end it
 			if (lastHoverCandidate && lastHoverCandidate->onHoverEnd) {
-				lastHoverCandidate->onHoverEnd(lastHoverCandidate);
+				if(lastHoverCandidate->onHoverEnd != NULL){
+					lastHoverCandidate->onHoverEnd(lastHoverCandidate);
+				}
 			}
 
 			// Start new hover
@@ -572,6 +575,13 @@ void destroyContainerContent(container_t *container) {
 
 	if (container->grid) {
 		for (int i = 0; i < container->rows * container->cols; i++) {
+			if(container->gridPositions[i] == hoverCandidate){
+				hoverCandidate = NULL;
+			}
+			if(container->gridPositions[i] == lastHoverCandidate){
+				lastHoverCandidate = NULL;
+			}
+
 			container->gridPositions[i] = NULL;
 		}
 	}
