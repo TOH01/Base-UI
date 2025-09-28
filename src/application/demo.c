@@ -64,10 +64,21 @@ static void updateTitle(void) {
 
 static void onDataUpdate(void);
 
+void updateAddGoalDay(void){
+	snprintf(yearInput->buffer, 10, "%d", calendar->year);
+	snprintf(dayInput->buffer, 10, "%d", calendar->selectedDay);
+	snprintf(monthInput->buffer, 10, "%d", calendar->month);
+}
+
+
 static void calendarDayChange(void) {
 	int day_num = calendar->selectedDay;
 	int month = calendar->month;
 	int year = calendar->year;
+
+	if(getActiveFromGroup(addGoalGroup->groupID) == addGoalMenu){
+		updateAddGoalDay();
+	}
 
 	if (day != NULL) {
 		free(day->entries);
@@ -268,9 +279,21 @@ void Calendar_InitUI(void) {
 	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)saveButton, 8, 8, 3, 6);
 }
 
+LRESULT onAddGoalLoad(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
+	(void) hwnd;
+	(void) msg;
+	(void) wParam;
+	(void) lParam;
+	updateAddGoalDay();
+	return 1;
+} 
+
 void Demo_InitAll(void) {
 	create_file_system();
 	Calendar_InitUI();
 
 	setOnActiveInputEndCbk(&onDataUpdate);
+	calendarDayChange();
+
+	MenuUi_SubmenuAddLoadHandler(&onAddGoalLoad, addGoalMenu);
 }

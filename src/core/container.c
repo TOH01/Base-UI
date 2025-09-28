@@ -1,9 +1,9 @@
 #include "container.h"
 #include "WmParamHashTable.h"
+#include "customInput.h"
 #include "menu.h"
 #include <assert.h>
 #include <stdio.h>
-#include "customInput.h"
 
 movingContainer_t movingContainer;
 BaseWidget_t *hoverCandidate = NULL;
@@ -354,6 +354,49 @@ LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
+LRESULT mouseScrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void) msg;
+	(void) lParam;
+	container_t *container = NULL;
+
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+	ScreenToClient(hwnd, &mousePos);
+
+	int x = mousePos.x;
+	int y = mousePos.y;
+
+	for (int i = currentWindowState.containers->size - 1; i >= 0; i--) {
+
+		container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
+
+		if (container->grid) {
+			if (UiUtils_CoordinateIsInsideOf(x, y, container->absPos)) {
+				int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+				if (delta > 0) {
+					if (container->startRow > 0) {
+						container->startRow--;
+						updateGridPositions(container);
+						updateContainersLayoutPos();
+						InvalidateRect(hwnd, NULL, FALSE);
+					}
+				} else {
+
+					if (container->startRow < container->rows) {
+						container->startRow++;
+						updateGridPositions(container);
+						updateContainersLayoutPos();
+						InvalidateRect(hwnd, NULL, FALSE);
+					}
+				}
+				break;
+			}
+		}
+	}
+
+	return 1;
+}
+
 LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	(void)msg;
 	(void)wParam;
@@ -424,7 +467,7 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (hoverCandidate != lastHoverCandidate) {
 			// If there was a previous hover, end it
 			if (lastHoverCandidate && lastHoverCandidate->onHoverEnd) {
-				if(lastHoverCandidate->onHoverEnd != NULL){
+				if (lastHoverCandidate->onHoverEnd != NULL) {
 					lastHoverCandidate->onHoverEnd(lastHoverCandidate);
 				}
 			}
@@ -499,6 +542,7 @@ container_t *initContainer(containerPos_t pos) {
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &MouseMoveCallback);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_TIMER, &TimerCallback);
 		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSELEAVE, &MouseLeaveCallback);
+		WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEWHEEL, &mouseScrollCallback);
 
 		currentWindowState.handlerTable->hasContainerHandlers = true;
 	}
@@ -526,47 +570,49 @@ container_t *initGridContainer(containerPos_t pos, int rows, int cols) {
 }
 
 void addWidgetToGridContainer(container_t *container, BaseWidget_t *widget, int row, int col) {
-	
+
 	if (!widgetArrayContains(container->widgetList, widget)) {
 		widget->parentPos = &container->absPos;
 		addWidget(container->widgetList, widget);
 	}
 
 	container->gridPositions[row * container->cols + col] = widget;
-
 }
 
-void addWidgetToGridContainerSpan(container_t *container, BaseWidget_t *widget,
-                                  int startRow, int endRow, int startCol, int endCol) {
-    if (!container || !widget)
-        return;
+void addWidgetToGridContainerSpan(container_t *container, BaseWidget_t *widget, int startRow, int endRow, int startCol, int endCol) {
+	if (!container || !widget)
+		return;
 
-    // Clamp values to grid bounds (inclusive)
-    if (startRow < 0) startRow = 0;
-    if (startCol < 0) startCol = 0;
-    if (endRow >= container->rows) endRow = container->rows - 1;
-    if (endCol >= container->cols) endCol = container->cols - 1;
+	// Clamp values to grid bounds (inclusive)
+	if (startRow < 0)
+		startRow = 0;
+	if (startCol < 0)
+		startCol = 0;
+	if (endRow >= container->rows)
+		endRow = container->rows - 1;
+	if (endCol >= container->cols)
+		endCol = container->cols - 1;
 
-    if (startRow > endRow || startCol > endCol)
-        return;
+	if (startRow > endRow || startCol > endCol)
+		return;
 
-    // Set parent position
-    widget->parentPos = &container->absPos;
+	// Set parent position
+	widget->parentPos = &container->absPos;
 
-    // Add to container list if not already present
-    if (!widgetArrayContains(container->widgetList, widget)) {
-        addWidget(container->widgetList, widget);
-    }
+	// Add to container list if not already present
+	if (!widgetArrayContains(container->widgetList, widget)) {
+		addWidget(container->widgetList, widget);
+	}
 
-    // Fill all target cells (inclusive)
-    for (int r = startRow; r <= endRow; r++) {
-        for (int c = startCol; c <= endCol; c++) {
-            container->gridPositions[r * container->cols + c] = widget;
-        }
-    }
+	// Fill all target cells (inclusive)
+	for (int r = startRow; r <= endRow; r++) {
+		for (int c = startCol; c <= endCol; c++) {
+			container->gridPositions[r * container->cols + c] = widget;
+		}
+	}
 
-    updateGridPositions(container);
-    updateWidgetVisibility(); // TODO: restrict update to this container
+	updateGridPositions(container);
+	updateWidgetVisibility(); // TODO: restrict update to this container
 }
 
 void destroyContainerContent(container_t *container) {
@@ -575,10 +621,10 @@ void destroyContainerContent(container_t *container) {
 
 	if (container->grid) {
 		for (int i = 0; i < container->rows * container->cols; i++) {
-			if(container->gridPositions[i] == hoverCandidate){
+			if (container->gridPositions[i] == hoverCandidate) {
 				hoverCandidate = NULL;
 			}
-			if(container->gridPositions[i] == lastHoverCandidate){
+			if (container->gridPositions[i] == lastHoverCandidate) {
 				lastHoverCandidate = NULL;
 			}
 

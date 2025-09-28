@@ -46,5 +46,6 @@ void MenuUi_CallAllActiveHandlers(HWND hwnd, int id, WPARAM wparam, LPARAM lpara
 void MenuUi_SubmenuAddContainer(MenuUi_Submenu_t * submenu, container_t * container);
 submenuGroup_t *initSubmenuGroup(void);
 void MenuUi_SetSubmenuActive(MenuUi_Submenu_t * menu);
+MenuUi_Submenu_t *getActiveFromGroup(int groupID);
 
 #endif

@@ -44,6 +44,7 @@ typedef struct container_t {
 	bool disableRectRender;
 	Layout_t layout;
 	bool grid;
+	int startRow;
 	int cols;
 	int rows;
 	bool limitGrid;
