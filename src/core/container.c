@@ -215,43 +215,8 @@ LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     (void)wParam;
     (void)lParam;
     
-    // First update scroll bounds for grid containers
-    for (int i = 0; i < currentWindowState.containers->size; i++) {
-        container_t *container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
-        if (container && container->grid) {
-            updateGridScrollBounds(container);
-        }
-    }
-    
-    updateContainersLayoutPos();
-    
-    // Update visibility only for NON-grid containers
-    // Grid containers handle their own visibility in updateGridPositions
-    int containerCount = currentWindowState.containers->size;
-    for (int i = 0; i < containerCount; i++) {
-        container_t *container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
-
-        if (container && container->fixedWidgets && !container->grid) {
-            // Update widget visibility for non-grid containers
-            int widgetCount = container->widgetList->size;
-            for (int j = 0; j < widgetCount; j++) {
-                BaseWidget_t *widget = (BaseWidget_t *)DynamicArray_get(container->widgetList, j);
-                if (widget) {
-                    widget->hidden = !UiUtils_WidgetFitsInContainer(widget->pos, container->absPos);
-                }
-            }
-
-            // Update drawable visibility
-            int drawCount = container->drawableList->size;
-            for (int j = 0; j < drawCount; j++) {
-                Drawable_t *drawable = (Drawable_t *)DynamicArray_get(container->drawableList, j);
-                if (drawable) {
-                    drawable->hidden = !UiUtils_WidgetFitsInContainer(drawable->pos, container->absPos);
-                }
-            }
-        }
-    }
-    
+    updateContainersLayoutPos();  // Already calls updateGridPositions for grid containers
+    updateWidgetVisibility();     // Skips grid containers
     InvalidateRect(hwnd, NULL, FALSE);
     return 0;
 }
@@ -353,7 +318,6 @@ void updateGridPositions(container_t *currContainer) {
 
     int cols        = currContainer->cols;
     int totalRows   = currContainer->rows;
-    int startRow    = currContainer->startRow;
 
     int containerLeft   = currContainer->absPos.left;
     int containerTop    = currContainer->absPos.top;
@@ -384,15 +348,13 @@ void updateGridPositions(container_t *currContainer) {
     int visibleRows = containerHeight / cellHeight;
     if (visibleRows <= 0) visibleRows = 1;
     
-    // Make sure we don't try to display more rows than exist
-    if (startRow + visibleRows > totalRows) {
-        visibleRows = totalRows - startRow;
-    }
+    // Clamp startRow to valid range
+    int maxStartRow = totalRows - visibleRows;
+    if (maxStartRow < 0) maxStartRow = 0;
+    if (currContainer->startRow > maxStartRow) currContainer->startRow = maxStartRow;
+    if (currContainer->startRow < 0) currContainer->startRow = 0;
     
-    // Clamp startRow
-    if (startRow < 0) startRow = 0;
-    if (startRow >= totalRows) startRow = totalRows - 1;
-    currContainer->startRow = startRow;
+    int startRow = currContainer->startRow;
 
     int maxCells = visibleRows * cols;
     char *visited = (char*)calloc((size_t)maxCells, 1);
@@ -436,7 +398,7 @@ void updateGridPositions(container_t *currContainer) {
                 } else break;
             }
 
-            // --- Vertical span (check in GLOBAL grid space) ---
+            // --- Vertical span ---
             int spanRows = 1;
             for (int nextVisRow = visibleRow + 1; nextVisRow < visibleRows; ++nextVisRow) {
                 int nextGlobalRow = startRow + nextVisRow;
@@ -481,7 +443,6 @@ void updateGridPositions(container_t *currContainer) {
     free(visited);
 }
 
-// Fixed scroll callback
 LRESULT mouseScrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     (void) msg;
     (void) lParam;
@@ -499,46 +460,16 @@ LRESULT mouseScrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         if (container && container->grid && container->visible) {
             if (UiUtils_CoordinateIsInsideOf(x, y, container->absPos)) {
                 
-                int containerHeight = container->absPos.bottom - container->absPos.top;
-                if (containerHeight <= 0) break;
-                
-                // Calculate cell height
-                int naturalCellHeight = containerHeight / container->rows;
-                int cellHeight = naturalCellHeight;
-                
-                if (container->cellMinHeight > 0 && cellHeight < container->cellMinHeight)
-                    cellHeight = container->cellMinHeight;
-                if (container->cellMaxHeight > 0 && cellHeight > container->cellMaxHeight)
-                    cellHeight = container->cellMaxHeight;
-                
-                int visibleRows = containerHeight / cellHeight;
-                if (visibleRows <= 0) visibleRows = 1;
-                
-                int maxStartRow = container->rows - visibleRows;
-                if (maxStartRow < 0) maxStartRow = 0;
-                
                 int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-                bool needsUpdate = false;
                 
-                if (delta > 0) {
-                    // Scroll up
-                    if (container->startRow > 0) {
-                        container->startRow--;
-                        needsUpdate = true;
-                    }
-                } else {
-                    // Scroll down
-                    if (container->startRow < maxStartRow) {
-                        container->startRow++;
-                        needsUpdate = true;
-                    }
+                if (delta > 0 && container->startRow > 0) {
+                    container->startRow--;
+                } else if (delta < 0) {
+                    container->startRow++;
                 }
                 
-                if (needsUpdate) {
-                    updateGridPositions(container);
-                    InvalidateRect(hwnd, NULL, FALSE);
-                }
-                
+                updateGridPositions(container);  // Handles clamping internally
+                InvalidateRect(hwnd, NULL, FALSE);
                 break;
             }
         }
@@ -546,6 +477,7 @@ LRESULT mouseScrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     return 1;
 }
+
 
 LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	(void)msg;
