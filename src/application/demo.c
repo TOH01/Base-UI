@@ -244,8 +244,8 @@ void Calendar_InitUI(void) {
 	sidebarContent->layout.offsetRight = -50;
 	sidebarContent->layout.offsetBottom = -50;
 	sidebarContent->limitGrid = true;
-	sidebarContent->cellMaxHeight = 75;
-	sidebarContent->cellMinHeight = 75;
+	sidebarContent->cellMaxHeight = 35;
+	sidebarContent->cellMinHeight = 35;
 	sidebarContent->cellMaxWidth = 9999;
 	sidebarContent->cellMinWidth = 0;
 

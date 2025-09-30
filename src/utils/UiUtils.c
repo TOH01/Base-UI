@@ -37,6 +37,20 @@ void UiUtils_DrawColoredRectangle(AbsolutePos_t pos, COLORREF colorBG, COLORREF 
 	DeleteObject(fillBrush);
 }
 
+void UiUtils_DrawBorder(AbsolutePos_t pos, COLORREF colorBorder, int BorderSize) {
+	if (BorderSize > 0) {
+		HPEN pen = CreatePen(PS_SOLID, BorderSize, colorBorder);
+		HPEN oldPen = SelectObject(currentWindowState.memHDC, pen);
+		HBRUSH oldBrush = SelectObject(currentWindowState.memHDC, GetStockObject(NULL_BRUSH));
+
+		UiUtils_DrawRectangleRelative(pos);
+
+		SelectObject(currentWindowState.memHDC, oldBrush);
+		SelectObject(currentWindowState.memHDC, oldPen);
+		DeleteObject(pen);
+	}
+}
+
 void UiUtils_DrawText(AbsolutePos_t pos, const char *name, UINT format) {
 
 	RECT textRect = UiUtils_absolutePosToRect(pos);

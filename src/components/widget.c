@@ -23,21 +23,21 @@ bool widgetArrayContains(DynamicArray_t *array, BaseWidget_t *widget) {
     return false; 
 }
 
-void renderWidgetList(DynamicArray_t *array) {
+void renderWidgetList(DynamicArray_t *array, RECT *clipRect) {
+    if (!array) return;
 
-	if (!array) {
-		return;
-	}
+    HRGN clipRgn = CreateRectRgnIndirect(clipRect);
+    SelectClipRgn(currentWindowState.memHDC, clipRgn);
 
-	BaseWidget_t *widget = NULL;
+    for (int i = 0; i < array->size; i++) {
+        BaseWidget_t *widget = DynamicArray_get(array, i);
+        if (widget && !widget->hidden) {
+            widget->drawHandler(widget);
+        }
+    }
 
-	for (int i = 0; i < array->size; i++) {
-		widget = DynamicArray_get(array, i);
-
-		if (widget != NULL && !widget->hidden) {
-			widget->drawHandler(widget);
-		}
-	}
+    SelectClipRgn(currentWindowState.memHDC, NULL);
+    DeleteObject(clipRgn);
 }
 
 void freeWidgetList(DynamicArray_t *array) {

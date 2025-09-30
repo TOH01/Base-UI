@@ -11,59 +11,68 @@
 *   Saving the data isnt handled here.
 */
 void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int numEntries, void *onDataChangeCallback) {
-	if (grid->cols < 5)
-		return;
+    if (grid->cols < 5)
+        return;
 
-	int leftPadding = 1;
-	int rightPadding = 1;
-	int widgetCols = 2;
-	int spacerCols = 1;
-	int totalCols = grid->cols;
-	int labelCols = totalCols - (leftPadding + widgetCols + spacerCols + rightPadding);
+    int leftPadding = 1;
+    int rightPadding = 1;
+    int widgetCols = 2;
+    int spacerCols = 1;
+    int totalCols = grid->cols;
+    int labelCols = totalCols - (leftPadding + widgetCols + spacerCols + rightPadding);
 
-	int currentRow = 0;
+    int currentRow = 0;
 
-	currentRow++;
+    for (int i = 0; i < numEntries; i++) {
+        calender_entry_t *entry = &entries[i];
 
-	for (int i = 0; i < numEntries; i++, currentRow++) {
-		calender_entry_t *entry = &entries[i];
+        // First row is a spacer
+        currentRow++;
 
-		BaseWidget_t *widget = NULL;
-		switch (entry->type) {
-		case ENTRY_CHECKBOX:
-			checkboxWidget_t * checkbox = customCheckbox_initCheckbox((CommonPos_t){0, 0, 0, 0}, &entry->data.state);
-            checkbox->onStateChange = onDataChangeCallback;
-			widget = (BaseWidget_t *)checkbox;
-			break;
-		case ENTRY_NUM: {
-			inputWidget_t *input = customInput_initInputNumeric((CommonPos_t){0, 0, 0, 0}, &entry->data.count);
-            input->onDataChange = onDataChangeCallback;
-			widget = (BaseWidget_t *)input;
-		} break;
-		}
+        BaseWidget_t *widget = NULL;
+        switch (entry->type) {
+            case ENTRY_CHECKBOX: {
+                checkboxWidget_t *checkbox = customCheckbox_initCheckbox((CommonPos_t){0, 0, 0, 0}, &entry->data.state);
+                checkbox->onStateChange = onDataChangeCallback;
+                widget = (BaseWidget_t *)checkbox;
+            } break;
+            case ENTRY_NUM: {
+                inputWidget_t *input = customInput_initInputNumeric((CommonPos_t){0, 0, 0, 0}, &entry->data.count);
+                input->onDataChange = onDataChangeCallback;
+                widget = (BaseWidget_t *)input;
+            } break;
+        }
 
-		if (widget) {
-			for (int c = leftPadding; c < leftPadding + widgetCols; c++) {
-				addWidgetToGridContainer(grid, widget, currentRow, c);
-			}
-		}
+        if (widget) {
+            // Widget spans 2 rows (currentRow and currentRow+1)
+            for (int r = currentRow; r < currentRow + 2; r++) {
+                for (int c = leftPadding; c < leftPadding + widgetCols; c++) {
+                    addWidgetToGridContainer(grid, widget, r, c);
+                }
+            }
+        }
 
-		buttonWidget_t *label = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
-		customButton_setButtonText(label, entry->text);
+        buttonWidget_t *label = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
+        customButton_setButtonText(label, entry->text);
 
-		int labelStart = leftPadding + widgetCols + spacerCols;
-		int labelEnd = labelStart + labelCols;
-		for (int c = labelStart; c < labelEnd; c++) {
-			addWidgetToGridContainer(grid, (BaseWidget_t *)label, currentRow, c);
-		}
+        int labelStart = leftPadding + widgetCols + spacerCols;
+        int labelEnd = labelStart + labelCols;
 
-		currentRow++;
-	}
+        // Label also spans 2 rows
+        for (int r = currentRow; r < currentRow + 2; r++) {
+            for (int c = labelStart; c < labelEnd; c++) {
+                addWidgetToGridContainer(grid, (BaseWidget_t *)label, r, c);
+            }
+        }
 
-	grid->rows = currentRow;
+        // Move to the next entry (2 rows for the entry + 1 row spacer already counted at start of next loop)
+        currentRow += 2;
+    }
 
-	updateGridPositions(grid);
-	updateWidgetVisibility(); // TODO: ONLY UPDATE THIS CONTAINER
+    grid->rows = currentRow + 1; // Add final spacer row
 
-	InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
+    updateGridPositions(grid);
+    updateWidgetVisibility(); // TODO: ONLY UPDATE THIS CONTAINER
+
+    InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
 }

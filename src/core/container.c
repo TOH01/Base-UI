@@ -32,31 +32,34 @@ int layoutToBorderHelper(LayoutType_t type, int offset) {
 	}
 }
 
-
 // Also, add this helper function to ensure consistency:
 
 void updateGridScrollBounds(container_t *container) {
-	if (!container || !container->grid) return;
-	
+	if (!container || !container->grid)
+		return;
+
 	int containerHeight = container->absPos.bottom - container->absPos.top;
-	if (containerHeight <= 0) return;
-	
+	if (containerHeight <= 0)
+		return;
+
 	// Calculate cell height
 	int naturalCellHeight = containerHeight / container->rows;
 	int cellHeight = naturalCellHeight;
-	
+
 	if (container->cellMinHeight > 0 && cellHeight < container->cellMinHeight)
 		cellHeight = container->cellMinHeight;
 	if (container->cellMaxHeight > 0 && cellHeight > container->cellMaxHeight)
 		cellHeight = container->cellMaxHeight;
-	
+
 	int visibleRows = containerHeight / cellHeight;
-	if (visibleRows <= 0) visibleRows = 1;
-	
+	if (visibleRows <= 0)
+		visibleRows = 1;
+
 	// Clamp startRow to valid range
 	int maxStartRow = container->rows - visibleRows;
-	if (maxStartRow < 0) maxStartRow = 0;
-	
+	if (maxStartRow < 0)
+		maxStartRow = 0;
+
 	if (container->startRow > maxStartRow) {
 		container->startRow = maxStartRow;
 	}
@@ -103,7 +106,7 @@ void updateWidgetVisibility(void) {
 	for (int i = 0; i < containerCount; i++) {
 		container_t *container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
-		if (container && container->fixedWidgets) {
+		if (container && container->fixedWidgets && !container->grid) {
 
 			// Update widget visibility
 			int widgetCount = container->widgetList->size;
@@ -141,10 +144,17 @@ void redrawContainerList(void) {
 		container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
 		if (container && container->visible) {
-			redrawContainer(DynamicArray_get(currentWindowState.containers, i));
+			redrawContainer(container);
+
 			if (!(movingContainer.action && container == movingContainer.container)) {
+				RECT rect = UiUtils_absolutePosToRect(container->absPos);
+
 				drawable_drawAll(container->drawableList);
-				renderWidgetList(container->widgetList);
+				renderWidgetList(container->widgetList, &rect);
+			}
+
+			if(!container->disableRectRender){
+				UiUtils_DrawBorder(container->absPos, container->theme->color.border, container->theme->borderWidth);
 			}
 		}
 	}
@@ -211,14 +221,14 @@ LRESULT redrawContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    (void)msg;
-    (void)wParam;
-    (void)lParam;
-    
-    updateContainersLayoutPos();  // Already calls updateGridPositions for grid containers
-    updateWidgetVisibility();     // Skips grid containers
-    InvalidateRect(hwnd, NULL, FALSE);
-    return 0;
+	(void)msg;
+	(void)wParam;
+	(void)lParam;
+
+	updateContainersLayoutPos(); // Already calls updateGridPositions for grid containers
+	updateWidgetVisibility();    // Skips grid containers
+	InvalidateRect(hwnd, NULL, FALSE);
+	return 0;
 }
 
 LRESULT LButtonDownCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -310,174 +320,152 @@ LRESULT LButtonUpCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-// The main issue is in updateGridPositions - it needs to be fixed
-
 void updateGridPositions(container_t *currContainer) {
-    if (!currContainer || !currContainer->gridPositions) return;
-    if (currContainer->cols <= 0 || currContainer->rows <= 0) return;
+	if (!currContainer || !currContainer->gridPositions)
+		return;
+	if (currContainer->cols <= 0 || currContainer->rows <= 0)
+		return;
 
-    int cols        = currContainer->cols;
-    int totalRows   = currContainer->rows;
+	int cols = currContainer->cols;
+	int totalRows = currContainer->rows;
 
-    int containerLeft   = currContainer->absPos.left;
-    int containerTop    = currContainer->absPos.top;
-    int containerRight  = currContainer->absPos.right;
-    int containerBottom = currContainer->absPos.bottom;
+	int containerLeft = currContainer->absPos.left;
+	int containerTop = currContainer->absPos.top;
+	int containerRight = currContainer->absPos.right;
+	int containerBottom = currContainer->absPos.bottom;
 
-    int containerWidth  = containerRight - containerLeft;
-    int containerHeight = containerBottom - containerTop;
-    if (containerWidth <= 0 || containerHeight <= 0) return;
+	int containerWidth = containerRight - containerLeft;
+	int containerHeight = containerBottom - containerTop;
+	if (containerWidth <= 0 || containerHeight <= 0)
+		return;
 
-    // --- Cell width ---
-    int cellWidth = containerWidth / cols;
-    if (currContainer->cellMinWidth > 0 && cellWidth < currContainer->cellMinWidth)
-        cellWidth = currContainer->cellMinWidth;
-    if (currContainer->cellMaxWidth > 0 && cellWidth > currContainer->cellMaxWidth)
-        cellWidth = currContainer->cellMaxWidth;
+	// cell width
+	int cellWidth = containerWidth / cols;
+	if (currContainer->cellMinWidth > 0 && cellWidth < currContainer->cellMinWidth)
+		cellWidth = currContainer->cellMinWidth;
+	if (currContainer->cellMaxWidth > 0 && cellWidth > currContainer->cellMaxWidth)
+		cellWidth = currContainer->cellMaxWidth;
 
-    // --- Cell height ---
-    int naturalCellHeight = containerHeight / totalRows;
-    int cellHeight = naturalCellHeight;
+	// cell height (logical)
+	int naturalCellHeight = containerHeight / totalRows;
+	int cellHeight = naturalCellHeight;
+	if (currContainer->cellMinHeight > 0 && cellHeight < currContainer->cellMinHeight)
+		cellHeight = currContainer->cellMinHeight;
+	if (currContainer->cellMaxHeight > 0 && cellHeight > currContainer->cellMaxHeight)
+		cellHeight = currContainer->cellMaxHeight;
 
-    if (currContainer->cellMinHeight > 0 && cellHeight < currContainer->cellMinHeight)
-        cellHeight = currContainer->cellMinHeight;
-    if (currContainer->cellMaxHeight > 0 && cellHeight > currContainer->cellMaxHeight)
-        cellHeight = currContainer->cellMaxHeight;
+	// clamp startRow
+	int startRow = currContainer->startRow;
+	if (startRow < 0)
+		startRow = 0;
+	int maxStart = totalRows - 1;
+	if (startRow > maxStart)
+		startRow = maxStart;
+	currContainer->startRow = startRow;
 
-    // --- Calculate visible rows ---
-    int visibleRows = containerHeight / cellHeight;
-    if (visibleRows <= 0) visibleRows = 1;
-    
-    // Clamp startRow to valid range
-    int maxStartRow = totalRows - visibleRows;
-    if (maxStartRow < 0) maxStartRow = 0;
-    if (currContainer->startRow > maxStartRow) currContainer->startRow = maxStartRow;
-    if (currContainer->startRow < 0) currContainer->startRow = 0;
-    
-    int startRow = currContainer->startRow;
+	BaseWidget_t **grid = currContainer->gridPositions;
+	size_t cells = (size_t)totalRows * (size_t)cols;
+	char *visited = (char *)calloc(cells, 1);
+	if (!visited)
+		return;
 
-    int maxCells = visibleRows * cols;
-    char *visited = (char*)calloc((size_t)maxCells, 1);
-    if (!visited) return;
+	for (int r = 0; r < totalRows; ++r) {
+		for (int c = 0; c < cols; ++c) {
+			int idx = r * cols + c;
+			if (visited[idx])
+				continue;
 
-    BaseWidget_t **grid = currContainer->gridPositions;
+			BaseWidget_t *w = grid[idx];
+			if (!w) {
+				visited[idx] = 1;
+				continue;
+			}
 
-    // First, hide all widgets in the grid
-    for (int gridIdx = 0; gridIdx < totalRows * cols; gridIdx++) {
-        BaseWidget_t *w = grid[gridIdx];
-        if (w) {
-            w->hidden = 1;  // Hide by default, will unhide visible ones
-        }
-    }
+			// horizontal span
+			int spanCols = 1;
+			while ((c + spanCols) < cols) {
+				int gi = r * cols + (c + spanCols);
+				if (grid[gi] == w && !visited[gi])
+					spanCols++;
+				else
+					break;
+			}
 
-    // Now process visible rows
-    for (int visibleRow = 0; visibleRow < visibleRows; ++visibleRow) {
-        int globalRow = startRow + visibleRow;
-        if (globalRow >= totalRows) break;
+			// vertical span
+			int spanRows = 1;
+			for (int rr = r + 1; rr < totalRows; ++rr) {
+				bool match = true;
+				for (int cc = 0; cc < spanCols; ++cc) {
+					int gi = rr * cols + (c + cc);
+					if (grid[gi] != w || visited[gi]) {
+						match = false;
+						break;
+					}
+				}
+				if (match)
+					spanRows++;
+				else
+					break;
+			}
 
-        for (int c = 0; c < cols; ++c) {
-            int vIdx = visibleRow * cols + c;
-            if (visited[vIdx]) continue;
+			// assign logical position **shifted by startRow (row offset)**
+			AbsolutePos_t pos;
+			pos.left = containerLeft + c * cellWidth;
+			pos.top = containerTop + (r - startRow) * cellHeight; // <-- important: scroll applied here
+			pos.right = pos.left + spanCols * cellWidth;
+			pos.bottom = pos.top + spanRows * cellHeight;
 
-            int gridIndex = globalRow * cols + c;
-            BaseWidget_t *w = grid[gridIndex];
+			w->pos = pos;
+			w->hidden = 0; // never hide here, we clip at draw-time
 
-            if (!w) {
-                visited[vIdx] = 1;
-                continue;
-            }
+			// mark visited
+			for (int rr = r; rr < r + spanRows; ++rr) {
+				for (int cc = c; cc < c + spanCols; ++cc) {
+					int v = rr * cols + cc;
+					if (v >= 0 && v < (int)cells)
+						visited[v] = 1;
+				}
+			}
+		}
+	}
 
-            // --- Horizontal span ---
-            int spanCols = 1;
-            while ((c + spanCols) < cols) {
-                int gi = globalRow * cols + (c + spanCols);
-                int vi = visibleRow * cols + (c + spanCols);
-                if (gi < totalRows * cols && vi < maxCells && 
-                    grid[gi] == w && !visited[vi]) {
-                    spanCols++;
-                } else break;
-            }
-
-            // --- Vertical span ---
-            int spanRows = 1;
-            for (int nextVisRow = visibleRow + 1; nextVisRow < visibleRows; ++nextVisRow) {
-                int nextGlobalRow = startRow + nextVisRow;
-                if (nextGlobalRow >= totalRows) break;
-
-                bool match = true;
-                for (int cc = 0; cc < spanCols; ++cc) {
-                    int gi = nextGlobalRow * cols + (c + cc);
-                    int vi = nextVisRow * cols + (c + cc);
-                    if (gi >= totalRows * cols || vi >= maxCells || 
-                        grid[gi] != w || visited[vi]) {
-                        match = false;
-                        break;
-                    }
-                }
-                if (match) spanRows++;
-                else break;
-            }
-
-            // --- Assign absolute position ---
-            AbsolutePos_t pos;
-            pos.left   = containerLeft + c * cellWidth;
-            pos.top    = containerTop  + visibleRow * cellHeight;
-            pos.right  = pos.left + spanCols * cellWidth;
-            pos.bottom = pos.top  + spanRows * cellHeight;
-
-            w->pos = pos;
-            w->hidden = 0;  // Unhide this visible widget
-
-            // Mark cells as visited
-            for (int rr = visibleRow; rr < visibleRow + spanRows && rr < visibleRows; ++rr) {
-                for (int cc = c; cc < c + spanCols && cc < cols; ++cc) {
-                    int vi = rr * cols + cc;
-                    if (vi < maxCells) {
-                        visited[vi] = 1;
-                    }
-                }
-            }
-        }
-    }
-
-    free(visited);
+	free(visited);
 }
 
 LRESULT mouseScrollCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    (void) msg;
-    (void) lParam;
+	(void)msg;
+	(void)lParam;
 
-    POINT mousePos;
-    GetCursorPos(&mousePos);
-    ScreenToClient(hwnd, &mousePos);
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+	ScreenToClient(hwnd, &mousePos);
 
-    int x = mousePos.x;
-    int y = mousePos.y;
+	int x = mousePos.x;
+	int y = mousePos.y;
 
-    for (int i = currentWindowState.containers->size - 1; i >= 0; i--) {
-        container_t *container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
+	for (int i = currentWindowState.containers->size - 1; i >= 0; i--) {
+		container_t *container = (container_t *)DynamicArray_get(currentWindowState.containers, i);
 
-        if (container && container->grid && container->visible) {
-            if (UiUtils_CoordinateIsInsideOf(x, y, container->absPos)) {
-                
-                int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-                
-                if (delta > 0 && container->startRow > 0) {
-                    container->startRow--;
-                } else if (delta < 0) {
-                    container->startRow++;
-                }
-                
-                updateGridPositions(container);  // Handles clamping internally
-                InvalidateRect(hwnd, NULL, FALSE);
-                break;
-            }
-        }
-    }
+		if (container && container->grid && container->visible) {
+			if (UiUtils_CoordinateIsInsideOf(x, y, container->absPos)) {
 
-    return 1;
+				int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+				if (delta > 0 && container->startRow > 0) {
+					container->startRow--;
+				} else if (delta < 0) {
+					container->startRow++;
+				}
+
+				updateGridPositions(container); // Handles clamping internally
+				InvalidateRect(hwnd, NULL, FALSE);
+				break;
+			}
+		}
+	}
+
+	return 1;
 }
-
 
 LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	(void)msg;
