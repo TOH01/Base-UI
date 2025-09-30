@@ -5,6 +5,13 @@
 #include <limits.h>
 #include <stdio.h>
 
+
+void (* labelClickCallback)(int);
+
+void setLabelClickCallback(void (* cbk)(int)){
+    labelClickCallback = cbk;
+}
+
 /*
 *   This function will automatically modify the passed entires.
 *   When modification occurs, call passed onDataChangeCallback.
@@ -22,6 +29,8 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
     int labelCols = totalCols - (leftPadding + widgetCols + spacerCols + rightPadding);
 
     int currentRow = 0;
+
+    int labelIdCounter = 0;
 
     for (int i = 0; i < numEntries; i++) {
         calender_entry_t *entry = &entries[i];
@@ -52,7 +61,8 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
             }
         }
 
-        buttonWidget_t *label = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
+        buttonWidget_t *label = customButton_initButton((CommonPos_t){0, 0, 0, 0}, labelClickCallback, labelIdCounter);
+        labelIdCounter++;
         customButton_setButtonText(label, entry->text);
 
         int labelStart = leftPadding + widgetCols + spacerCols;

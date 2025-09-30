@@ -45,6 +45,8 @@ char *monthNames[12] = {"January", "February", "March", "April", "May", "June", 
 char addGoalStr[30] = "Add goal";
 char xButtonStr[30] = "X";
 
+bool *toBeDeletedIndexes = NULL;
+
 static void numericCheckboxCallback(void) {
 	if (isBooleanGoal && isNumericGoal) {
 		isBooleanGoal = false;
@@ -105,6 +107,14 @@ static void calendarDayChange(void) {
 	sidebarContent->startRow = 0;
 
 	day = loadDay(day_num, month, year);
+
+	if (toBeDeletedIndexes != NULL) {
+		free(toBeDeletedIndexes);
+	}
+
+	if (day) {
+		toBeDeletedIndexes = calloc(1, sizeof(bool) * day->elements);
+	}
 
 	if (day) {
 		renderCalendarEntries(sidebarContent, day->entries, day->elements, &onDataUpdate);
@@ -176,6 +186,29 @@ static void rightArrowCallback(int id) {
 	updateTitle();
 }
 
+static void oncalendarLabelCbk(int id) { toBeDeletedIndexes[id] = !toBeDeletedIndexes[id]; }
+
+static void deleteEntires(int id) {
+	(void)id;
+	if (day && day->elements != 0) {
+
+		int new_count = 0;
+
+		// Filter entries in-place
+		for (int i = 0; i < day->elements; i++) {
+			if (!toBeDeletedIndexes[i]) {
+				day->entries[new_count++] = day->entries[i];
+			}
+		}
+
+		day->elements = new_count;
+
+		// Persist changes
+		overwriteDayData(day, calendar->selectedDay, calendar->month, calendar->year);
+		calendarDayChange();
+	}
+}
+
 void Calendar_InitUI(void) {
 
 	borderlessButton = currentWindowState.activeTheme.button;
@@ -230,8 +263,11 @@ void Calendar_InitUI(void) {
 	sidebarHeader->disableRectRender = true;
 
 	buttonWidget_t *addGoal = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
+	buttonWidget_t *removeGoal = customButton_initButton((CommonPos_t){0, 0, 0, 0}, &deleteEntires, 0);
 	customButton_setButtonText(addGoal, "Add Goal");
-	containerAddWidgetAnchored(sidebarHeader, (BaseWidget_t *)addGoal, (AbsolutePos_t){25, 0, 350, 75}, WIDGET_ANCHOR_CENTER, 0);
+	customButton_setButtonText(removeGoal, "-");
+	containerAddWidgetAnchored(sidebarHeader, (BaseWidget_t *)addGoal, (AbsolutePos_t){25, 0, 290, 75}, WIDGET_ANCHOR_LEFT, 0);
+	containerAddWidgetAnchored(sidebarHeader, (BaseWidget_t *)removeGoal, (AbsolutePos_t){25, 300, 350, 75}, WIDGET_ANCHOR_RIGHT, 0);
 
 	AbsolutePos_t sidebarContentPos = {UI_UTILS_CALCULATE_PERCENTAGE(0.1, CONFIG_INIT_WINDOW_HEIGTH), UI_UTILS_CALCULATE_PERCENTAGE(0.75, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_HEIGTH)};
 	sidebarContent = windowAddGridContainer(sidebarContentPos, 20, 10);
@@ -324,6 +360,8 @@ LRESULT onAddGoalLoad(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 void Demo_InitAll(void) {
+	setLabelClickCallback(&oncalendarLabelCbk);
+
 	create_file_system();
 	Calendar_InitUI();
 
