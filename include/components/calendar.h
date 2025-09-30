@@ -18,7 +18,10 @@ typedef struct {
 
     int selectedDay;
 
+    int selectedEndDay;
+
     void (*dateChangeCallback)(void);
+    void (*dateSelectCallback)(void);
 
 } calendarWidget_t;
 

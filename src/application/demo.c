@@ -34,6 +34,9 @@ inputWidget_t *yearInput;
 inputWidget_t *monthInput;
 inputWidget_t *dayInput;
 inputWidget_t *nameInput;
+inputWidget_t *yearInputEnd;
+inputWidget_t *monthInputEnd;
+inputWidget_t *dayInputEnd;
 
 day_save_data_t *day;
 
@@ -64,20 +67,32 @@ static void updateTitle(void) {
 
 static void onDataUpdate(void);
 
-void updateAddGoalDay(void){
+void updateAddGoalStartDay(void) {
 	snprintf(yearInput->buffer, 10, "%d", calendar->year);
 	snprintf(dayInput->buffer, 10, "%d", calendar->selectedDay);
 	snprintf(monthInput->buffer, 10, "%d", calendar->month);
 }
 
+void updateAddGoalEndDay(void) {
+
+	if (calendar->selectedEndDay == 0) {
+		customInput_clearInput(yearInputEnd);
+		customInput_clearInput(dayInputEnd);
+		customInput_clearInput(monthInputEnd);
+	} else {
+		snprintf(yearInputEnd->buffer, 10, "%d", calendar->year);
+		snprintf(dayInputEnd->buffer, 10, "%d", calendar->selectedEndDay);
+		snprintf(monthInputEnd->buffer, 10, "%d", calendar->month);
+	}
+}
 
 static void calendarDayChange(void) {
 	int day_num = calendar->selectedDay;
 	int month = calendar->month;
 	int year = calendar->year;
 
-	if(getActiveFromGroup(addGoalGroup->groupID) == addGoalMenu){
-		updateAddGoalDay();
+	if (getActiveFromGroup(addGoalGroup->groupID) == addGoalMenu) {
+		updateAddGoalStartDay();
 	}
 
 	if (day != NULL) {
@@ -87,11 +102,18 @@ static void calendarDayChange(void) {
 	}
 
 	destroyContainerContent(sidebarContent);
+	sidebarContent->startRow = 0;
 
 	day = loadDay(day_num, month, year);
 
 	if (day) {
 		renderCalendarEntries(sidebarContent, day->entries, day->elements, &onDataUpdate);
+	}
+}
+
+static void calendarSelectDay(void) {
+	if (getActiveFromGroup(addGoalGroup->groupID) == addGoalMenu) {
+		updateAddGoalEndDay();
 	}
 }
 
@@ -194,6 +216,7 @@ void Calendar_InitUI(void) {
 
 	calendar = initCalendarWidget((CommonPos_t){0, 0, 1, 1}, activeYear, activeMonth);
 	calendar->dateChangeCallback = &calendarDayChange;
+	calendar->dateSelectCallback = &calendarSelectDay;
 	containerAddWidget(calendarContainer, (BaseWidget_t *)calendar);
 
 	AbsolutePos_t sidebarHeaderPos = {UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_HEIGTH), UI_UTILS_CALCULATE_PERCENTAGE(0.75, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(0.1, CONFIG_INIT_WINDOW_HEIGTH)};
@@ -229,7 +252,7 @@ void Calendar_InitUI(void) {
 	addGoalGroup = initSubmenuGroup();
 	addGoalMenu = MenuUi_SubmenuInit(addGoalStr, addGoal, addGoalGroup);
 
-	container_t *addGoalContainer = windowAddGridContainer((AbsolutePos_t){100, 100, 400, 400}, 10, 10);
+	container_t *addGoalContainer = windowAddGridContainer((AbsolutePos_t){100, 100, 400, 450}, 11, 10);
 
 	MenuUi_SubmenuAddContainer(addGoalMenu, addGoalContainer);
 	addGoalContainer->movable = true;
@@ -256,6 +279,17 @@ void Calendar_InitUI(void) {
 	setDefaultText(monthInput, "MM");
 	setDefaultText(dayInput, "DD");
 
+	yearInputEnd = customInput_initInput((CommonPos_t){0, 0, 0, 0});
+	monthInputEnd = customInput_initInput((CommonPos_t){0, 0, 0, 0});
+	dayInputEnd = customInput_initInput((CommonPos_t){0, 0, 0, 0});
+	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)dayInputEnd, 4, 4, 1, 1);
+	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)monthInputEnd, 4, 4, 3, 3);
+	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)yearInputEnd, 4, 4, 5, 8);
+
+	setDefaultText(yearInputEnd, "YYYY");
+	setDefaultText(monthInputEnd, "MM");
+	setDefaultText(dayInputEnd, "DD");
+
 	numericCheckbox = customCheckbox_initCheckbox((CommonPos_t){0, 0, 0, 0}, &isNumericGoal);
 	booleanCheckbox = customCheckbox_initCheckbox((CommonPos_t){0, 0, 0, 0}, &isBooleanGoal);
 	buttonWidget_t *numericCheckboxButton = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
@@ -264,10 +298,10 @@ void Calendar_InitUI(void) {
 	customCheckbox_setStateChangeCallback(numericCheckbox, &numericCheckboxCallback);
 	customCheckbox_setStateChangeCallback(booleanCheckbox, &booleanCheckboxCallback);
 
-	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)numericCheckbox, 5, 5, 6, 6);
-	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)booleanCheckbox, 6, 6, 6, 6);
-	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)numericCheckboxButton, 5, 5, 1, 4);
-	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)booleanCheckboxButton, 6, 6, 1, 4);
+	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)numericCheckbox, 6, 6, 6, 6);
+	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)booleanCheckbox, 7, 7, 6, 6);
+	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)numericCheckboxButton, 6, 6, 1, 4);
+	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)booleanCheckboxButton, 7, 7, 1, 4);
 	customButton_setButtonText(numericCheckboxButton, "Numeric Goal");
 	customButton_setButtonText(booleanCheckboxButton, "Boolean Goal");
 	numericCheckboxButton->theme = &borderlessButton;
@@ -276,17 +310,18 @@ void Calendar_InitUI(void) {
 	buttonWidget_t *saveButton = customButton_initButton((CommonPos_t){0, 0, 0, 0}, &saveButtonCallback, 0);
 	customButton_setButtonText(saveButton, "Add");
 
-	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)saveButton, 8, 8, 3, 6);
+	addWidgetToGridContainerSpan(addGoalContainer, (BaseWidget_t *)saveButton, 9, 9, 3, 6);
 }
 
-LRESULT onAddGoalLoad(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
-	(void) hwnd;
-	(void) msg;
-	(void) wParam;
-	(void) lParam;
-	updateAddGoalDay();
+LRESULT onAddGoalLoad(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	(void)hwnd;
+	(void)msg;
+	(void)wParam;
+	(void)lParam;
+	updateAddGoalStartDay();
+	updateAddGoalEndDay();
 	return 1;
-} 
+}
 
 void Demo_InitAll(void) {
 	create_file_system();
