@@ -106,10 +106,11 @@ static void calendarDayChange(void) {
 	destroyContainerContent(sidebarContent);
 	sidebarContent->startRow = 0;
 
-	day = loadDay(day_num, month, year);
+	day = loadDayWithRules(day_num, month, year);
 
 	if (toBeDeletedIndexes != NULL) {
 		free(toBeDeletedIndexes);
+		toBeDeletedIndexes = NULL;
 	}
 
 	if (day) {
@@ -135,31 +136,78 @@ static void onDataUpdate(void) {
 }
 
 static void saveButtonCallback(int id) {
-	(void)id;
+    (void)id;
 
-	int day_num = atoi(dayInput->buffer);
-	int month = atoi(monthInput->buffer);
-	int year = atoi(yearInput->buffer);
+    int day_num = atoi(dayInput->buffer);
+    int month = atoi(monthInput->buffer);
+    int year = atoi(yearInput->buffer);
+    
+    int day_num_end = atoi(dayInputEnd->buffer);
+    int month_end = atoi(monthInputEnd->buffer);
+    int year_end = atoi(yearInputEnd->buffer);
+    
+    // Determine if this is a single day save or rule-based save
+    int is_single_day = 0;
+    
+    // Check if end date is empty
+    if (dayInputEnd->buffer[0] == '\0' || monthInputEnd->buffer[0] == '\0' || yearInputEnd->buffer[0] == '\0') {
+        is_single_day = 1;
+    }
+    // Check if start and end dates are equal
+    else if (day_num == day_num_end && month == month_end && year == year_end) {
+        is_single_day = 1;
+    }
+    
+    if (is_single_day) {
+        // Single day save - use existing logic
+        calender_entry_t entry;
+        memset(&entry, 0, sizeof(entry));
 
-	calender_entry_t entry;
-	memset(&entry, 0, sizeof(entry));
+        strncpy(entry.text, nameInput->buffer, sizeof(entry.text) - 1);
+        entry.text[sizeof(entry.text) - 1] = '\0';
 
-	strncpy(entry.text, nameInput->buffer, sizeof(entry.text) - 1);
-	entry.text[sizeof(entry.text) - 1] = '\0';
+        if (*(numericCheckbox->value)) {
+            entry.type = ENTRY_NUM;
+        } else {
+            entry.type = ENTRY_CHECKBOX;
+        }
 
-	if (*(numericCheckbox->value)) {
-		entry.type = ENTRY_NUM;
-	} else {
-		entry.type = ENTRY_CHECKBOX;
-	}
+		entry.ruleID = -1;
 
-	day_save_data_t day;
-	day.elements = 1;
-	day.entries = &entry;
+        day_save_data_t day;
+        day.elements = 1;
+        day.entries = &entry;
 
-	saveDay(&day, day_num, month, year);
 
-	calendarDayChange();
+        saveDay(&day, day_num, month, year);
+    } else {
+        // Rule-based save
+        rule_t rule;
+        memset(&rule, 0, sizeof(rule));
+        
+        rule.start_year = year;
+        rule.start_month = month;
+        rule.start_day = day_num;
+        rule.end_year = year_end;
+        rule.end_month = month_end;
+        rule.end_day = day_num_end;
+        
+        if (*(numericCheckbox->value)) {
+            rule.type = ENTRY_NUM;
+        } else {
+            rule.type = ENTRY_CHECKBOX;
+        }
+        
+        // Copy text to data array: data[0] = length, data[1..n] = string
+        int len = strlen(nameInput->buffer);
+        if (len > 255) len = 255;
+        rule.data[0] = (char)len;
+        memcpy(&rule.data[1], nameInput->buffer, len);
+        
+        save_rule(&rule, "saves/rules.dat", "saves/rules.idx");
+    }
+
+    calendarDayChange();
 }
 
 static void leftArrowCallback(int id) {
@@ -192,18 +240,12 @@ static void deleteEntires(int id) {
 	(void)id;
 	if (day && day->elements != 0) {
 
-		int new_count = 0;
-
-		// Filter entries in-place
 		for (int i = 0; i < day->elements; i++) {
-			if (!toBeDeletedIndexes[i]) {
-				day->entries[new_count++] = day->entries[i];
+			if (toBeDeletedIndexes[i]) {
+				day->entries[i].type = ENTRY_TYPE_DELETED;
 			}
 		}
 
-		day->elements = new_count;
-
-		// Persist changes
 		overwriteDayData(day, calendar->selectedDay, calendar->month, calendar->year);
 		calendarDayChange();
 	}
