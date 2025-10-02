@@ -83,5 +83,6 @@ void addWidgetToGridContainer(container_t * container, BaseWidget_t * widget, in
 void destroyContainerContent(container_t * container);
 void addWidgetToGridContainerSpan(container_t *container, BaseWidget_t *widget, int startRow, int endRow, int startCol, int endCol);
 void updateGridPositions(container_t *currContainer);
+void gridAppendEmptyRow(container_t *container);
 
 #endif

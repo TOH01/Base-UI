@@ -639,14 +639,39 @@ container_t *initGridContainer(containerPos_t pos, int rows, int cols) {
 	return gridContainer;
 }
 
+// Append empty row helper
+void gridAppendEmptyRow(container_t *container) {
+    int newRows = container->rows + 1;
+    int newSize = newRows * container->cols;
+
+    BaseWidget_t **newGrid = realloc(container->gridPositions, sizeof(BaseWidget_t *) * newSize);
+    if (!newGrid) {
+        return;
+    }
+
+    memset(newGrid + container->rows * container->cols, 0, sizeof(BaseWidget_t *) * container->cols);
+
+    container->gridPositions = newGrid;
+    container->rows = newRows;
+}
+
 void addWidgetToGridContainer(container_t *container, BaseWidget_t *widget, int row, int col) {
+    if (!widget) return;
 
-	if (!widgetArrayContains(container->widgetList, widget)) {
-		widget->parentPos = &container->absPos;
-		addWidget(container->widgetList, widget);
-	}
+    if (col < 0 || col >= container->cols) {
+        return;
+    }
 
-	container->gridPositions[row * container->cols + col] = widget;
+    while (row >= container->rows) {
+        gridAppendEmptyRow(container);
+    }
+
+    if (!widgetArrayContains(container->widgetList, widget)) {
+        widget->parentPos = &container->absPos;
+        addWidget(container->widgetList, widget);
+    }
+
+    container->gridPositions[row * container->cols + col] = widget;
 }
 
 void addWidgetToGridContainerSpan(container_t *container, BaseWidget_t *widget, int startRow, int endRow, int startCol, int endCol) {

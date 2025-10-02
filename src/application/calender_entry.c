@@ -78,9 +78,12 @@ void renderCalendarEntries(container_t *grid, calender_entry_t *entries, int num
 			// Move to the next entry (2 rows for the entry + 1 row spacer already counted at start of next loop)
 			currentRow += 2;
 		}
+        else{
+            labelIdCounter++; // for delete functionality
+        }
 	}
 
-	grid->rows = currentRow + 1; // Add final spacer row
+	gridAppendEmptyRow(grid);
 
 	updateGridPositions(grid);
 	updateWidgetVisibility(); // TODO: ONLY UPDATE THIS CONTAINER
