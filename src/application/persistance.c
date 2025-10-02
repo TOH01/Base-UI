@@ -664,87 +664,82 @@ day_save_data_t *loadDayWithRules(int day_num, int month, int year) {
 
     if (rule_count == 0 || rules == NULL) {
         if (rules) free(rules);
-        return day_data; // no rules, return what we have
+        return day_data; // no rules, return existing day data
     }
 
-    // Convert rules to calendar entries
-    calender_entry_t *rule_entries = malloc(sizeof(calender_entry_t) * rule_count);
-    if (!rule_entries) { free(rules); return day_data; }
-
+    // Count how many rules are truly new
+    int new_rules_count = 0;
     for (int i = 0; i < rule_count; ++i) {
-        memset(&rule_entries[i], 0, sizeof(calender_entry_t));
-        rule_entries[i].type = rules[i].type;
-
-        int len = (int)rules[i].data[0];
-        if (len > (int)sizeof(rule_entries[i].text) - 1) len = (int)sizeof(rule_entries[i].text) - 1;
-        if (len > 0) memcpy(rule_entries[i].text, &rules[i].data[1], len);
-        rule_entries[i].text[len] = '\0';
-        rule_entries[i].ruleID = rules[i].rule_id;
-    }
-
-    if (day_data == NULL) {
-        // First time this day exists: create new day data with rules
-        day_data = malloc(sizeof(day_save_data_t));
-        if (!day_data) { free(rule_entries); free(rules); return NULL; }
-
-        day_data->elements = rule_count;
-        day_data->entries = rule_entries;
-
-        // Save immediately
-        int key = create_save_key(day_num, month, year);
-        long offset = save_day_data_raw(day_data, "saves/date.dat");
-        if (offset >= 0) {
-            write_save_idx(key, (int)offset, "saves/date.idx");
-        }
-    } else {
-        // Merge new rules with existing day data
-        int original_count = day_data->elements;
-        int new_entries = 0;
-
-        // Count how many rules are actually new
-        for (int i = 0; i < rule_count; ++i) {
-            int exists = 0;
-            for (int j = 0; j < original_count; ++j) {
-                if (day_data->entries[j].ruleID == rule_entries[i].ruleID) {
+        int exists = 0;
+        if (day_data) {
+            for (int j = 0; j < day_data->elements; ++j) {
+                if (day_data->entries[j].ruleID == rules[i].rule_id) {
                     exists = 1;
                     break;
                 }
             }
-            if (!exists) new_entries++;
         }
+        if (!exists) new_rules_count++;
+    }
 
-        if (new_entries > 0) {
-            calender_entry_t *tmp = realloc(day_data->entries,
-                                            sizeof(calender_entry_t) * (original_count + new_entries));
-            if (!tmp) {
-                free(rule_entries);
-                free(rules);
-                return day_data; // can't reallocate, return existing day_data
-            }
-            day_data->entries = tmp;
+    if (new_rules_count == 0) {
+        free(rules);
+        return day_data; // nothing new to add
+    }
 
-            // Copy only new rules
-            int idx = original_count;
-            for (int i = 0; i < rule_count; ++i) {
-                int exists = 0;
-                for (int j = 0; j < original_count; ++j) {
-                    if (day_data->entries[j].ruleID == rule_entries[i].ruleID) {
-                        exists = 1;
-                        break;
-                    }
-                }
-                if (!exists) {
-                    day_data->entries[idx++] = rule_entries[i];
+    // Allocate array for new entries
+    calender_entry_t *new_entries = malloc(sizeof(calender_entry_t) * new_rules_count);
+    if (!new_entries) { free(rules); return day_data; }
+
+    int idx = 0;
+    for (int i = 0; i < rule_count; ++i) {
+        int exists = 0;
+        if (day_data) {
+            for (int j = 0; j < day_data->elements; ++j) {
+                if (day_data->entries[j].ruleID == rules[i].rule_id) {
+                    exists = 1;
+                    break;
                 }
             }
-
-            day_data->elements = original_count + new_entries;
-
-            // Save updated day data
-            saveDay(day_data, day_num, month, year);
-        } else {
-            free(rule_entries); // nothing new to add
         }
+        if (!exists) {
+            memset(&new_entries[idx], 0, sizeof(calender_entry_t));
+            new_entries[idx].type = rules[i].type;
+
+            int len = (int)rules[i].data[0];
+            if (len > (int)sizeof(new_entries[idx].text) - 1) len = (int)sizeof(new_entries[idx].text) - 1;
+            if (len > 0) memcpy(new_entries[idx].text, &rules[i].data[1], len);
+            new_entries[idx].text[len] = '\0';
+            new_entries[idx].ruleID = rules[i].rule_id;
+            idx++;
+        }
+    }
+
+    // Merge with existing day data
+    if (!day_data) {
+        day_data = malloc(sizeof(day_save_data_t));
+        if (!day_data) { free(new_entries); free(rules); return NULL; }
+        day_data->elements = new_rules_count;
+        day_data->entries = new_entries;
+    } else {
+        int old_count = day_data->elements;
+        calender_entry_t *merged = realloc(day_data->entries, sizeof(calender_entry_t) * (old_count + new_rules_count));
+        if (!merged) {
+            free(new_entries);
+            free(rules);
+            return day_data; // can't merge, return existing
+        }
+        memcpy(&merged[old_count], new_entries, sizeof(calender_entry_t) * new_rules_count);
+        day_data->entries = merged;
+        day_data->elements = old_count + new_rules_count;
+        free(new_entries);
+    }
+
+    // Save updated day data
+    int key = create_save_key(day_num, month, year);
+    long offset = save_day_data_raw(day_data, "saves/date.dat");
+    if (offset >= 0) {
+        write_save_idx(key, (int)offset, "saves/date.idx");
     }
 
     free(rules);
