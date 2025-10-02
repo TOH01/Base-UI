@@ -80,6 +80,7 @@ static void save_entry(FILE *fp, const calender_entry_t *entry) {
 
     // write the rest of entry data (always 4 bytes)
     fwrite(&entry->data, sizeof(entry->data), 1, fp);
+	fwrite(&entry->ruleID, sizeof(entry->ruleID), 1, fp);
 }
 
 static void load_entry(FILE *fp, calender_entry_t *entry) {
@@ -96,6 +97,7 @@ static void load_entry(FILE *fp, calender_entry_t *entry) {
 
     // read rest of entry data
     fread(&entry->data, sizeof(entry->data), 1, fp);
+	fread(&entry->ruleID, sizeof(entry->ruleID),1 ,fp);
 }
 
 /*
@@ -652,16 +654,17 @@ rule_t *load_rules_for_day(int day_num, int month, int year, int *out_count, con
     return rules;
 }
 
-/* --- Merge rules into day structure --- */
 day_save_data_t *loadDayWithRules(int day_num, int month, int year) {
+    // Load existing day data
     day_save_data_t *day_data = loadDay(day_num, month, year);
 
     int rule_count = 0;
-    rule_t *rules = load_rules_for_day(day_num, month, year, &rule_count, "saves/rules.idx", "saves/rules.dat");
+    rule_t *rules = load_rules_for_day(day_num, month, year, &rule_count,
+                                       "saves/rules.idx", "saves/rules.dat");
 
     if (rule_count == 0 || rules == NULL) {
         if (rules) free(rules);
-        return day_data;
+        return day_data; // no rules, return what we have
     }
 
     // Convert rules to calendar entries
@@ -671,6 +674,7 @@ day_save_data_t *loadDayWithRules(int day_num, int month, int year) {
     for (int i = 0; i < rule_count; ++i) {
         memset(&rule_entries[i], 0, sizeof(calender_entry_t));
         rule_entries[i].type = rules[i].type;
+
         int len = (int)rules[i].data[0];
         if (len > (int)sizeof(rule_entries[i].text) - 1) len = (int)sizeof(rule_entries[i].text) - 1;
         if (len > 0) memcpy(rule_entries[i].text, &rules[i].data[1], len);
@@ -678,19 +682,26 @@ day_save_data_t *loadDayWithRules(int day_num, int month, int year) {
         rule_entries[i].ruleID = rules[i].rule_id;
     }
 
-    // Merge into day_data
     if (day_data == NULL) {
-        // No existing day data: take all rules
+        // First time this day exists: create new day data with rules
         day_data = malloc(sizeof(day_save_data_t));
         if (!day_data) { free(rule_entries); free(rules); return NULL; }
+
         day_data->elements = rule_count;
         day_data->entries = rule_entries;
+
+        // Save immediately
+        int key = create_save_key(day_num, month, year);
+        long offset = save_day_data_raw(day_data, "saves/date.dat");
+        if (offset >= 0) {
+            write_save_idx(key, (int)offset, "saves/date.idx");
+        }
     } else {
-        // Existing day data: only add rules whose ruleID is not already present
+        // Merge new rules with existing day data
         int original_count = day_data->elements;
         int new_entries = 0;
 
-        // First, count how many new rules are actually needed
+        // Count how many rules are actually new
         for (int i = 0; i < rule_count; ++i) {
             int exists = 0;
             for (int j = 0; j < original_count; ++j) {
@@ -703,12 +714,12 @@ day_save_data_t *loadDayWithRules(int day_num, int month, int year) {
         }
 
         if (new_entries > 0) {
-            // Reallocate day_data->entries to fit the new rules
-            calender_entry_t *tmp = realloc(day_data->entries, sizeof(calender_entry_t) * (original_count + new_entries));
+            calender_entry_t *tmp = realloc(day_data->entries,
+                                            sizeof(calender_entry_t) * (original_count + new_entries));
             if (!tmp) {
                 free(rule_entries);
                 free(rules);
-                return day_data; // can't reallocate, just return existing day_data
+                return day_data; // can't reallocate, return existing day_data
             }
             day_data->entries = tmp;
 
@@ -726,13 +737,16 @@ day_save_data_t *loadDayWithRules(int day_num, int month, int year) {
                     day_data->entries[idx++] = rule_entries[i];
                 }
             }
-            day_data->elements = original_count + new_entries;
-        }
 
-        free(rule_entries);
+            day_data->elements = original_count + new_entries;
+
+            // Save updated day data
+            saveDay(day_data, day_num, month, year);
+        } else {
+            free(rule_entries); // nothing new to add
+        }
     }
 
     free(rules);
     return day_data;
 }
-/* --- End of corrected implementation --- */
