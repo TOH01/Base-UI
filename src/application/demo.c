@@ -224,6 +224,7 @@ static void leftArrowCallback(int id) {
 	}
 	updateVisibleCalendar(calendar, activeYear, activeMonth);
 	updateTitle();
+	calendarDayChange();
 }
 
 static void rightArrowCallback(int id) {
@@ -236,6 +237,7 @@ static void rightArrowCallback(int id) {
 	}
 	updateVisibleCalendar(calendar, activeYear, activeMonth);
 	updateTitle();
+	calendarDayChange();
 }
 
 static void oncalendarLabelCbk(int id) { toBeDeletedIndexes[id] = !toBeDeletedIndexes[id]; }
@@ -280,6 +282,7 @@ void Calendar_InitUI(void) {
 	containerAddWidgetAnchored(mainHeader, (BaseWidget_t *)rightArrow, (AbsolutePos_t){25, 0, 50, 75}, WIDGET_ANCHOR_RIGHT, 0);
 
 	currentMonth = customButton_initButton((CommonPos_t){0, 0, 0, 0}, NULL, 0);
+	
 	customButton_setButtonText(currentMonth, "September 2025");
 	currentMonth->theme = &borderlessButton;
 	containerAddWidgetAnchored(mainHeader, (BaseWidget_t *)currentMonth, (AbsolutePos_t){25, 0, 500, 75}, WIDGET_ANCHOR_CENTER, 0);
@@ -411,8 +414,13 @@ void Demo_InitAll(void) {
 	create_file_system();
 	Calendar_InitUI();
 
+	activeMonth = calendar->todayMonth;
+	activeYear = calendar->todayYear;
+
 	setOnActiveInputEndCbk(&onDataUpdate);
 	calendarDayChange();
+
+	updateTitle();
 
 	MenuUi_SubmenuAddLoadHandler(&onAddGoalLoad, addGoalMenu);
 

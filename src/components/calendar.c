@@ -160,6 +160,8 @@ calendarWidget_t *initCalendarWidget(CommonPos_t pos, int year, int month) {
 	cal->todayDay = st.wDay;
 	cal->todayMonth = st.wMonth;
 	cal->todayYear = st.wYear;
+	cal->month = cal->todayMonth;
+	cal->year = cal->todayYear;
 
 	cal->selectedDay = cal->todayDay;
 	return cal;
