@@ -1,3 +1,7 @@
 build
 .vscode
 saves
+.clang-format
+.cache
+compile_commands.json
+.clang-tidy
