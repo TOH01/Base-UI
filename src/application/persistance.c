@@ -500,6 +500,10 @@ fail:
 	return -1;
 }
 
+static int cmp_idx(const void *a, const void *b) {
+	return ((const idx_entry_t *)a)->key - ((const idx_entry_t *)b)->key;
+}
+
 int write_rule_idx_range(int start_year, int start_month, int end_year, int end_month, int offset, const char *filename) {
     if (!filename) return -1;
 
@@ -516,38 +520,72 @@ int write_rule_idx_range(int start_year, int start_month, int end_year, int end_
         if (m > 12) { m = 1; y++; }
     }
 
-    // Allocate all entries at once
-    idx_entry_t *entries = malloc(sizeof(idx_entry_t) * total_months);
-    if (!entries) { fclose(fp); return -1; }
+    if (total_months == 0) {
+        fclose(fp);
+        return 0;
+    }
 
-    // Fill entries
+    // Load existing entries
+    int num_existing = (header.last_offset - (int)sizeof(file_header_t)) / (int)sizeof(idx_entry_t);
+    idx_entry_t *existing = NULL;
+    if (num_existing > 0) {
+        existing = malloc(sizeof(idx_entry_t) * num_existing);
+        if (!existing) {
+            fclose(fp);
+            return -1;
+        }
+        if (fseek(fp, (int)sizeof(file_header_t), SEEK_SET) != 0 ||
+            fread(existing, sizeof(idx_entry_t), num_existing, fp) != (size_t)num_existing) {
+            free(existing);
+            fclose(fp);
+            return -1;
+        }
+    }
+
+    // Allocate for all entries
+    idx_entry_t *all_entries = malloc(sizeof(idx_entry_t) * (num_existing + total_months));
+    if (!all_entries) {
+        free(existing);
+        fclose(fp);
+        return -1;
+    }
+
+    if (num_existing > 0) {
+        memcpy(all_entries, existing, sizeof(idx_entry_t) * num_existing);
+        free(existing);
+    }
+
+    // Fill new entries
     y = start_year; m = start_month;
     for (int i = 0; i < total_months; i++) {
-        entries[i].key = y * 100 + m;
-        entries[i].offset = offset;
+        all_entries[num_existing + i].key = y * 100 + m;
+        all_entries[num_existing + i].offset = offset;
 
         m++;
         if (m > 12) { m = 1; y++; }
     }
 
-    // Write all entries in one block
-    if (fseek(fp, header.last_offset, SEEK_SET) != 0 || 
-        fwrite(entries, sizeof(idx_entry_t), total_months, fp) != (size_t)total_months) {
-        free(entries);
+    // Sort all entries by key
+    qsort(all_entries, num_existing + total_months, sizeof(idx_entry_t), cmp_idx);
+
+    // Write all entries back
+    if (fseek(fp, (int)sizeof(file_header_t), SEEK_SET) != 0 ||
+        fwrite(all_entries, sizeof(idx_entry_t), num_existing + total_months, fp) != (size_t)(num_existing + total_months)) {
+        free(all_entries);
         fclose(fp);
         return -1;
     }
 
-    header.last_offset += sizeof(idx_entry_t) * total_months;
+    header.last_offset = (int)sizeof(file_header_t) + (num_existing + total_months) * (int)sizeof(idx_entry_t);
 
     // Update header
     if (fseek(fp, 0, SEEK_SET) != 0 || fwrite(&header, sizeof(file_header_t), 1, fp) != 1) {
-        free(entries);
+        free(all_entries);
         fclose(fp);
         return -1;
     }
 
-    free(entries);
+    free(all_entries);
     fflush(fp);
     fclose(fp);
     return 0;
@@ -589,9 +627,47 @@ rule_t *load_rules_for_day(int day_num, int month, int year, int *out_count, con
 		return NULL;
 	}
 
+	int num_entries = (idx_header.last_offset - (int)sizeof(file_header_t)) / (int)sizeof(idx_entry_t);
+	if (num_entries == 0) {
+		fclose(idx_fp);
+		return NULL;
+	}
+
 	int key = year * 100 + month;
 
-	// collect offsets (linear scan - safe even if idx is not sorted)
+	// Binary search to find the lower bound (first position where entry.key >= key)
+	int low = 0;
+	int high = num_entries - 1;
+	while (low < high) {
+		int mid = low + (high - low) / 2;
+		if (fseek(idx_fp, (int)sizeof(file_header_t) + mid * (int)sizeof(idx_entry_t), SEEK_SET) != 0) {
+			fclose(idx_fp);
+			return NULL;
+		}
+		idx_entry_t entry;
+		if (fread(&entry, sizeof(idx_entry_t), 1, idx_fp) != 1) {
+			fclose(idx_fp);
+			return NULL;
+		}
+		if (entry.key < key) {
+			low = mid + 1;
+		} else {
+			high = mid;
+		}
+	}
+
+	// Check if the lower bound matches the key
+	if (fseek(idx_fp, (int)sizeof(file_header_t) + low * (int)sizeof(idx_entry_t), SEEK_SET) != 0) {
+		fclose(idx_fp);
+		return NULL;
+	}
+	idx_entry_t entry;
+	if (fread(&entry, sizeof(idx_entry_t), 1, idx_fp) != 1 || entry.key != key) {
+		fclose(idx_fp);
+		return NULL; // No matching key
+	}
+
+	// Collect all consecutive offsets where entry.key == key
 	int offsets_capacity = INITIAL_OFFSETS_CAP;
 	int *offsets = malloc(sizeof(int) * offsets_capacity);
 	if (!offsets) {
@@ -600,31 +676,33 @@ rule_t *load_rules_for_day(int day_num, int month, int year, int *out_count, con
 	}
 	int offsets_count = 0;
 
-	if (fseek(idx_fp, sizeof(file_header_t), SEEK_SET) != 0) {
-		fclose(idx_fp);
-		free(offsets);
-		return NULL;
-	}
-
-	long read_pos = ftell(idx_fp);
-	while (read_pos + (long)sizeof(idx_entry_t) <= (long)idx_header.last_offset) {
-		idx_entry_t entry;
-		if (fread(&entry, sizeof(idx_entry_t), 1, idx_fp) != 1)
-			break;
-		if (entry.key == key) {
-			if (offsets_count >= offsets_capacity) {
-				offsets_capacity *= 2;
-				int *tmp = realloc(offsets, sizeof(int) * offsets_capacity);
-				if (!tmp) {
-					free(offsets);
-					fclose(idx_fp);
-					return NULL;
-				}
-				offsets = tmp;
-			}
-			offsets[offsets_count++] = entry.offset;
+	int pos = low;
+	while (pos < num_entries) {
+		if (fseek(idx_fp, (int)sizeof(file_header_t) + pos * (int)sizeof(idx_entry_t), SEEK_SET) != 0) {
+			free(offsets);
+			fclose(idx_fp);
+			return NULL;
 		}
-		read_pos = ftell(idx_fp);
+		if (fread(&entry, sizeof(idx_entry_t), 1, idx_fp) != 1) {
+			free(offsets);
+			fclose(idx_fp);
+			return NULL;
+		}
+		if (entry.key != key) {
+			break;
+		}
+		if (offsets_count >= offsets_capacity) {
+			offsets_capacity *= 2;
+			int *tmp = realloc(offsets, sizeof(int) * offsets_capacity);
+			if (!tmp) {
+				free(offsets);
+				fclose(idx_fp);
+				return NULL;
+			}
+			offsets = tmp;
+		}
+		offsets[offsets_count++] = entry.offset;
+		pos++;
 	}
 	fclose(idx_fp);
 

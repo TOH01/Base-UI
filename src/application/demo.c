@@ -11,6 +11,10 @@
 #include "persistance.h"
 #include <stdio.h>
 
+#include <stdlib.h>
+#include <time.h>
+
+
 int activeYear = 2025;
 int activeMonth = 9;
 bool value = false;
@@ -411,4 +415,125 @@ void Demo_InitAll(void) {
 	calendarDayChange();
 
 	MenuUi_SubmenuAddLoadHandler(&onAddGoalLoad, addGoalMenu);
+
+	#ifdef PERFORMANCE_TEST
+	srand(time(NULL)); // Seed random
+
+	// Array of common goal/habit texts
+	const char *goal_texts[] = {
+		"Exercise for 30 minutes",
+		"Meditate for 10 minutes",
+		"Read a book chapter",
+		"Drink 8 glasses of water",
+		"Practice gratitude",
+		"Journal thoughts",
+		"Eat a healthy breakfast",
+		"Walk 10k steps",
+		"Skincare routine",
+		"Track daily calories",
+		"Learn a new skill",
+		"Call a friend",
+		"Organize workspace",
+		"Plan tomorrow's tasks",
+		"Get 8 hours of sleep",
+		"Limit screen time",
+		"Practice deep breathing",
+		"Stretch body",
+		"Prepare lunch",
+		"Review finances",
+		"Smile at strangers",
+		"Try a new recipe",
+		"Clean house",
+		"Work on side hustle",
+		"Save money",
+		"Invest in stocks",
+		"Build emergency fund",
+		"Improve time management",
+		"Enhance work-life balance",
+		"Develop conflict resolution skills"
+	};
+	
+	int num_goals = sizeof(goal_texts) / sizeof(goal_texts[0]);
+
+	// Function to get days in month, considering leap years
+	int days_in_month(int m, int y) {
+		if (m == 2) {
+			if ((y % 4 == 0 && y % 100 != 0) || (y % 400 == 0)) return 29;
+			return 28;
+		}
+		if (m == 4 || m == 6 || m == 9 || m == 11) return 30;
+		return 31;
+	}
+
+	int start_year = 2025;
+	int end_year = 2024;
+
+	for (int year = start_year; year <= end_year; ++year) {
+		for (int month = 1; month <= 12; ++month) {
+			int days = days_in_month(month, year);
+			for (int day_num = 1; day_num <= days; ++day_num) {
+				// Create day data with random 5-10 entries (average ~7.5)
+				int num_entries = 5 + rand() % 6;
+				day_save_data_t *day = malloc(sizeof(day_save_data_t));
+				if (!day) continue;
+				day->elements = num_entries;
+				day->entries = malloc(sizeof(calender_entry_t) * num_entries);
+				if (!day->entries) {
+					free(day);
+					continue;
+				}
+
+				for (int i = 0; i < num_entries; ++i) {
+					calender_entry_t *entry = &day->entries[i];
+					memset(entry, 0, sizeof(calender_entry_t)); // Zero out, including data
+					entry->type = rand() % 3; // Assume 0-2 for types (goal, event, etc.)
+					int txt_idx = rand() % num_goals;
+					strncpy(entry->text, goal_texts[txt_idx], sizeof(entry->text) - 1);
+					entry->text[sizeof(entry->text) - 1] = '\0';
+					entry->ruleID = 0; // Manual entry
+				}
+
+				// Save the day
+				saveDay(day, day_num, month, year);
+
+				// Free
+				free(day->entries);
+				free(day);
+
+				// Occasionally add a rule (about 1 per week, so ~4-5 per month)
+				if (rand() % 7 == 0) { // Roughly every 7 days
+					rule_t rule;
+					memset(&rule, 0, sizeof(rule_t));
+					rule.rule_id = 0; // Will be assigned
+					rule.start_year = year;
+					rule.start_month = month;
+					rule.start_day = day_num;
+					// Random end date: 1-365 days later
+					int duration_days = 1 + rand() % 365;
+					int end_y = year, end_m = month, end_d = day_num + duration_days;
+					while (end_d > days_in_month(end_m, end_y)) {
+						end_d -= days_in_month(end_m, end_y);
+						end_m++;
+						if (end_m > 12) {
+							end_m = 1;
+							end_y++;
+						}
+					}
+					rule.end_year = end_y;
+					rule.end_month = end_m;
+					rule.end_day = end_d;
+					rule.type = rand() % 3; // Same as above
+					int txt_idx = rand() % num_goals;
+					int len = strlen(goal_texts[txt_idx]);
+					if (len > 255) len = 255;
+					rule.data[0] = (char)len;
+					memcpy(&rule.data[1], goal_texts[txt_idx], len);
+
+					// Save rule
+					save_rule(&rule, "saves/rules.dat", "saves/rules.idx");
+				}
+			}
+		}
+	}
+	#endif
 }
