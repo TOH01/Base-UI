@@ -243,7 +243,7 @@ HFONT getFontForRect(HDC hdc, char text[], RECT box) {
     return hFont;
 }
 
-void draw3SliceHelper(AbsolutePos_t pos, HICON left, HICON center, HICON right) {
+void UiUtils_draw3SliceHelper(AbsolutePos_t pos, HICON left, HICON center, HICON right) {
     int height = pos.bottom - pos.top;
     int width = pos.right - pos.left;
 
