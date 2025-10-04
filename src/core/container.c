@@ -7,7 +7,6 @@
 #include "customInput.h"
 #include "menu.h"
 
-
 movingContainer_t movingContainer;
 BaseWidget_t* hoverCandidate = NULL;
 BaseWidget_t* lastHoverCandidate = NULL;
@@ -105,35 +104,6 @@ void updateContainersLayoutPos(void) {
     }
 }
 
-void updateWidgetVisibility(void) {
-    int containerCount = currentWindowState.containers->size;
-
-    for (int i = 0; i < containerCount; i++) {
-        container_t* container = (container_t*)DynamicArray_get(currentWindowState.containers, i);
-
-        if (container && container->fixedWidgets && !container->grid) {
-            // Update widget visibility
-            int widgetCount = container->widgetList->size;
-            for (int j = 0; j < widgetCount; j++) {
-                BaseWidget_t* widget = (BaseWidget_t*)DynamicArray_get(container->widgetList, j);
-                if (widget) {
-                    widget->hidden = !UiUtils_WidgetFitsInContainer(widget->pos, container->absPos);
-                }
-            }
-
-            // Update drawable visibility
-            int drawCount = container->drawableList->size;
-            for (int j = 0; j < drawCount; j++) {
-                Drawable_t* drawable = (Drawable_t*)DynamicArray_get(container->drawableList, j);
-                if (drawable) {
-                    drawable->hidden =
-                        !UiUtils_WidgetFitsInContainer(drawable->pos, container->absPos);
-                }
-            }
-        }
-    }
-}
-
 void redrawContainer(container_t* container) {
     if (!container->disableRectRender) {
         UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill,
@@ -153,8 +123,14 @@ void redrawContainerList(void) {
             if (!(movingContainer.action && container == movingContainer.container)) {
                 RECT rect = UiUtils_absolutePosToRect(container->absPos);
 
+                HRGN clipRgn = CreateRectRgnIndirect(&rect);
+                SelectClipRgn(currentWindowState.memHDC, clipRgn);
+
                 drawable_drawAll(container->drawableList);
-                renderWidgetList(container->widgetList, &rect);
+                renderWidgetList(container->widgetList);
+
+                SelectClipRgn(currentWindowState.memHDC, NULL);
+                DeleteObject(clipRgn);
             }
 
             if (!container->disableRectRender) {
@@ -233,7 +209,6 @@ LRESULT resizeContainers(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     (void)lParam;
 
     updateContainersLayoutPos();  // Already calls updateGridPositions for grid containers
-    updateWidgetVisibility();     // Skips grid containers
     InvalidateRect(hwnd, NULL, FALSE);
     return 0;
 }
@@ -709,7 +684,6 @@ void addWidgetToGridContainerSpan(container_t* container, BaseWidget_t* widget, 
     }
 
     updateGridPositions(container);
-    updateWidgetVisibility();  // TODO: restrict update to this container
 }
 
 void destroyContainerContent(container_t* container) {

@@ -78,7 +78,6 @@ void containerAddDrawableAbsolute(container_t* container, Drawable_t* drawable, 
 void containerAddWidgetAnchored(container_t* container, BaseWidget_t* widget, AbsolutePos_t pos,
                                 AnchorPos_t anchor, int anchorOffset);
 void updateContainersLayoutPos(void);
-void updateWidgetVisibility(void);
 container_t* windowAddGridContainer(AbsolutePos_t pos, int rows, int cols);
 void addWidgetToGridContainer(container_t* container, BaseWidget_t* widget, int row, int col);
 void destroyContainerContent(container_t* container);

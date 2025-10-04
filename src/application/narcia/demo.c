@@ -1,12 +1,11 @@
 #include <stdio.h>
 
+#include "UiTheme.h"
 #include "colorMatrix.h"
 #include "common.h"
 #include "container.h"
 #include "customButton.h"
-#include "customCheckbox.h"
 #include "customInput.h"
-#include "customSlider.h"
 #include "drawable.h"
 #include "menu.h"
 #include "narciaMap.h"
@@ -406,4 +405,6 @@ void Demo_InitAll(void) {
                                  (AbsolutePos_t){0.2 * 100, 0.745 * 1400, 0.745 * 1400, 0.8 * 100});
 
     mainHeaderContainer->fixedWidgets = true;
+
+    currentWindowState.activeTheme = CASTLE_CLASH_THEME();
 }
