@@ -7,22 +7,34 @@ WINDRES = windres
 SRCDIR = src
 TESTDIR = tests
 BUILDDIR = build
+DEMOSDIR = $(SRCDIR)/application
+
+# Choose demo: calendar or narcia
+DEMO ?= calendar
+DEMODIR = $(DEMOSDIR)/$(DEMO)
 
 # Output executable names
 OUT = $(BUILDDIR)/my_program.exe
 TESTOUT = $(BUILDDIR)/test_program.exe
 
 # Resource files
-RCFILE = $(SRCDIR)/application/resource.rc
-RESFILE = $(BUILDDIR)/resource.res
+RCFILE = $(DEMODIR)/resource.rc
+RESFILE = $(BUILDDIR)/$(DEMO)_resource.res
 
-# Source files
-SRCS = $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/*/*.c) $(wildcard $(SRCDIR)/*/*/*.c)
-TEST_SRCS = $(wildcard $(TESTDIR)/*.c) $(wildcard $(TESTDIR)/*/*.c) $(wildcard $(TESTDIR)/*/*/*.c)
+# Framework source files
+FRAMEWORK_SRCS = $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/*/*.c)
+# Demo source files (only the selected demo)
+DEMO_SRCS = $(wildcard $(DEMODIR)/*.c) $(wildcard $(DEMODIR)/*/*.c)
+# Combined
+SRCS = $(FRAMEWORK_SRCS) $(DEMO_SRCS)
 
 # Object files
-OBJS = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SRCS))
-TEST_OBJS = $(patsubst $(TESTDIR)/%.c, $(BUILDDIR)/%.o, $(TEST_SRCS))
+OBJS = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(FRAMEWORK_SRCS)) \
+       $(patsubst $(DEMODIR)/%.c,$(BUILDDIR)/%.o,$(DEMO_SRCS))
+
+# Test sources and objects
+TEST_SRCS = $(wildcard $(TESTDIR)/*.c) $(wildcard $(TESTDIR)/*/*.c)
+TEST_OBJS = $(patsubst $(TESTDIR)/%.c,$(BUILDDIR)/%.o,$(TEST_SRCS))
 
 # Build type: debug or release (default: debug)
 BUILD_TYPE ?= debug
@@ -37,14 +49,14 @@ else
     CFLAGS = -g -O0 -DDEBUG \
              -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components \
              -Wall -Wextra -Werror -Wstrict-prototypes -D_WIN32_WINNT=0x0A00
-    LDFLAGS = -lgdi32 -lcomdlg32 -mconsole -luser32 -luxtheme -lMsimg32
+    LDFLAGS = -lgdi32 -lcomdlg32 -mwindows -luser32 -luxtheme -lMsimg32
 endif
 
 # Default target
 all: $(OUT)
 
 # Build main program with resource file
-$(OUT): $(OBJS) #$(RESFILE)
+$(OUT): $(OBJS) $(RESFILE)
 	@if not exist "$(BUILDDIR)" mkdir "$(BUILDDIR)"
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
@@ -53,13 +65,13 @@ $(TESTOUT): $(OBJS) $(TEST_OBJS)
 	@if not exist "$(BUILDDIR)" mkdir "$(BUILDDIR)"
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-# Compile main source files
+# Compile framework source files
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compile test source files
-$(BUILDDIR)/%.o: $(TESTDIR)/%.c
+# Compile demo source files (only selected demo)
+$(BUILDDIR)/%.o: $(DEMODIR)/%.c
 	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
