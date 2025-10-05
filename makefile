@@ -51,7 +51,8 @@ BUILD_TYPE ?= debug
 # Flags per build type
 ifeq ($(BUILD_TYPE),release)
     CFLAGS = -O3 -march=native -flto -ffast-math -DNDEBUG \
-             -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components -D_WIN32_WINNT=0x0A00
+             -Iinclude -Iinclude/core -Iinclude/utils -Iinclude/application -Iinclude/components -D_WIN32_WINNT=0x0A00 \
+			 -fno-asynchronous-unwind-tables -ffunction-sections -fdata-sections
     LDFLAGS = -lgdi32 -lcomdlg32 -mwindows -luser32 -luxtheme -lMsimg32
 else
     # debug
