@@ -1,6 +1,1 @@
-{
-    "schemaVersion": 1,
-    "label": "tests",
-    "message": "pending",
-    "color": "yellow"
-}
+{"schemaVersion":1,"message":"16 tests | 35 assertions | 0 failures","color":"brightgreen","label":"tests"}
