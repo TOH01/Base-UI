@@ -1,0 +1,49 @@
+name: Build and Test (MinGW)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    name: Build, Test, and Package
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up MinGW (x64)
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
+
+      - name: Clean build directory
+        run: mingw32-make clean
+
+      - name: Build and run unit tests
+        run: |
+          mingw32-make test > test_output.txt
+          cat test_output.txt
+
+      - name: Build Narcia (Release)
+        run: mingw32-make DEMO=narcia MODE=release
+
+      - name: Build Calendar (Release)
+        run: mingw32-make DEMO=calendar MODE=release
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log
+          path: test_output.txt
+
+      - name: Upload release builds
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-builds
+          path: |
+            build/narcia.exe
+            build/calendar.exe
