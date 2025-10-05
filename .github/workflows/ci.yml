@@ -100,26 +100,6 @@ jobs:
           dir build
           if exist build\my_program.exe (copy build\my_program.exe artifacts\builds\calendar.exe) else (echo ERROR: my_program.exe not found in build directory && exit /b 1)
 
-      # --- Summarize Test Results and Artifacts ---
-      - name: Summarize test results and artifacts
-        shell: cmd
-        run: |
-          echo Test Log Summary:
-          type artifacts\logs\test_output.txt
-          echo.
-          echo Artifact List:
-          dir artifacts\builds
-          dir artifacts\logs
-          echo.
-          echo ## Test Results and Artifacts > $GITHUB_STEP_SUMMARY
-          echo ### Test Log >> $GITHUB_STEP_SUMMARY
-          type artifacts\logs\test_output.txt >> $GITHUB_STEP_SUMMARY
-          echo. >> $GITHUB_STEP_SUMMARY
-          echo ### Artifacts >> $GITHUB_STEP_SUMMARY
-          dir artifacts\builds >> $GITHUB_STEP_SUMMARY
-          echo. >> $GITHUB_STEP_SUMMARY
-          echo ### Test Summary >> $GITHUB_STEP_SUMMARY
-          findstr /C:"passed" /C:"failed" artifacts\logs\test_output.txt >> $GITHUB_STEP_SUMMARY || echo No pass/fail summary found in test_output.txt >> $GITHUB_STEP_SUMMARY
 
       # --- Upload Artifacts ---
       - name: Upload test log
@@ -140,17 +120,17 @@ jobs:
             artifacts/builds/calendar.exe
           retention-days: 7
 
-      # --- Optional: Create GitHub Release (uncomment to enable) ---
-      # - name: Create GitHub Release
-      #   if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #     files: |
-      #       artifacts/builds/narcia.exe
-      #       artifacts/builds/calendar.exe
-      #       artifacts/logs/test_output.txt
-      #     name: Release ${{ github.ref_name }}
-      #     draft: false
-      #     prerelease: false
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/builds/narcia.exe
+            artifacts/builds/calendar.exe
+            artifacts/logs/test_output.txt
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
