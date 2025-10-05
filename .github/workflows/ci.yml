@@ -138,6 +138,7 @@ jobs:
         shell: cmd
         run: |
           mingw32-make SHELL=cmd.exe DEMO=narcia BUILD_TYPE=release
+          strip build\my_program.exe
           dir build
           if exist build\my_program.exe (copy build\my_program.exe artifacts\builds\narcia.exe) else (echo ERROR: my_program.exe not found in build directory && exit /b 1)
 
@@ -158,6 +159,7 @@ jobs:
         shell: cmd
         run: |
           mingw32-make SHELL=cmd.exe DEMO=calendar BUILD_TYPE=release
+          strip build\my_program.exe
           dir build
           if exist build\my_program.exe (copy build\my_program.exe artifacts\builds\calendar.exe) else (echo ERROR: my_program.exe not found in build directory && exit /b 1)
 
