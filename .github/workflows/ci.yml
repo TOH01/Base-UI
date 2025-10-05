@@ -50,33 +50,33 @@ jobs:
       # --- Unit Test ---
       - name: Clean before unit test
         shell: cmd
-        run: mingw32-make clean --debug
+        run: mingw32-make SHELL=cmd.exe clean --debug
 
       - name: Build and run unit tests
         shell: cmd
         run: |
-          mingw32-make test > artifacts\test_output.txt
+          mingw32-make SHELL=cmd.exe test > artifacts\test_output.txt
 
       # --- Narcia Build ---
       - name: Clean before Narcia build
         shell: cmd
-        run: mingw32-make clean --debug
+        run: mingw32-make SHELL=cmd.exe clean --debug
 
       - name: Build Narcia (Release)
         shell: cmd
         run: |
-          mingw32-make DEMO=narcia MODE=release
+          mingw32-make SHELL=cmd.exe DEMO=narcia MODE=release
           copy build\narcia.exe artifacts\
 
       # --- Calendar Build ---
       - name: Clean before Calendar build
         shell: cmd
-        run: mingw32-make clean --debug
+        run: mingw32-make SHELL=cmd.exe clean --debug
 
       - name: Build Calendar (Release)
         shell: cmd
         run: |
-          mingw32-make DEMO=calendar MODE=release
+          mingw32-make SHELL=cmd.exe DEMO=calendar MODE=release
           copy build\calendar.exe artifacts\
 
       # --- Upload Artifacts ---
