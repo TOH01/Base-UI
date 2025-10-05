@@ -1,4 +1,4 @@
-name: Build and Test (MinGW)
+name: Build and Test (MSYS2 / MinGW)
 
 on:
   push:
@@ -6,38 +6,77 @@ on:
 
 jobs:
   build-test:
-    name: Build, Test, and Package
     runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up MinGW (x64)
-        uses: egor-tensin/setup-mingw@v2
+      - name: Set up MSYS2 with MinGW64
+        uses: msys2/setup-msys2@v2
         with:
-          platform: x64
+          msystem: MINGW64
+          update: true
+          install: >
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-gdb
+          cache: true
 
-      - name: Clean build directory
+      - name: Debug MSYS2 environment
+        shell: msys2 {0}
+        run: |
+          echo "MSYS2 Environment Info:"
+          echo "MSYSTEM: $MSYSTEM"
+          echo "PATH: $PATH"
+          which make
+          which mingw32-make
+
+      - name: Create artifacts directory
+        shell: cmd
+        run: |
+          if not exist artifacts mkdir artifacts
+
+      # --- Unit Test ---
+      - name: Clean before unit test
+        shell: msys2 {0}
         run: mingw32-make clean
 
       - name: Build and run unit tests
+        shell: msys2 {0}
         run: |
-          mingw32-make test > test_output.txt
-          cat test_output.txt
+          mingw32-make test > artifacts/test_output.txt
+
+      # --- Narcia Build ---
+      - name: Clean before Narcia build
+        shell: msys2 {0}
+        run: mingw32-make clean
 
       - name: Build Narcia (Release)
-        run: mingw32-make DEMO=narcia MODE=release
+        shell: msys2 {0}
+        run: |
+          mingw32-make DEMO=narcia MODE=release
+          cp build/narcia.exe artifacts/
+
+      # --- Calendar Build ---
+      - name: Clean before Calendar build
+        shell: msys2 {0}
+        run: mingw32-make clean
 
       - name: Build Calendar (Release)
-        run: mingw32-make DEMO=calendar MODE=release
+        shell: msys2 {0}
+        run: |
+          mingw32-make DEMO=calendar MODE=release
+          cp build/calendar.exe artifacts/
 
+      # --- Upload Artifacts ---
       - name: Upload test log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-log
-          path: test_output.txt
+          path: artifacts/test_output.txt
+          retention-days: 7
 
       - name: Upload release builds
         if: success()
@@ -45,5 +84,6 @@ jobs:
         with:
           name: release-builds
           path: |
-            build/narcia.exe
-            build/calendar.exe
+            artifacts/narcia.exe
+            artifacts/calendar.exe
+          retention-days: 7
