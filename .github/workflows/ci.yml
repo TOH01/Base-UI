@@ -21,7 +21,7 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-make
             mingw-w64-x86_64-gdb
-          cache: false  # Temporarily disable cache to ensure fresh setup
+          cache: false  # Keep cache disabled until stable
 
       - name: Verify MSYS2 package installation
         shell: msys2 {0}
@@ -29,14 +29,18 @@ jobs:
           echo "Checking installed packages..."
           pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-make mingw-w64-x86_64-gdb
 
-      - name: Debug MSYS2 environment
-        shell: msys2 {0}
+      - name: Add MSYS2 MinGW64 to Windows PATH
+        shell: cmd
         run: |
-          echo "MSYS2 Environment Info:"
-          echo "MSYSTEM: $MSYSTEM"
-          echo "PATH: $PATH"
-          which mingw32-make || echo "mingw32-make not found"
-          ls -l /mingw64/bin/mingw32-make || echo "mingw32-make binary not found in /mingw64/bin"
+          set "PATH=%PATH%;C:\msys64\mingw64\bin"
+
+      - name: Debug Windows environment
+        shell: cmd
+        run: |
+          echo Verifying Windows environment...
+          echo PATH=%PATH%
+          where mingw32-make
+          mingw32-make --version
 
       - name: Create artifacts directory
         shell: cmd
@@ -45,35 +49,35 @@ jobs:
 
       # --- Unit Test ---
       - name: Clean before unit test
-        shell: msys2 {0}
-        run: mingw32-make clean
+        shell: cmd
+        run: mingw32-make clean --debug
 
       - name: Build and run unit tests
-        shell: msys2 {0}
+        shell: cmd
         run: |
-          mingw32-make test > artifacts/test_output.txt
+          mingw32-make test > artifacts\test_output.txt
 
       # --- Narcia Build ---
       - name: Clean before Narcia build
-        shell: msys2 {0}
-        run: mingw32-make clean
+        shell: cmd
+        run: mingw32-make clean --debug
 
       - name: Build Narcia (Release)
-        shell: msys2 {0}
+        shell: cmd
         run: |
           mingw32-make DEMO=narcia MODE=release
-          cp build/narcia.exe artifacts/
+          copy build\narcia.exe artifacts\
 
       # --- Calendar Build ---
       - name: Clean before Calendar build
-        shell: msys2 {0}
-        run: mingw32-make clean
+        shell: cmd
+        run: mingw32-make clean --debug
 
       - name: Build Calendar (Release)
-        shell: msys2 {0}
+        shell: cmd
         run: |
           mingw32-make DEMO=calendar MODE=release
-          cp build/calendar.exe artifacts/
+          copy build\calendar.exe artifacts\
 
       # --- Upload Artifacts ---
       - name: Upload test log
