@@ -10,10 +10,9 @@ jobs:
 
     steps:
       # --- Checkout ---
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # --- MSYS2 Setup ---
+      # --- MSYS2 Setup with caching ---
       - name: Set up MSYS2 with MinGW64
         uses: msys2/setup-msys2@v2
         with:
@@ -23,32 +22,37 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-make
             mingw-w64-x86_64-gdb
-          cache: false
+          cache: true
 
-      # --- Verify Installation ---
+      # --- Verify MSYS2 installation ---
       - name: Verify MSYS2 packages
         shell: msys2 {0}
-        run: |
-          pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-make mingw-w64-x86_64-gdb
+        run: pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-make mingw-w64-x86_64-gdb
 
       # --- Add MinGW64 to Windows PATH ---
-      - name: Add MSYS2 MinGW64 to PATH
+      - name: Add MinGW64 to PATH
         shell: cmd
-        run: |
-          set "PATH=%PATH%;C:\msys64\mingw64\bin"
+        run: set "PATH=%PATH%;C:\msys64\mingw64\bin"
 
-      - name: Debug Windows environment
+      # --- Debug Windows environment ---
+      - name: Debug environment
         shell: cmd
         run: |
           echo PATH=%PATH%
           where mingw32-make
           mingw32-make --version
 
-      # --- Ensure artifacts folder exists ---
-      - name: Create artifacts directory
+      # --- Ensure artifacts and build directories exist ---
+      - name: Prepare directories
         shell: cmd
         run: |
           if not exist artifacts mkdir artifacts
+          if not exist build mkdir build
+          if not exist build\main mkdir build\main
+          if not exist build\main\components mkdir build\main\components
+          if not exist build\main\core mkdir build\main\core
+          if not exist build\main\utils mkdir build\main\utils
+          if not exist build\main\demo mkdir build\main\demo
 
       # --- Unit Test ---
       - name: Clean before unit test
@@ -57,8 +61,7 @@ jobs:
 
       - name: Build and run unit tests
         shell: cmd
-        run: |
-          mingw32-make SHELL=cmd.exe test > artifacts\test_output.txt
+        run: mingw32-make SHELL=cmd.exe test > artifacts\test_output.txt
 
       # --- Narcia Build ---
       - name: Clean before Narcia build
