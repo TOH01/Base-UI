@@ -203,3 +203,91 @@ jobs:
           name: all-releases
           path: releases/all-releases.zip
           retention-days: 30
+      
+       # --- Upload Individual Release Packages ---
+      - name: Upload Narcia release
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: narcia-release
+          path: releases/narcia-release.zip
+          retention-days: 30
+
+      - name: Upload Calendar release
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calendar-release
+          path: releases/calendar-release.zip
+          retention-days: 30
+
+      - name: Upload all releases
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-releases
+          path: releases/all-releases.zip
+          retention-days: 30
+
+      # --- Create GitHub Release (on tags) ---
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            releases/narcia-release.zip
+            releases/calendar-release.zip
+            releases/all-releases.zip
+          body: |
+            ## Release Notes
+            
+            ### Downloads
+            - **Narcia Demo**: `narcia-release.zip`
+            - **Calendar Demo**: `calendar-release.zip`
+            - **All Demos**: `all-releases.zip`
+            
+            ### Build Information
+            - Compiler: MinGW GCC (MSYS2)
+            - Build Type: Release
+            - Platform: Windows x64
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- Update Test Badge ---
+      - name: Create test badge
+        if: always() && github.ref == 'refs/heads/main'
+        shell: pwsh
+        run: |
+          $testOutput = Get-Content artifacts\logs\test_output.txt -Raw
+          
+          if ($testOutput -match '(\d+)\s+tests?,\s+(\d+)\s+assertions?,\s+(\d+)\s+failures?') {
+            $tests = $matches[1]
+            $assertions = $matches[2]
+            $failures = $matches[3]
+            
+            $status = if ($failures -eq 0) { "passing" } else { "failing" }
+            $color = if ($failures -eq 0) { "brightgreen" } else { "red" }
+            
+            $badgeData = @{
+              schemaVersion = 1
+              label = "tests"
+              message = "$tests tests | $assertions assertions | $failures failures"
+              color = $color
+            }
+            
+            $badgeJson = $badgeData | ConvertTo-Json -Compress
+            $badgeJson | Out-File -FilePath badges\test-results.json -Encoding utf8
+            
+            Write-Host "Created badge data: $badgeJson"
+          }
+
+      - name: Commit badge data
+        if: always() && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add badges/test-results.json || true
+          git diff --staged --quiet || git commit -m "Update test results badge [skip ci]"
+          git push || true
