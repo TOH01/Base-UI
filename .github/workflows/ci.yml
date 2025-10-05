@@ -21,7 +21,13 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-make
             mingw-w64-x86_64-gdb
-          cache: true
+          cache: false  # Temporarily disable cache to ensure fresh setup
+
+      - name: Verify MSYS2 package installation
+        shell: msys2 {0}
+        run: |
+          echo "Checking installed packages..."
+          pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-make mingw-w64-x86_64-gdb
 
       - name: Debug MSYS2 environment
         shell: msys2 {0}
@@ -29,8 +35,8 @@ jobs:
           echo "MSYS2 Environment Info:"
           echo "MSYSTEM: $MSYSTEM"
           echo "PATH: $PATH"
-          which make
-          which mingw32-make
+          which mingw32-make || echo "mingw32-make not found"
+          ls -l /mingw64/bin/mingw32-make || echo "mingw32-make binary not found in /mingw64/bin"
 
       - name: Create artifacts directory
         shell: cmd
