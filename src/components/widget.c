@@ -5,22 +5,26 @@
 #include "UiUtils.h"
 #include "common.h"
 
+/*
+ * @brief adds a base widget to a dynamic array
+ *
+ * @param array : where base widget will be added
+ * @param widget : what base widget will be added
+ */
 void addWidget(DynamicArray_t* array, BaseWidget_t* widget) {
-    if (!array) {
-        return;
+    if (array) {
+        DynamicArray_Add(array, widget);
     }
-
-    DynamicArray_Add(array, widget);
 }
 
 bool widgetArrayContains(DynamicArray_t* array, BaseWidget_t* widget) {
-    if (!array || !array->items) return false;
-
-    for (int i = 0; i < array->size; i++) {
-        if (array->items[i] == widget) {
-            return true;
+    if (array && array->items) {
+        for (int i = 0; i < array->size; i++) {
+            if (array->items[i] == widget) {
+                return true;
+            }
         }
-    }
+    };
 
     return false;
 }

@@ -34,38 +34,6 @@ int layoutToBorderHelper(LayoutType_t type, int offset) {
     }
 }
 
-// Also, add this helper function to ensure consistency:
-
-void updateGridScrollBounds(container_t* container) {
-    if (!container || !container->grid) return;
-
-    int containerHeight = container->absPos.bottom - container->absPos.top;
-    if (containerHeight <= 0) return;
-
-    // Calculate cell height
-    int naturalCellHeight = containerHeight / container->rows;
-    int cellHeight = naturalCellHeight;
-
-    if (container->cellMinHeight > 0 && cellHeight < container->cellMinHeight)
-        cellHeight = container->cellMinHeight;
-    if (container->cellMaxHeight > 0 && cellHeight > container->cellMaxHeight)
-        cellHeight = container->cellMaxHeight;
-
-    int visibleRows = containerHeight / cellHeight;
-    if (visibleRows <= 0) visibleRows = 1;
-
-    // Clamp startRow to valid range
-    int maxStartRow = container->rows - visibleRows;
-    if (maxStartRow < 0) maxStartRow = 0;
-
-    if (container->startRow > maxStartRow) {
-        container->startRow = maxStartRow;
-    }
-    if (container->startRow < 0) {
-        container->startRow = 0;
-    }
-}
-
 void updateContainersLayoutPos(void) {
     container_t* currContainer = NULL;
 
