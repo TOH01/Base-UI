@@ -1,112 +1,113 @@
 #include "WmParamHashTable.h"
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 
-void HandlerListAdd(HandlerList_t* list, MessageHandler_t handler) {
-    if (!list) {
-        printf("Cant add Handler to list, because list does not exist\n");
-        return;
+#include "debug.h"
+
+void WmParamHashTable_Add(HandlerList_t* list, MessageHandler_t handler) {
+    if (list) {
+        HandlerNode_t* currentNode = list->firstHandlerNode;
+
+        if (currentNode == NULL) {
+            HandlerNode_t* newNode = (HandlerNode_t*)calloc(1, sizeof(HandlerNode_t));
+            newNode->handler = handler;
+            list->firstHandlerNode = newNode;
+        } else {
+            while (currentNode->nextHandlerNode != NULL) {
+                currentNode = currentNode->nextHandlerNode;
+            }
+
+            HandlerNode_t* newNode = (HandlerNode_t*)calloc(1, sizeof(HandlerNode_t));
+
+            currentNode->nextHandlerNode = newNode;
+
+            newNode->handler = handler;
+            newNode->nextHandlerNode = NULL;
+        }
+
+    } else {
+        DEBUG_ERROR("WmParamHashTable_Add: handler list not found");
     }
-
-    HandlerNode_t* currentNode = list->firstHandlerNode;
-
-    if (currentNode == NULL) {
-        HandlerNode_t* newNode = (HandlerNode_t*)calloc(1, sizeof(HandlerNode_t));
-        newNode->handler = handler;
-        list->firstHandlerNode = newNode;
-        return;
-    }
-
-    while (currentNode->nextHandlerNode != NULL) {
-        currentNode = currentNode->nextHandlerNode;
-    }
-
-    HandlerNode_t* newNode = (HandlerNode_t*)calloc(1, sizeof(HandlerNode_t));
-
-    currentNode->nextHandlerNode = newNode;
-
-    newNode->handler = handler;
-    newNode->nextHandlerNode = NULL;
 }
 
-HandlerList_t* HandlerListInit(void) {
+HandlerList_t* WmParamHashTable_Init(void) {
     HandlerList_t* list = (HandlerList_t*)calloc(1, sizeof(HandlerList_t));
 
     if (list == NULL) {
-        printf("Error Initializing Hander List\n");
-        return NULL;
+        DEBUG_ERROR("WmParamHashTable_Init: error initalizing handler table");
     }
 
     return list;
 }
 
-MessageHandler_t HandlerListGetFirstHandler(HandlerList_t* list) {
+MessageHandler_t WmParamHashTable_GetFirstHandler(HandlerList_t* list) {
+    MessageHandler_t handler = NULL;
+
     if (!list) {
-        printf("Cannot get first Handler, because list is null\n");
-        return NULL;
+        DEBUG_ERROR("WmParamHashTable_GetFirstHandler: handler table is null");
+    }
+    if (!list->firstHandlerNode) {
+        DEBUG_ERROR("WmParamHashTable_GetFirstHandler: handler table has no nodes yet");
+    } else {
+        handler = list->firstHandlerNode->handler;
     }
 
-    return list->firstHandlerNode->handler;
+    return handler;
 }
 
 int getHash(int WmParamKey) { return (WmParamKey % MAX_WM_PARAM_AMOUNT); }
 
 WmParamHandlerTable_t* WmParamHandlerTable_Init(void) {
-    WmParamHandlerTable_t* handlerTable =
-        (WmParamHandlerTable_t*)calloc(1, sizeof(WmParamHandlerTable_t));
+    WmParamHandlerTable_t* handlerTable = (WmParamHandlerTable_t*)calloc(1, sizeof(WmParamHandlerTable_t));
 
     for (int i = 0; i < MAX_WM_PARAM_AMOUNT; i++) {
         handlerTable->content[i].WmParamKey = WM_PARAM_TABLE_UNUSED_ID;
     }
 
-    if (!handlerTable) {
-        printf("Error initializing HandlerTable\n");
-        return NULL;
+    if (handlerTable == NULL) {
+        DEBUG_ERROR("WmParamHashTable_GetFirstHandler: handler table is null");
     }
 
     return handlerTable;
 }
 
-int WmParamHanderTable_Insert(WmParamHandlerTable_t* hashtable, int WmParamKey,
-                              MessageHandler_t handler) {
+int WmParamHanderTable_Insert(WmParamHandlerTable_t* hashtable, int WmParamKey, MessageHandler_t handler) {
+    int status = -1;
+
     if (!hashtable) {
-        printf("Cannot Insert, because Hashtable does not exist.");
-        return -1;
-    }
+        DEBUG_ERROR("WmParamHanderTable_Insert: handler table is null");
+    } else if (hashtable->size >= MAX_WM_PARAM_AMOUNT) {
+        DEBUG_ERROR("WmParamHanderTable_Insert: handler table is full");
+    } else {
+        int idx = getHash(WmParamKey);
 
-    if (hashtable->size >= 128) {
-        printf("Error WmParamHashTable Overflow\n");
-        return -1;
-    }
+        while (hashtable->content[idx].WmParamKey != WM_PARAM_TABLE_UNUSED_ID) {
+            if (hashtable->content[idx].WmParamKey == WmParamKey) {
+                WmParamHashTable_Add(hashtable->content[idx].WmParamHandler, handler);
+                return 0;
+            }
 
-    int idx = getHash(WmParamKey);
-
-    while (hashtable->content[idx].WmParamKey != WM_PARAM_TABLE_UNUSED_ID) {
-        if (hashtable->content[idx].WmParamKey == WmParamKey) {
-            HandlerListAdd(hashtable->content[idx].WmParamHandler, handler);
-            return 0;
+            idx = (idx + 1) % MAX_WM_PARAM_AMOUNT;
         }
 
-        idx = (idx + 1) % MAX_WM_PARAM_AMOUNT;
+        hashtable->content[idx].WmParamKey = WmParamKey;
+
+        if (!hashtable->content[idx].WmParamHandler) {
+            hashtable->content[idx].WmParamHandler = WmParamHashTable_Init();
+        }
+
+        WmParamHashTable_Add(hashtable->content[idx].WmParamHandler, handler);
+
+        hashtable->size++;
+
+        status = 0;
     }
 
-    hashtable->content[idx].WmParamKey = WmParamKey;
-
-    if (!hashtable->content[idx].WmParamHandler) {
-        hashtable->content[idx].WmParamHandler = HandlerListInit();
-    }
-
-    HandlerListAdd(hashtable->content[idx].WmParamHandler, handler);
-
-    hashtable->size++;
-
-    return 0;
+    return status;
 }
 
-HandlerList_t* WmParamHandlerTable_GetHandlerList(WmParamHandlerTable_t* hashtable,
-                                                  int WmParamKey) {
+HandlerList_t* WmParamHandlerTable_GetHandlerList(WmParamHandlerTable_t* hashtable, int WmParamKey) {
     if (!hashtable) {
         return NULL;
     }
@@ -139,7 +140,7 @@ bool WmParamHandlerTable_IdHasHandler(WmParamHandlerTable_t* hashtable, int msg)
         return false;
     }
 
-    MessageHandler_t handler = HandlerListGetFirstHandler(handlerList);
+    MessageHandler_t handler = WmParamHashTable_GetFirstHandler(handlerList);
 
     if (handler) {
         return true;
@@ -148,8 +149,7 @@ bool WmParamHandlerTable_IdHasHandler(WmParamHandlerTable_t* hashtable, int msg)
     return false;
 }
 
-void WmParamHandlerTable_CallHandlersOfId(WmParamHandlerTable_t* hashtable, HWND hwnd, int id,
-                                          WPARAM wparam, LPARAM lparam) {
+void WmParamHandlerTable_CallHandlersOfId(WmParamHandlerTable_t* hashtable, HWND hwnd, int id, WPARAM wparam, LPARAM lparam) {
     if (!hashtable) {
         return;
     }

@@ -33,11 +33,9 @@ typedef struct {
 } WmParamHandlerTable_t;
 
 WmParamHandlerTable_t* WmParamHandlerTable_Init(void);
-int WmParamHanderTable_Insert(WmParamHandlerTable_t* hashtable, int WmParamKey,
-                              MessageHandler_t handler);
+int WmParamHanderTable_Insert(WmParamHandlerTable_t* hashtable, int WmParamKey, MessageHandler_t handler);
 void WmParamHandlerTable_Destroy(WmParamHandlerTable_t* hashtable);
-void WmParamHandlerTable_CallHandlersOfId(WmParamHandlerTable_t* hashtable, HWND hwnd, int id,
-                                          WPARAM wparam, LPARAM lparam);
+void WmParamHandlerTable_CallHandlersOfId(WmParamHandlerTable_t* hashtable, HWND hwnd, int id, WPARAM wparam, LPARAM lparam);
 bool WmParamHandlerTable_IdHasHandler(WmParamHandlerTable_t* hashtable, int msg);
 
 #endif

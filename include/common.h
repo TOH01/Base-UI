@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include "coreWindowState.h"
+#include "debug.h"
 
 extern WindowState_t currentWindowState;
 

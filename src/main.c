@@ -1,13 +1,11 @@
-#include "main.h"
-
 #include <stdio.h>
 #include <windows.h>
 
-#include "UiUtils.h"
 #include "WmParamHashTable.h"
 #include "common.h"
 #include "container.h"
 #include "coreWndProc.h"
+#include "debug.h"
 #include "demo.h"
 
 #ifdef CUSTOM_TITLE_BAR
@@ -19,6 +17,8 @@ const char g_szClassName[] = "MyWindowClass";
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     (void)hPrevInstance;
     (void)lpCmdLine;
+
+    DEBUG_INIT();
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
@@ -62,18 +62,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-    int window_style =
-        WS_THICKFRAME  // required for a standard resizeable window
-        | WS_SYSMENU   // Explicitly ask for the titlebar to support snapping via Win + ← / Win + →
-        | WS_MAXIMIZEBOX  // Add maximize button to support maximizing via mouse dragging
-                          // to the top of the screen
-        |
-        WS_MINIMIZEBOX  // Add minimize button to support minimizing by clicking on the taskbar icon
-        | WS_VISIBLE;   // Make window visible after it is created (not important)
+    int window_style = WS_THICKFRAME     // required for a standard resizeable window
+                       | WS_SYSMENU      // Explicitly ask for the titlebar to support snapping via Win + ← / Win + →
+                       | WS_MAXIMIZEBOX  // Add maximize button to support maximizing via mouse dragging
+                                         // to the top of the screen
+                       | WS_MINIMIZEBOX  // Add minimize button to support minimizing by clicking on the taskbar icon
+                       | WS_VISIBLE;     // Make window visible after it is created (not important)
 
-    hwnd = CreateWindowEx(0, g_szClassName, NULL, window_style, CW_USEDEFAULT, CW_USEDEFAULT,
-                          CONFIG_INIT_WINDOW_WIDTH, CONFIG_INIT_WINDOW_HEIGTH, NULL, NULL,
-                          hInstance, NULL);
+    hwnd = CreateWindowEx(0, g_szClassName, NULL, window_style, CW_USEDEFAULT, CW_USEDEFAULT, CONFIG_INIT_WINDOW_WIDTH, CONFIG_INIT_WINDOW_HEIGTH,
+                          NULL, NULL, hInstance, NULL);
 
     if (hwnd == NULL) {
         MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
