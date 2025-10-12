@@ -22,13 +22,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-    currentWindowState.handlerTable = WmParamHandlerTable_Init();
+    currentWindowState.handlerTable = WmParamTable_Init();
     currentWindowState.hInstance = hInstance;
 
-    WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_CREATE,
-                              &CoreWindowState_WmCreateHook);  // init handler in core window state
-    WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE,
-                              &CoreWindowState_WmSizeHook);  // resize handler in core window state
+    WmParamTable_Insert(currentWindowState.handlerTable, WM_CREATE,
+                        &CoreWindowState_WmCreateHook);  // init handler in core window state
+    WmParamTable_Insert(currentWindowState.handlerTable, WM_SIZE,
+                        &CoreWindowState_WmSizeHook);  // resize handler in core window state
 
     UiTheme_initFonts();
 

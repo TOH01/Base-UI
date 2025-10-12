@@ -114,10 +114,7 @@ AbsolutePos_t TileToScreenRect(narciaMap_t* map, int tileX, int tileY) {
     int tileLeft = middleTileTopLeftX + (tileX - map->middleX) * tileSize;
     int tileTop = middleTileTopLeftY + (tileY - map->middleY) * tileSize;
 
-    return (AbsolutePos_t){.left = tileLeft,
-                           .top = tileTop,
-                           .right = tileLeft + tileSize,
-                           .bottom = tileTop + tileSize};
+    return (AbsolutePos_t){.left = tileLeft, .top = tileTop, .right = tileLeft + tileSize, .bottom = tileTop + tileSize};
 }
 
 static void drawPathOnMap(narciaMap_t* map, COLORREF color, Coordinate_t* path, int pathLength) {
@@ -130,10 +127,7 @@ static void drawPathOnMap(narciaMap_t* map, COLORREF color, Coordinate_t* path, 
         POINT fromPoint = TileToScreenCenter(map, from);
         POINT toPoint = TileToScreenCenter(map, to);
 
-        UiUtils_DrawLineRelativeTheme(
-            (AbsolutePos_t){
-                .left = fromPoint.x, .top = fromPoint.y, .right = toPoint.x, .bottom = toPoint.y},
-            color, 4);
+        UiUtils_DrawLineRelativeTheme((AbsolutePos_t){.left = fromPoint.x, .top = fromPoint.y, .right = toPoint.x, .bottom = toPoint.y}, color, 4);
     }
 }
 
@@ -190,9 +184,7 @@ static HPEN TileTypeToColor(mapTile_t mapTile) {
     }
 }
 
-bool adjacentToTown(Coordinate_t townCenter, Coordinate_t tile) {
-    return (abs(townCenter.x - tile.x) <= 2) && (abs(townCenter.y - tile.y) <= 2);
-}
+bool adjacentToTown(Coordinate_t townCenter, Coordinate_t tile) { return (abs(townCenter.x - tile.x) <= 2) && (abs(townCenter.y - tile.y) <= 2); }
 
 static void drawTown(AbsolutePos_t pos, mapTile_t mapTile) {
     switch (mapTile.type) {
@@ -302,10 +294,8 @@ static void drawNarciaMap(BaseWidget_t* base) {
     const int tileDrawRight = middleTileTopLeftX + (endX - map->middleX + 1) * tileSize;
     const int tileDrawBottom = middleTileTopLeftY + (endY - map->middleY + 1) * tileSize;
 
-    AbsolutePos_t backgroundPos = {.left = max(tileDrawLeft, left),
-                                   .top = max(tileDrawTop, top),
-                                   .right = min(tileDrawRight, right),
-                                   .bottom = min(tileDrawBottom, bottom)};
+    AbsolutePos_t backgroundPos = {
+        .left = max(tileDrawLeft, left), .top = max(tileDrawTop, top), .right = min(tileDrawRight, right), .bottom = min(tileDrawBottom, bottom)};
     RECT backgroundRect = UiUtils_absolutePosToRect(backgroundPos);
 
     // --- Rebuild brush if tile size changed ---
@@ -373,9 +363,7 @@ static void drawNarciaMap(BaseWidget_t* base) {
             if (mapTile.type == TILE_EMPTY) continue;
 
             AbsolutePos_t rect = TileToScreenRect(map, x, y);
-            if (rect.right <= left || rect.left >= right || rect.bottom <= top ||
-                rect.top >= bottom)
-                continue;
+            if (rect.right <= left || rect.left >= right || rect.bottom <= top || rect.top >= bottom) continue;
 
             rect.left = max(rect.left, left);
             rect.top = max(rect.top, top);
@@ -384,12 +372,8 @@ static void drawNarciaMap(BaseWidget_t* base) {
 
             bool selected = false;
 
-            if (selected1Valid &&
-                mapTile.townID == map->map[map->selected1.y][map->selected1.x].townID)
-                selected = true;
-            if (selected2Valid &&
-                mapTile.townID == map->map[map->selected2.y][map->selected2.x].townID)
-                selected = true;
+            if (selected1Valid && mapTile.townID == map->map[map->selected1.y][map->selected1.x].townID) selected = true;
+            if (selected2Valid && mapTile.townID == map->map[map->selected2.y][map->selected2.x].townID) selected = true;
 
             Coordinate_t townCenter = getCenterOfTownTile(map, (Coordinate_t){x, y});
             bool disabled = !map->map[townCenter.y][townCenter.x].active;
@@ -416,8 +400,7 @@ static void drawNarciaMap(BaseWidget_t* base) {
 
                 if (!cachedFontCoordinates) {
                     cachedFontCoordinates =
-                        getFontForRect(currentWindowState.memHDC, maxTextForCachedFontCoordinates,
-                                       UiUtils_absolutePosToRect(rect));
+                        getFontForRect(currentWindowState.memHDC, maxTextForCachedFontCoordinates, UiUtils_absolutePosToRect(rect));
                 }
 
                 HFONT oldFont = SelectObject(currentWindowState.memHDC, cachedFontCoordinates);
@@ -426,18 +409,14 @@ static void drawNarciaMap(BaseWidget_t* base) {
 
                 SelectObject(currentWindowState.memHDC, oldFont);
             }
-            if ((mapTile.townType == TOWN_TYPE_IMPERIAL_CASTLE ||
-                 mapTile.townType == TOWN_TYPE_LARGE) &&
-                mapTile.type == TILE_TOWN_BOTTOM) {
+            if ((mapTile.townType == TOWN_TYPE_IMPERIAL_CASTLE || mapTile.townType == TOWN_TYPE_LARGE) && mapTile.type == TILE_TOWN_BOTTOM) {
                 rect.top = rect.bottom;
                 rect.bottom += map->tileSize * 1.5;
                 rect.left -= map->tileSize * 1.5;
                 rect.right += map->tileSize * 1.5;
 
                 if (!cachedFontTownName) {
-                    cachedFontTownName =
-                        getFontForRect(currentWindowState.memHDC, maxTextForCachedFontName,
-                                       UiUtils_absolutePosToRect(rect));
+                    cachedFontTownName = getFontForRect(currentWindowState.memHDC, maxTextForCachedFontName, UiUtils_absolutePosToRect(rect));
                 }
 
                 HFONT oldFont = SelectObject(currentWindowState.memHDC, cachedFontTownName);
@@ -468,8 +447,7 @@ void RbuttonDownCallbackNaricaMap(int x, int y, narciaMap_t* map) {
     Coordinate_t tile;
     if (screenPosToNarciaPos(map, x, y, &tile)) {
         mapTile_t clickedTile = map->map[tile.y][tile.x];
-        if (clickedTile.townID != 0 && !coordinateEqual(tile, map->selected1) &&
-            !coordinateEqual(tile, map->selected2)) {
+        if (clickedTile.townID != 0 && !coordinateEqual(tile, map->selected1) && !coordinateEqual(tile, map->selected2)) {
             Coordinate_t center = getCenterOfTownTile(map, tile);
             map->map[center.y][center.x].active = !map->map[center.y][center.x].active;
         }
@@ -560,8 +538,7 @@ LRESULT handleMouseWheelNarcia(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         GetCursorPos(&mousePos);
         ScreenToClient(hwnd, &mousePos);
 
-        if (UiUtils_CoordinateIsInsideOf(mousePos.x, mousePos.y,
-                                         focusedNarciaMap->baseWidget.pos)) {
+        if (UiUtils_CoordinateIsInsideOf(mousePos.x, mousePos.y, focusedNarciaMap->baseWidget.pos)) {
             int delta = GET_WHEEL_DELTA_WPARAM(wParam);
 
             if (delta > 0) {
@@ -641,8 +618,7 @@ bool insideofMap(narciaMap_t* map, int x, int y) {
     return xCheck && yCheck;
 }
 
-void PopulateMapWithTowns(narciaMap_t* map, const Coordinate_t* coords, int coordCount,
-                          townType_t townType, int startID) {
+void PopulateMapWithTowns(narciaMap_t* map, const Coordinate_t* coords, int coordCount, townType_t townType, int startID) {
     int id = startID;
 
     for (int i = 0; i < coordCount; i++) {
@@ -733,19 +709,14 @@ narciaMap_t* initNarciaMap(CommonPos_t pos) {
     narciaMap->selected2 = (Coordinate_t){-1, -1};
 
     PopulateMapWithTowns(narciaMap, narciaWarEraTowns, narciaWarEraTowns_count, TOWN_TYPE_SMALL, 1);
-    PopulateMapWithTowns(narciaMap, narciaWarEraLargeTowns, narciaWarEraLargeTowns_count,
-                         TOWN_TYPE_LARGE, narciaWarEraTowns_count + 1);
-    PopulateMapWithTowns(narciaMap, narciaWarEraImperalCastle, narciaWarEraImperalCastle_count,
-                         TOWN_TYPE_IMPERIAL_CASTLE,
+    PopulateMapWithTowns(narciaMap, narciaWarEraLargeTowns, narciaWarEraLargeTowns_count, TOWN_TYPE_LARGE, narciaWarEraTowns_count + 1);
+    PopulateMapWithTowns(narciaMap, narciaWarEraImperalCastle, narciaWarEraImperalCastle_count, TOWN_TYPE_IMPERIAL_CASTLE,
                          narciaWarEraLargeTowns_count + narciaWarEraTowns_count + 1);
 
     if (!callbackInitialized) {
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE,
-                                  &mouseMoveNarciaMap);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONUP,
-                                  &buttonUpCallbackNaricaMap);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEWHEEL,
-                                  &handleMouseWheelNarcia);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &mouseMoveNarciaMap);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_LBUTTONUP, &buttonUpCallbackNaricaMap);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_MOUSEWHEEL, &handleMouseWheelNarcia);
     }
 
     activateAllTiles(narciaMap);
@@ -776,8 +747,7 @@ int getTimeForDistance(float distance) { return (uint32_t)(1.108f * powf(distanc
 int getWaterForDistance(float distance) { return (uint32_t)(54.0 * getTimeForDistance(distance)); }
 
 DynamicArray_t* getAllActiveTown(narciaMap_t* map) {
-    DynamicArray_t* array = DynamicArray_init(
-        narciaWarEraTowns_count + narciaWarEraLargeTowns_count + narciaWarEraImperalCastle_count);
+    DynamicArray_t* array = DynamicArray_init(narciaWarEraTowns_count + narciaWarEraLargeTowns_count + narciaWarEraImperalCastle_count);
 
     for (int y = 0; y < map->mapSize; y++) {
         for (int x = 0; x < map->mapSize; x++) {
@@ -914,8 +884,7 @@ void pathDistanceToTextDump(path_t* path, textDumpWidget_t* textDump) {
         c2 = (Coordinate_t){path->tiles[i + 1].x, path->tiles[i + 1].y};
 
         totalDistance += getDistance(c1, c2);
-        snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %.1f", c1.x, c1.y, c2.x, c2.y,
-                 getDistance(c1, c2));
+        snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %.1f", c1.x, c1.y, c2.x, c2.y, getDistance(c1, c2));
         customTextDump_AddLine(textDump, buff);
     }
 
@@ -940,8 +909,7 @@ void pathWaterToTextDump(path_t* path, textDumpWidget_t* textDump) {
         c2 = (Coordinate_t){path->tiles[i + 1].x, path->tiles[i + 1].y};
 
         totalWater += getWaterForDistance(getDistance(c1, c2));
-        snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %d", c1.x, c1.y, c2.x, c2.y,
-                 getWaterForDistance(getDistance(c1, c2)));
+        snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %d", c1.x, c1.y, c2.x, c2.y, getWaterForDistance(getDistance(c1, c2)));
         customTextDump_AddLine(textDump, buff);
     }
 
@@ -970,8 +938,7 @@ void pathTimeToTextDump(path_t* path, textDumpWidget_t* textDump) {
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;
 
-        snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %d:%02d", c1.x, c1.y, c2.x, c2.y,
-                 minutes, seconds);
+        snprintf(buff, sizeof(buff), "(%d, %d) -> (%d, %d) - %d:%02d", c1.x, c1.y, c2.x, c2.y, minutes, seconds);
         customTextDump_AddLine(textDump, buff);
     }
 

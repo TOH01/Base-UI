@@ -41,25 +41,17 @@ void updateContainersLayoutPos(void) {
         currContainer = DynamicArray_get(currentWindowState.containers, i);
 
         if (currContainer->fixed) {
-            if (currContainer->layout.right != LAYOUT_CONTAINER &&
-                currContainer->layout.right != LAYOUT_NONE) {
-                currContainer->absPos.right = layoutToBorderHelper(
-                    currContainer->layout.right, currContainer->layout.offsetRight);
+            if (currContainer->layout.right != LAYOUT_CONTAINER && currContainer->layout.right != LAYOUT_NONE) {
+                currContainer->absPos.right = layoutToBorderHelper(currContainer->layout.right, currContainer->layout.offsetRight);
             }
-            if (currContainer->layout.bottom != LAYOUT_CONTAINER &&
-                currContainer->layout.bottom != LAYOUT_NONE) {
-                currContainer->absPos.bottom = layoutToBorderHelper(
-                    currContainer->layout.bottom, currContainer->layout.offsetBottom);
+            if (currContainer->layout.bottom != LAYOUT_CONTAINER && currContainer->layout.bottom != LAYOUT_NONE) {
+                currContainer->absPos.bottom = layoutToBorderHelper(currContainer->layout.bottom, currContainer->layout.offsetBottom);
             }
-            if (currContainer->layout.top != LAYOUT_CONTAINER &&
-                currContainer->layout.top != LAYOUT_NONE) {
-                currContainer->absPos.top = layoutToBorderHelper(currContainer->layout.top,
-                                                                 currContainer->layout.offsetTop);
+            if (currContainer->layout.top != LAYOUT_CONTAINER && currContainer->layout.top != LAYOUT_NONE) {
+                currContainer->absPos.top = layoutToBorderHelper(currContainer->layout.top, currContainer->layout.offsetTop);
             }
-            if (currContainer->layout.left != LAYOUT_CONTAINER &&
-                currContainer->layout.left != LAYOUT_NONE) {
-                currContainer->absPos.left = layoutToBorderHelper(currContainer->layout.left,
-                                                                  currContainer->layout.offsetLeft);
+            if (currContainer->layout.left != LAYOUT_CONTAINER && currContainer->layout.left != LAYOUT_NONE) {
+                currContainer->absPos.left = layoutToBorderHelper(currContainer->layout.left, currContainer->layout.offsetLeft);
             }
         }
 
@@ -74,8 +66,7 @@ void updateContainersLayoutPos(void) {
 
 void redrawContainer(container_t* container) {
     if (!container->disableRectRender) {
-        UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill,
-                                     container->theme->color.border, container->theme->borderWidth);
+        UiUtils_DrawColoredRectangle(container->absPos, container->theme->color.fill, container->theme->color.border, container->theme->borderWidth);
     }
 }
 
@@ -102,8 +93,7 @@ void redrawContainerList(void) {
             }
 
             if (!container->disableRectRender) {
-                UiUtils_DrawBorder(container->absPos, container->theme->color.border,
-                                   container->theme->borderWidth);
+                UiUtils_DrawBorder(container->absPos, container->theme->color.border, container->theme->borderWidth);
             }
         }
     }
@@ -128,18 +118,15 @@ void containerListClick(int x, int y, ClickType_t clickType) {
         container = (container_t*)DynamicArray_get(currentWindowState.containers, i);
 
         if (container && container->visible) {
-            if (UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth,
-                                               container->absPos) &&
-                !movingContainer.action && container->resizable && clickType == CLICK_TYPE_LDOWN) {
+            if (UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->absPos) && !movingContainer.action &&
+                container->resizable && clickType == CLICK_TYPE_LDOWN) {
                 movingContainer.startPos = container->absPos;
-                movingContainer.action = UiUtils_CoordinateIsOnBorderOf(
-                    x, y, container->theme->borderWidth, container->absPos);
+                movingContainer.action = UiUtils_CoordinateIsOnBorderOf(x, y, container->theme->borderWidth, container->absPos);
                 movingContainer.container = container;
                 movingContainer.mouseStartX = x;
                 movingContainer.mouseStartY = y;
                 break;
-            } else if (UiUtils_CoordinateIsInsideOf(x, y, container->absPos) &&
-                       container->visible) {
+            } else if (UiUtils_CoordinateIsInsideOf(x, y, container->absPos) && container->visible) {
                 BaseWidget_t* widget = widgetClicked(x, y, container->widgetList);
 
                 if (widget && !widget->hidden) {
@@ -147,8 +134,7 @@ void containerListClick(int x, int y, ClickType_t clickType) {
                     InvalidateRect(currentWindowState.hwnd, NULL,
                                    FALSE);  // redraw for interactive widgets like checkboxes, which
                                             // need redraw on click
-                } else if (!movingContainer.action && container->movable &&
-                           clickType == CLICK_TYPE_LDOWN) {
+                } else if (!movingContainer.action && container->movable && clickType == CLICK_TYPE_LDOWN) {
                     movingContainer.startPos = container->absPos;
                     movingContainer.action = CONTAINER_MOVE_ACTION;
                     movingContainer.container = container;
@@ -286,18 +272,14 @@ void updateGridPositions(container_t* currContainer) {
 
     // cell width
     int cellWidth = containerWidth / cols;
-    if (currContainer->cellMinWidth > 0 && cellWidth < currContainer->cellMinWidth)
-        cellWidth = currContainer->cellMinWidth;
-    if (currContainer->cellMaxWidth > 0 && cellWidth > currContainer->cellMaxWidth)
-        cellWidth = currContainer->cellMaxWidth;
+    if (currContainer->cellMinWidth > 0 && cellWidth < currContainer->cellMinWidth) cellWidth = currContainer->cellMinWidth;
+    if (currContainer->cellMaxWidth > 0 && cellWidth > currContainer->cellMaxWidth) cellWidth = currContainer->cellMaxWidth;
 
     // cell height (logical)
     int naturalCellHeight = containerHeight / totalRows;
     int cellHeight = naturalCellHeight;
-    if (currContainer->cellMinHeight > 0 && cellHeight < currContainer->cellMinHeight)
-        cellHeight = currContainer->cellMinHeight;
-    if (currContainer->cellMaxHeight > 0 && cellHeight > currContainer->cellMaxHeight)
-        cellHeight = currContainer->cellMaxHeight;
+    if (currContainer->cellMinHeight > 0 && cellHeight < currContainer->cellMinHeight) cellHeight = currContainer->cellMinHeight;
+    if (currContainer->cellMaxHeight > 0 && cellHeight > currContainer->cellMaxHeight) cellHeight = currContainer->cellMaxHeight;
 
     // clamp startRow
     int startRow = currContainer->startRow;
@@ -352,8 +334,7 @@ void updateGridPositions(container_t* currContainer) {
             // assign logical position **shifted by startRow (row offset)**
             AbsolutePos_t pos;
             pos.left = containerLeft + c * cellWidth;
-            pos.top =
-                containerTop + (r - startRow) * cellHeight;  // <-- important: scroll applied here
+            pos.top = containerTop + (r - startRow) * cellHeight;  // <-- important: scroll applied here
             pos.right = pos.left + spanCols * cellWidth;
             pos.bottom = pos.top + spanRows * cellHeight;
 
@@ -440,15 +421,13 @@ LRESULT MouseMoveCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     movingContainer.container->absPos.top = movingContainer.startPos.top + deltaY;
                     break;
                 case BOTTOM:
-                    movingContainer.container->absPos.bottom =
-                        movingContainer.startPos.bottom + deltaY;
+                    movingContainer.container->absPos.bottom = movingContainer.startPos.bottom + deltaY;
                     break;
                 case LEFT:
                     movingContainer.container->absPos.left = movingContainer.startPos.left + deltaX;
                     break;
                 case RIGHT:
-                    movingContainer.container->absPos.right =
-                        movingContainer.startPos.right + deltaX;
+                    movingContainer.container->absPos.right = movingContainer.startPos.right + deltaX;
                     break;
                 default:
                     break;
@@ -540,35 +519,24 @@ container_t* Container_initContainer(containerPos_t pos) {
     container_t* container = (container_t*)calloc(1, sizeof(container_t));
 
     if (!currentWindowState.handlerTable->hasContainerHandlers) {
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_PAINT, &redrawContainers);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_SIZE, &resizeContainers);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONDOWN,
-                                  &LButtonDownCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_LBUTTONUP,
-                                  &LButtonUpCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_RBUTTONDOWN,
-                                  &RButtonDownCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_RBUTTONUP,
-                                  &RButtonUpCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MBUTTONDOWN,
-                                  &MButtonDownCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MBUTTONUP,
-                                  &MButtonUpCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE,
-                                  &MouseMoveCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_TIMER, &TimerCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSELEAVE,
-                                  &MouseLeaveCallback);
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_MOUSEWHEEL,
-                                  &mouseScrollCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_PAINT, &redrawContainers);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_SIZE, &resizeContainers);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_LBUTTONDOWN, &LButtonDownCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_LBUTTONUP, &LButtonUpCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_RBUTTONDOWN, &RButtonDownCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_RBUTTONUP, &RButtonUpCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_MBUTTONDOWN, &MButtonDownCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_MBUTTONUP, &MButtonUpCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_MOUSEMOVE, &MouseMoveCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_TIMER, &TimerCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_MOUSELEAVE, &MouseLeaveCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_MOUSEWHEEL, &mouseScrollCallback);
 
         currentWindowState.handlerTable->hasContainerHandlers = true;
     }
 
-    container->widgetList =
-        DynamicArray_init(10);  // TODO : better init size logic to increase performance
-    container->drawableList =
-        DynamicArray_init(10);  // TODO : better init size logic to increase performance
+    container->widgetList = DynamicArray_init(10);    // TODO : better init size logic to increase performance
+    container->drawableList = DynamicArray_init(10);  // TODO : better init size logic to increase performance
 
     container->absPos = pos;
 
@@ -624,8 +592,7 @@ void addWidgetToGridContainer(container_t* container, BaseWidget_t* widget, int 
     container->gridPositions[row * container->cols + col] = widget;
 }
 
-void addWidgetToGridContainerSpan(container_t* container, BaseWidget_t* widget, int startRow,
-                                  int endRow, int startCol, int endCol) {
+void addWidgetToGridContainerSpan(container_t* container, BaseWidget_t* widget, int startRow, int endRow, int startCol, int endCol) {
     if (!container || !widget) return;
 
     // Clamp values to grid bounds (inclusive)
@@ -690,8 +657,7 @@ void containerAddWidgetAbsolute(container_t* container, BaseWidget_t* widget, Ab
     addWidget(container->widgetList, widget);
 }
 
-void containerAddWidgetAnchored(container_t* container, BaseWidget_t* widget, AbsolutePos_t pos,
-                                AnchorPos_t anchor, int anchorOffset) {
+void containerAddWidgetAnchored(container_t* container, BaseWidget_t* widget, AbsolutePos_t pos, AnchorPos_t anchor, int anchorOffset) {
     widget->parentPos = &container->absPos;
     widget->pos = getPosToContainerAbsolute(widget->parentPos, pos);
     widget->initPosAbs = pos;

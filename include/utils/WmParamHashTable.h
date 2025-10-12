@@ -23,19 +23,32 @@ typedef struct {
 
 typedef struct {
     int WmParamKey;
-    HandlerList_t* WmParamHandler;
-} WmParamHandlerNode_t;
+    HandlerList_t* handlerList;
+} WmParamEntry_t;
 
+/**
+ * @brief table, to efficiently store handlers
+ *
+ * WmParamTable_t
+ * |__ entries[0]
+ * |   |__ WmParamKey
+ * |   |__ handlerList
+ * |       |__firstHandlerNode -> HandlerNode_t -> nextHandlerNode -> ...
+ * |__ entries[1]
+ *     |__ WmParamKey
+ *     |__ handlerList
+ *         |__firstHandlerNode -> HandlerNode_t -> nextHandlerNode -> ...
+ */
 typedef struct {
     int size;
-    WmParamHandlerNode_t content[MAX_WM_PARAM_AMOUNT];
+    WmParamEntry_t entries[MAX_WM_PARAM_AMOUNT];
     bool hasContainerHandlers;
-} WmParamHandlerTable_t;
+} WmParamTable_t;
 
-WmParamHandlerTable_t* WmParamHandlerTable_Init(void);
-int WmParamHanderTable_Insert(WmParamHandlerTable_t* hashtable, int WmParamKey, MessageHandler_t handler);
-void WmParamHandlerTable_Destroy(WmParamHandlerTable_t* hashtable);
-void WmParamHandlerTable_CallHandlersOfId(WmParamHandlerTable_t* hashtable, HWND hwnd, int id, WPARAM wparam, LPARAM lparam);
-bool WmParamHandlerTable_IdHasHandler(WmParamHandlerTable_t* hashtable, int msg);
+WmParamTable_t* WmParamTable_Init(void);
+int WmParamTable_Insert(WmParamTable_t* hashtable, int WmParamKey, MessageHandler_t handler);
+void WmParamTable_Free(WmParamTable_t* hashtable);
+void WmParamHandlerTable_CallHandlersOfId(WmParamTable_t* hashtable, HWND hwnd, int id, WPARAM wparam, LPARAM lparam);
+bool WmParamHandlerTable_IdHasHandler(WmParamTable_t* hashtable, int msg);
 
 #endif

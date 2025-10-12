@@ -16,30 +16,24 @@ static void drawInput(BaseWidget_t* baseWidget) {
 
     if (input->theme != NULL) {
         COLORREF fill = input->beingHovered ? input->theme->color.hover : input->theme->color.fill;
-        COLORREF border =
-            (input == activeInput) ? input->theme->active.border : input->theme->color.border;
+        COLORREF border = (input == activeInput) ? input->theme->active.border : input->theme->color.border;
 
         UiUtils_DrawColoredRectangle(baseWidget->pos, fill, border, input->theme->borderWidth);
 
         if (strlen(input->buffer) >= 1) {
-            if (UiUtils_TextFitsBoxTheme(input->buffer, baseWidget->pos,
-                                         input->theme->inputText.font)) {
-                UiUtils_DrawTextTheme(baseWidget->pos, input->buffer,
-                                      input->theme->inputText.formatFlags,
-                                      input->theme->inputText.font, input->theme->inputText.color);
+            if (UiUtils_TextFitsBoxTheme(input->buffer, baseWidget->pos, input->theme->inputText.font)) {
+                UiUtils_DrawTextTheme(baseWidget->pos, input->buffer, input->theme->inputText.formatFlags, input->theme->inputText.font,
+                                      input->theme->inputText.color);
             } else {
                 int lastElementIdx = strlen(input->buffer) - 1;
 
-                while (UiUtils_TextFitsBoxTheme(&input->buffer[lastElementIdx], baseWidget->pos,
-                                                input->theme->inputText.font)) {
+                while (UiUtils_TextFitsBoxTheme(&input->buffer[lastElementIdx], baseWidget->pos, input->theme->inputText.font)) {
                     lastElementIdx--;
                 }
 
                 if (lastElementIdx >= 0) {
-                    UiUtils_DrawTextTheme(baseWidget->pos, &input->buffer[lastElementIdx],
-                                          input->theme->inputText.formatFlags,
-                                          input->theme->inputText.font,
-                                          input->theme->inputText.color);
+                    UiUtils_DrawTextTheme(baseWidget->pos, &input->buffer[lastElementIdx], input->theme->inputText.formatFlags,
+                                          input->theme->inputText.font, input->theme->inputText.color);
                 }
 #ifdef DEBUG
                 else {
@@ -48,8 +42,7 @@ static void drawInput(BaseWidget_t* baseWidget) {
 #endif
             }
         } else {
-            UiUtils_DrawTextTheme(baseWidget->pos, input->defaultText,
-                                  input->theme->emptyText.formatFlags, input->theme->emptyText.font,
+            UiUtils_DrawTextTheme(baseWidget->pos, input->defaultText, input->theme->emptyText.formatFlags, input->theme->emptyText.font,
                                   input->theme->emptyText.color);
         }
     }
@@ -186,7 +179,7 @@ inputWidget_t* customInput_initInput(CommonPos_t pos) {
     inputWidget_t* input = (inputWidget_t*)calloc(1, sizeof(inputWidget_t));
 
     if (!HandlerInit) {
-        WmParamHanderTable_Insert(currentWindowState.handlerTable, WM_KEYDOWN, &keystoreCallback);
+        WmParamTable_Insert(currentWindowState.handlerTable, WM_KEYDOWN, &keystoreCallback);
         HandlerInit = 1;
     }
 

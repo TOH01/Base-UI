@@ -16,7 +16,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             DestroyWindow(hwnd);
             break;
         case WM_DESTROY:
-            WmParamHandlerTable_Destroy(currentWindowState.handlerTable);
+            WmParamTable_Free(currentWindowState.handlerTable);
             PostQuitMessage(0);
             break;
         case WM_GETMINMAXINFO: {
@@ -59,8 +59,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             currentWindowState.titlbarHeight = getTitleBarHeight(hwnd);
 
             for (int i = 1; i < currentWindowState.containers->size; i++) {
-                container_t* container =
-                    (container_t*)DynamicArray_get(currentWindowState.containers, i);
+                container_t* container = (container_t*)DynamicArray_get(currentWindowState.containers, i);
 
                 container->absPos.top += currentWindowState.titlbarHeight - oldTitlebarHeight;
                 container->absPos.bottom += currentWindowState.titlbarHeight - oldTitlebarHeight;
@@ -130,24 +129,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
             // Create and select the memory device context
             currentWindowState.memHDC = CreateCompatibleDC(currentWindowState.hdc);
-            currentWindowState.memBitmap = CreateCompatibleBitmap(
-                currentWindowState.hdc, currentWindowState.width, currentWindowState.height);
+            currentWindowState.memBitmap = CreateCompatibleBitmap(currentWindowState.hdc, currentWindowState.width, currentWindowState.height);
             HBITMAP hbmOld = SelectObject(currentWindowState.memHDC, currentWindowState.memBitmap);
 
             // call draw handlers (draw to memDC)
 
             MenuUi_CallAllActiveHandlers(hwnd, msg, wParam, lParam);
 
-            WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam,
-                                                 lParam);
+            WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
 
 #ifdef CUSTOM_TITLE_BAR
             drawTitlebar(currentWindowState.memHDC);
 #endif
 
             // Blit to the screen
-            BitBlt(currentWindowState.hdc, 0, 0, currentWindowState.width,
-                   currentWindowState.height, currentWindowState.memHDC, 0, 0, SRCCOPY);
+            BitBlt(currentWindowState.hdc, 0, 0, currentWindowState.width, currentWindowState.height, currentWindowState.memHDC, 0, 0, SRCCOPY);
 
             // Clean up memory DC and bitmap
             SelectObject(currentWindowState.memHDC, hbmOld);
@@ -163,8 +159,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             MenuUi_SubmenuCommandHandler(hwnd, msg, wParam, lParam);
 
             if (WmParamHandlerTable_IdHasHandler(currentWindowState.handlerTable, msg)) {
-                WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg,
-                                                     wParam, lParam);
+                WmParamHandlerTable_CallHandlersOfId(currentWindowState.handlerTable, hwnd, msg, wParam, lParam);
 
             } else {
                 return DefWindowProc(hwnd, msg, wParam, lParam);

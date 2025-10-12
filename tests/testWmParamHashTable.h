@@ -5,18 +5,18 @@
 #include "minunit.h"
 #include "minwindef.h"
 
-static WmParamHandlerTable_t* Table = NULL;
+static WmParamTable_t* Table = NULL;
 int Counter = 0;
 
 /* Setup and teardown functions */
 static void setup(void) {
     Counter = 0;
-    Table = WmParamHandlerTable_Init();
+    Table = WmParamTable_Init();
     mu_check(Table != NULL);
 }
 
 static void teardown(void) {
-    WmParamHandlerTable_Destroy(Table);
+    WmParamTable_Free(Table);
     Table = NULL;
 }
 
@@ -31,30 +31,30 @@ LRESULT CountingHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 /* Tests */
 MU_TEST(test_table_insert_null) {
-    mu_assert_int_eq(-1, WmParamHanderTable_Insert(NULL, 0, NULL));
+    mu_assert_int_eq(-1, WmParamTable_Insert(NULL, 0, NULL));
     mu_assert_int_eq(0, Table->size);
 }
 
 MU_TEST(test_table_insert_full) {
     Table->size = MAX_WM_PARAM_AMOUNT + 1;
-    mu_assert_int_eq(-1, WmParamHanderTable_Insert(Table, 0, NULL));
+    mu_assert_int_eq(-1, WmParamTable_Insert(Table, 0, NULL));
 }
 
 MU_TEST(test_table_insert_param) {
-    WmParamHanderTable_Insert(Table, 1, &CountingHandler);
+    WmParamTable_Insert(Table, 1, &CountingHandler);
     mu_check(WmParamHandlerTable_IdHasHandler(Table, 1));
     mu_check(!WmParamHandlerTable_IdHasHandler(Table, 2));
 }
 
 MU_TEST(test_table_insert_duplicate_param) {
-    WmParamHanderTable_Insert(Table, 1, NULL);
-    WmParamHanderTable_Insert(Table, 1, NULL);
+    WmParamTable_Insert(Table, 1, NULL);
+    WmParamTable_Insert(Table, 1, NULL);
 
     // simulate hash function
     int expectedIdx = 1 % MAX_WM_PARAM_AMOUNT;
 
     // assume table is empty before, so can use calculated idx
-    HandlerNode_t* first = Table->content[expectedIdx].WmParamHandler->firstHandlerNode;
+    HandlerNode_t* first = Table->entries[expectedIdx].handlerList->firstHandlerNode;
     mu_check(first != NULL);
     mu_check(first->nextHandlerNode != NULL);
     mu_check(first != first->nextHandlerNode);
@@ -63,7 +63,7 @@ MU_TEST(test_table_insert_duplicate_param) {
 
 MU_TEST(test_table_call_handlers_of_id) {
     for (int i = 0; i < 10; i++) {
-        WmParamHanderTable_Insert(Table, 1, &CountingHandler);
+        WmParamTable_Insert(Table, 1, &CountingHandler);
     }
     WmParamHandlerTable_CallHandlersOfId(Table, NULL, 1, (WPARAM)0, (LPARAM)0);
     mu_assert_int_eq(10, Counter);
