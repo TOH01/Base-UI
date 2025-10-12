@@ -4,6 +4,7 @@
 
 #include "Common.h"
 #include "WmParamHashTable.h"
+#include "common.h"
 #include "container.h"
 #include "menu.h"
 #include "titlbar.h"
@@ -17,6 +18,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             break;
         case WM_DESTROY:
             WmParamTable_Free(currentWindowState.handlerTable);
+            currentWindowState.handlerTable = NULL;
             PostQuitMessage(0);
             break;
         case WM_GETMINMAXINFO: {

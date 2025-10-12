@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "DynamicArray.h"
 #include "UiUtils.h"
 #include "textDump.h"
 
@@ -225,7 +226,6 @@ static void drawTown(AbsolutePos_t pos, mapTile_t mapTile) {
             break;
 
         case TILE_TOWN_CENTER:
-            // Optionally, draw a cross or leave it blank
             break;
 
         default:
@@ -335,10 +335,15 @@ static void drawNarciaMap(BaseWidget_t* base) {
     }
 
     // --- Align brush to tiles ---
-    int brushOrgX = (tileDrawLeft) % (tileSize * 2);
-    int brushOrgY = (tileDrawTop) % (tileSize * 2);
-    if (brushOrgX < 0) brushOrgX += tileSize * 2;
-    if (brushOrgY < 0) brushOrgY += tileSize * 2;
+    const int patSize = tileSize * 2;
+
+    int screenZeroX = centerX - tileSize / 2 + (0 - map->middleX) * tileSize;
+    int screenZeroY = centerY - tileSize / 2 + (0 - map->middleY) * tileSize;
+
+    int brushOrgX = screenZeroX % patSize;
+    int brushOrgY = screenZeroY % patSize;
+    if (brushOrgX < 0) brushOrgX += patSize;
+    if (brushOrgY < 0) brushOrgY += patSize;
     SetBrushOrgEx(currentWindowState.memHDC, brushOrgX, brushOrgY, NULL);
 
     // --- Draw checker background ---
@@ -722,6 +727,7 @@ narciaMap_t* initNarciaMap(CommonPos_t pos) {
     activateAllTiles(narciaMap);
 
     narciaMap->paths = DynamicArray_init(10);
+    narciaMap->homebases = DynamicArray_init(10);
 
     if (!selectedTownPen) {
         selectedTownPen = CreatePen(PS_SOLID, 3, RGB(255, 255, 255));
@@ -946,4 +952,24 @@ void pathTimeToTextDump(path_t* path, textDumpWidget_t* textDump) {
     customTextDump_AddLine(textDump, buff);
     customTextDump_AddLine(textDump, "------------------------------");
     customTextDump_AddLine(textDump, "");
+}
+
+bool narciaMap_IsInBorderBelt(int x, int y, int size, int min_dist, int max_dist) {
+    // Check coordinate validity (optional safety check)
+    if (x < 0 || x >= size || y < 0 || y >= size) return false;
+
+    // Distance to the closest border
+    int dist_left = x;
+    int dist_top = y;
+    int dist_right = size - 1 - x;
+    int dist_bottom = size - 1 - y;
+
+    // Find the smallest distance to any border
+    int dist_to_border = dist_left;
+    if (dist_top < dist_to_border) dist_to_border = dist_top;
+    if (dist_right < dist_to_border) dist_to_border = dist_right;
+    if (dist_bottom < dist_to_border) dist_to_border = dist_bottom;
+
+    // Check if it's within the belt range
+    return (dist_to_border >= min_dist && dist_to_border <= max_dist);
 }

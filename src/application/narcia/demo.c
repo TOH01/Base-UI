@@ -51,6 +51,9 @@ colorMatrix_t* colorMatrix;
 inputWidget_t* inputX;
 inputWidget_t* inputY;
 
+inputWidget_t* homebaseX;
+inputWidget_t* homebaseY;
+
 int selectedPathIdx = 0;
 
 LRESULT textDumpWaterMenuCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -58,12 +61,9 @@ LRESULT textDumpWaterMenuCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
     (void)msg;
     (void)wParam;
     (void)lParam;
-    customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2,
-                                       IDI_RIGHT_BTN_2);
-    customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2,
-                                       IDI_RIGHT_BTN_2);
-    customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2_ACTIVE,
-                                       IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2_ACTIVE, IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
     InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
     return 0;
 }
@@ -73,12 +73,9 @@ LRESULT textDumpTimeMenuCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     (void)msg;
     (void)wParam;
     (void)lParam;
-    customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2,
-                                       IDI_RIGHT_BTN_2);
-    customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2,
-                                       IDI_RIGHT_BTN_2);
-    customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2_ACTIVE,
-                                       IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2_ACTIVE, IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
     InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
     return 0;
 }
@@ -88,12 +85,9 @@ LRESULT textDumpDistanceMenuCallback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
     (void)msg;
     (void)wParam;
     (void)lParam;
-    customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2,
-                                       IDI_RIGHT_BTN_2);
-    customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2,
-                                       IDI_RIGHT_BTN_2);
-    customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2_ACTIVE,
-                                       IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[2], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[1], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2_ACTIVE, IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
     InvalidateRect(currentWindowState.hwnd, NULL, FALSE);
     return 0;
 }
@@ -108,8 +102,7 @@ void pathSelectButtonCallback(int id) {
             selectedPathIdx = selectedPathIdx + id;
         }
         narciaMap->selecetdPath = (path_t*)DynamicArray_get(narciaMap->paths, selectedPathIdx);
-        goToTile(narciaMap, narciaMap->selecetdPath->tiles[0].x,
-                 narciaMap->selecetdPath->tiles[0].y);
+        goToTile(narciaMap, narciaMap->selecetdPath->tiles[0].x, narciaMap->selecetdPath->tiles[0].y);
     }
 }
 
@@ -151,6 +144,41 @@ void goButtonCallback(int id) {
     }
 }
 
+void addHomebaseCallback(int id) {
+    (void)id;
+
+    char* endX;
+    char* endY;
+
+    int x = (int)strtol(homebaseX->buffer, &endX, 10);
+    int y = (int)strtol(homebaseY->buffer, &endY, 10);
+
+    if (*endX == '\0' && *endY == '\0') {
+        if (x < narciaMap->mapSize && y < narciaMap->mapSize) {
+            Coordinate_t coord = (Coordinate_t){
+                .x = x,
+                .y = y,
+            };
+
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    int checkX = x + dx;
+                    int checkY = y + dy;
+
+                    if (narciaMap->map[checkX][checkY].type != TILE_EMPTY) {
+                        return;
+                    }
+                }
+            }
+
+            if (narciaMap_IsInBorderBelt(x, y, NARCIA_WAR_ERA_MAP_SIZE, 1, 10)) {
+                PopulateMapWithTowns(narciaMap, &coord, 1, TOWN_TYPE_HOMEBASE, HOMEBASE_START_ID + narciaMap->homebaseNum);
+                narciaMap->homebaseNum++;
+            }
+        }
+    }
+}
+
 void generatePath(int id) {
     (void)id;
 
@@ -170,34 +198,24 @@ void generatePath(int id) {
 
 void Demo_InitAll(void) {
     AbsolutePos_t mainContent =
-        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0.1, CONFIG_INIT_WINDOW_HEIGTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_HEIGTH)};
+        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0.1, CONFIG_INIT_WINDOW_HEIGTH), UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_WIDTH),
+                        UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_HEIGTH)};
 
     AbsolutePos_t textDump =
-        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0.06, CONFIG_INIT_WINDOW_HEIGTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_HEIGTH)};
+        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0.06, CONFIG_INIT_WINDOW_HEIGTH), UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH),
+                        UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_HEIGTH)};
 
     AbsolutePos_t textDumpHeader =
-        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_HEIGTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.06, CONFIG_INIT_WINDOW_HEIGTH)};
+        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_HEIGTH), UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH),
+                        UI_UTILS_CALCULATE_PERCENTAGE(1, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(0.06, CONFIG_INIT_WINDOW_HEIGTH)};
 
     AbsolutePos_t mainHeader =
-        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_HEIGTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.1, CONFIG_INIT_WINDOW_HEIGTH)};
+        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_HEIGTH), UI_UTILS_CALCULATE_PERCENTAGE(0, CONFIG_INIT_WINDOW_WIDTH),
+                        UI_UTILS_CALCULATE_PERCENTAGE(0.7, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(0.1, CONFIG_INIT_WINDOW_HEIGTH)};
 
-    AbsolutePos_t tileSearchBar =
-        (AbsolutePos_t){UI_UTILS_CALCULATE_PERCENTAGE(0.80, CONFIG_INIT_WINDOW_HEIGTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.5, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.65, CONFIG_INIT_WINDOW_WIDTH),
-                        UI_UTILS_CALCULATE_PERCENTAGE(0.95, CONFIG_INIT_WINDOW_HEIGTH)};
+    AbsolutePos_t tileSearchBar = (AbsolutePos_t){
+        UI_UTILS_CALCULATE_PERCENTAGE(0.80, CONFIG_INIT_WINDOW_HEIGTH), UI_UTILS_CALCULATE_PERCENTAGE(0.5, CONFIG_INIT_WINDOW_WIDTH),
+        UI_UTILS_CALCULATE_PERCENTAGE(0.65, CONFIG_INIT_WINDOW_WIDTH), UI_UTILS_CALCULATE_PERCENTAGE(0.95, CONFIG_INIT_WINDOW_HEIGTH)};
 
     container_t* mainContentContainer = windowAddContainer(mainContent);
     container_t* textDumpHeaderContainer = windowAddContainer(textDumpHeader);
@@ -233,20 +251,16 @@ void Demo_InitAll(void) {
 
     textDumpMenuGroup = initSubmenuGroup();
 
-    Drawable_t* textDumpBG = drawable_init9SliceImgRectangle(
-        (CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_2_TOP_LEFT, IDI_9_SLICE_2_TOP,
-        IDI_9_SLICE_2_TOP_RIGHT, IDI_9_SLICE_2_LEFT, IDI_9_SLICE_2_CENTER, IDI_9_SLICE_2_RIGHT,
-        IDI_9_SLICE_2_BOTTOM_LEFT, IDI_9_SLICE_2_BOTTOM, IDI_9_SLICE_2_BOTTOM_RIGHT, 60);
+    Drawable_t* textDumpBG = drawable_init9SliceImgRectangle((CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_2_TOP_LEFT, IDI_9_SLICE_2_TOP,
+                                                             IDI_9_SLICE_2_TOP_RIGHT, IDI_9_SLICE_2_LEFT, IDI_9_SLICE_2_CENTER, IDI_9_SLICE_2_RIGHT,
+                                                             IDI_9_SLICE_2_BOTTOM_LEFT, IDI_9_SLICE_2_BOTTOM, IDI_9_SLICE_2_BOTTOM_RIGHT, 60);
 
     for (int i = 0; i < 3; i++) {
-        textDumpMenuButtons[i] = (buttonWidget_t*)customButton_initButton(
-            (CommonPos_t){0, i / 3.0f, (i + 1) / 3.0f, 1}, NULL, 1);
+        textDumpMenuButtons[i] = (buttonWidget_t*)customButton_initButton((CommonPos_t){0, i / 3.0f, (i + 1) / 3.0f, 1}, NULL, 1);
         containerAddWidget(textDumpHeaderContainer, (BaseWidget_t*)textDumpMenuButtons[i]);
-        customButton_setTo3SliceBackground(textDumpMenuButtons[i], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2,
-                                           IDI_RIGHT_BTN_2);
+        customButton_setTo3SliceBackground(textDumpMenuButtons[i], IDI_LEFT_BTN_2, IDI_CENTER_BTN_2, IDI_RIGHT_BTN_2);
 
-        textDumpSubmenus[i] = MenuUi_SubmenuInit(textDumpMenuButtonNames[i], textDumpMenuButtons[i],
-                                                 textDumpMenuGroup);
+        textDumpSubmenus[i] = MenuUi_SubmenuInit(textDumpMenuButtonNames[i], textDumpMenuButtons[i], textDumpMenuGroup);
 
         textDumpContainers[i] = windowAddContainer(textDump);
 
@@ -258,8 +272,7 @@ void Demo_InitAll(void) {
         textDumpContainers[i]->layout.bottom = LAYOUT_BORDER_BOTTOM;
         textDumpContainers[i]->layout.offsetLeft = -400;
 
-        textDumps[i] =
-            (textDumpWidget_t*)customTextDump_initTextDump((CommonPos_t){0.02, 0.05, 0.95, 0.98});
+        textDumps[i] = (textDumpWidget_t*)customTextDump_initTextDump((CommonPos_t){0.02, 0.05, 0.95, 0.98});
         containerAddWidget(textDumpContainers[i], (BaseWidget_t*)textDumps[i]);
         containerAddDrawable(textDumpContainers[i], textDumpBG);
         customTextDump_AddLine(textDumps[i], textDumpDefaultLines[i]);
@@ -267,8 +280,7 @@ void Demo_InitAll(void) {
         customTextDump_AddLine(textDumps[i], "");
     }
 
-    customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2_ACTIVE,
-                                       IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
+    customButton_setTo3SliceBackground(textDumpMenuButtons[0], IDI_LEFT_BTN_2_ACTIVE, IDI_CENTER_BTN_2_ACTIVE, IDI_RIGHT_BTN_2_ACTIVE);
 
     MenuUi_SubmenuAddLoadHandler(&textDumpDistanceMenuCallback, textDumpSubmenus[0]);
     MenuUi_SubmenuAddLoadHandler(&textDumpTimeMenuCallback, textDumpSubmenus[1]);
@@ -282,127 +294,90 @@ void Demo_InitAll(void) {
 
     strncpy(inputY->defaultText, "Y", 2);
 
-    buttonWidget_t* goButton =
-        customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
+    buttonWidget_t* goButton = customButton_initButton((CommonPos_t){0.2, 0.75, 0.95, 0.8}, &goButtonCallback, 0);
     customButton_setToIcon(goButton, IDI_GOBUTTON);
 
     Drawable_t* tileSearchBarBg = drawable_init9SliceImgRectangle(
-        (CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP,
-        IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT,
-        IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 30);
+        (CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP, IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER,
+        IDI_9_SLICE_1_RIGHT, IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 30);
     Drawable_t* tileSearchBarLabelBg =
-        drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT,
-                                       IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
-    Drawable_t* tileSearchBarLabel = drawable_initLabel(
-        (CommonPos_t){0, 0, 0, 0}, tileSearchLabelText, &currentWindowState.activeTheme.label);
+        drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT, IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
+    Drawable_t* tileSearchBarLabel = drawable_initLabel((CommonPos_t){0, 0, 0, 0}, tileSearchLabelText, &currentWindowState.activeTheme.label);
 
     containerAddDrawable(tileSearchBarContainer, tileSearchBarBg);
-    containerAddDrawableAbsolute(tileSearchBarContainer, tileSearchBarLabelBg,
-                                 (AbsolutePos_t){5, 25, 200, 35});
-    containerAddDrawableAbsolute(tileSearchBarContainer, tileSearchBarLabel,
-                                 (AbsolutePos_t){5, 65, 160, 35});
-    containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t*)inputX,
-                               (AbsolutePos_t){50, 0.05 * 225, 0.35 * 225, 80});
-    containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t*)inputY,
-                               (AbsolutePos_t){50, 0.4 * 225, 0.7 * 225, 80});
-    containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t*)goButton,
-                               (AbsolutePos_t){45, 170, 210, 85});
+    containerAddDrawableAbsolute(tileSearchBarContainer, tileSearchBarLabelBg, (AbsolutePos_t){5, 25, 200, 35});
+    containerAddDrawableAbsolute(tileSearchBarContainer, tileSearchBarLabel, (AbsolutePos_t){5, 65, 160, 35});
+    containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t*)inputX, (AbsolutePos_t){50, 0.05 * 225, 0.35 * 225, 80});
+    containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t*)inputY, (AbsolutePos_t){50, 0.4 * 225, 0.7 * 225, 80});
+    containerAddWidgetAbsolute(tileSearchBarContainer, (BaseWidget_t*)goButton, (AbsolutePos_t){45, 170, 210, 85});
 
     colorMatrix = initColorMatrix((CommonPos_t){0.2, 0.85, 0.98, 0.9}, 4, 3);
 
-    Drawable_t* mainHeaderBg = drawable_init9SliceImgRectangle(
-        (CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP,
-        IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT,
-        IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 50);
+    Drawable_t* mainHeaderBg = drawable_init9SliceImgRectangle((CommonPos_t){0, 0, 1, 1}, IDI_9_SLICE_1_TOP_LEFT, IDI_9_SLICE_1_TOP,
+                                                               IDI_9_SLICE_1_TOP_RIGHT, IDI_9_SLICE_1_LEFT, IDI_9_SLICE_1_CENTER, IDI_9_SLICE_1_RIGHT,
+                                                               IDI_9_SLICE_1_BOTTOM_LEFT, IDI_9_SLICE_1_BOTTOM, IDI_9_SLICE_1_BOTTOM_RIGHT, 50);
     containerAddDrawable(mainHeaderContainer, mainHeaderBg);
 
-    Drawable_t* colorMatrixLabel =
-        drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText,
-                           &currentWindowState.activeTheme.label);
+    Drawable_t* colorMatrixLabel = drawable_initLabel((CommonPos_t){0.2, 0.77, 0.84, 0.9}, colorMatrixText, &currentWindowState.activeTheme.label);
     Drawable_t* colorMatrixBg =
-        drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT,
-                                       IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
+        drawable_init3SliceImgRectange((CommonPos_t){0.2, 0.77, 0.84, 0.9}, IDI_TEXT_BG_LEFT, IDI_TEXT_BG_CENTER, IDI_TEXT_BG_RIGHT);
 
-    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)colorMatrix,
-                               (AbsolutePos_t){0.2 * 100, 0.85 * 1400, 0.98 * 1400, 0.9 * 100});
-    containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixBg,
-                                 (AbsolutePos_t){0.4 * 100, 0.75 * 1400, 0.845 * 1400, 0.7 * 100});
-    containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixLabel,
-                                 (AbsolutePos_t){0.4 * 100, 0.765 * 1400, 0.835 * 1400, 0.7 * 100});
+    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)colorMatrix, (AbsolutePos_t){0.2 * 100, 0.85 * 1400, 0.98 * 1400, 0.9 * 100});
+    containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixBg, (AbsolutePos_t){0.4 * 100, 0.75 * 1400, 0.845 * 1400, 0.7 * 100});
+    containerAddDrawableAbsolute(mainHeaderContainer, colorMatrixLabel, (AbsolutePos_t){0.4 * 100, 0.765 * 1400, 0.835 * 1400, 0.7 * 100});
 
-    buttonWidget_t* generatePathButton =
-        customButton_initButton((CommonPos_t){0.3, 0.02, 0.12, 0.7}, &generatePath, 0);
+    buttonWidget_t* generatePathButton = customButton_initButton((CommonPos_t){0.3, 0.02, 0.12, 0.7}, &generatePath, 0);
     containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)generatePathButton,
                                (AbsolutePos_t){0.3 * 100, 0.02 * 1400, 0.12 * 1400, 0.7 * 100});
     customButton_setButtonText(generatePathButton, generatePathText);
-    customButton_setTo3SliceBackground(generatePathButton, IDI_LEFT_BTN, IDI_CENTER_BTN,
-                                       IDI_RIGHT_BTN);
+    customButton_setTo3SliceBackground(generatePathButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
-    Drawable_t* seperatorLine1 = drawable_initLine((CommonPos_t){0.2, 0.14, 0.14, 0.8},
-                                                   &currentWindowState.activeTheme.line);
-    containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine1,
-                                 (AbsolutePos_t){0.2 * 100, 0.14 * 1400, 0.14 * 1400, 0.8 * 100});
+    Drawable_t* seperatorLine1 = drawable_initLine((CommonPos_t){0.2, 0.14, 0.14, 0.8}, &currentWindowState.activeTheme.line);
+    containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine1, (AbsolutePos_t){0.2 * 100, 0.14 * 1400, 0.14 * 1400, 0.8 * 100});
 
-    buttonWidget_t* previousPathButton = customButton_initButton(
-        (CommonPos_t){0.2, 0.16, 0.27, 0.55}, &pathSelectButtonCallback, PREV_PATH_ID);
+    buttonWidget_t* previousPathButton = customButton_initButton((CommonPos_t){0.2, 0.16, 0.27, 0.55}, &pathSelectButtonCallback, PREV_PATH_ID);
     containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)previousPathButton,
                                (AbsolutePos_t){0.2 * 100, 0.16 * 1400, 0.27 * 1400, 0.55 * 100});
     customButton_setButtonText(previousPathButton, previousPathText);
-    customButton_setTo3SliceBackground(previousPathButton, IDI_LEFT_BTN, IDI_CENTER_BTN,
-                                       IDI_RIGHT_BTN);
+    customButton_setTo3SliceBackground(previousPathButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
-    buttonWidget_t* nexPathButton = customButton_initButton(
-        (CommonPos_t){0.2, 0.29, 0.40, 0.55}, &pathSelectButtonCallback, NEXT_PATH_ID);
-    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)nexPathButton,
-                               (AbsolutePos_t){0.2 * 100, 0.29 * 1400, 0.40 * 1400, 0.55 * 100});
+    buttonWidget_t* nexPathButton = customButton_initButton((CommonPos_t){0.2, 0.29, 0.40, 0.55}, &pathSelectButtonCallback, NEXT_PATH_ID);
+    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)nexPathButton, (AbsolutePos_t){0.2 * 100, 0.29 * 1400, 0.40 * 1400, 0.55 * 100});
     customButton_setButtonText(nexPathButton, nextPathText);
     customButton_setTo3SliceBackground(nexPathButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
-    buttonWidget_t* deleteButton =
-        customButton_initButton((CommonPos_t){0.65, 0.22, 0.34, 0.95}, &deletePathCallback, 0);
-    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)deleteButton,
-                               (AbsolutePos_t){0.65 * 100, 0.22 * 1400, 0.34 * 1400, 0.95 * 100});
+    buttonWidget_t* deleteButton = customButton_initButton((CommonPos_t){0.65, 0.22, 0.34, 0.95}, &deletePathCallback, 0);
+    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)deleteButton, (AbsolutePos_t){0.65 * 100, 0.22 * 1400, 0.34 * 1400, 0.95 * 100});
     customButton_setButtonText(deleteButton, deleteText);
     customButton_setTo3SliceBackground(deleteButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
-    Drawable_t* seperatorLine2 = drawable_initLine((CommonPos_t){0.2, 0.42, 0.42, 0.8},
-                                                   &currentWindowState.activeTheme.line);
-    containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine2,
-                                 (AbsolutePos_t){0.2 * 100, 0.42 * 1400, 0.42 * 1400, 0.8 * 100});
+    Drawable_t* seperatorLine2 = drawable_initLine((CommonPos_t){0.2, 0.42, 0.42, 0.8}, &currentWindowState.activeTheme.line);
+    containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine2, (AbsolutePos_t){0.2 * 100, 0.42 * 1400, 0.42 * 1400, 0.8 * 100});
 
-    buttonWidget_t* clearSelectionButton =
-        customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, &clearSelection, 0);
+    buttonWidget_t* clearSelectionButton = customButton_initButton((CommonPos_t){0.3, 0.44, 0.54, 0.7}, &clearSelection, 0);
     containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)clearSelectionButton,
                                (AbsolutePos_t){0.3 * 100, 0.44 * 1400, 0.54 * 1400, 0.7 * 100});
     customButton_setButtonText(clearSelectionButton, clearSelectionText);
-    customButton_setTo3SliceBackground(clearSelectionButton, IDI_LEFT_BTN, IDI_CENTER_BTN,
-                                       IDI_RIGHT_BTN);
+    customButton_setTo3SliceBackground(clearSelectionButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
-    Drawable_t* seperatorLine3 = drawable_initLine((CommonPos_t){0.2, 0.56, 0.56, 0.8},
-                                                   &currentWindowState.activeTheme.line);
-    containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine3,
-                                 (AbsolutePos_t){0.2 * 100, 0.56 * 1400, 0.56 * 1400, 0.8 * 100});
+    Drawable_t* seperatorLine3 = drawable_initLine((CommonPos_t){0.2, 0.56, 0.56, 0.8}, &currentWindowState.activeTheme.line);
+    containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine3, (AbsolutePos_t){0.2 * 100, 0.56 * 1400, 0.56 * 1400, 0.8 * 100});
 
-    buttonWidget_t* addEnemyHomebaseButton =
-        customButton_initButton((CommonPos_t){0.2, 0.58, 0.73, 0.53}, NULL, 0);
-    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)addEnemyHomebaseButton,
-                               (AbsolutePos_t){0.2 * 100, 0.58 * 1400, 0.73 * 1400, 0.53 * 100});
-    customButton_setButtonText(addEnemyHomebaseButton, generateEnemeyTownText);
-    customButton_setTo3SliceBackground(addEnemyHomebaseButton, IDI_LEFT_BTN, IDI_CENTER_BTN,
-                                       IDI_RIGHT_BTN);
+    homebaseX = customInput_initInput((CommonPos_t){0.2, 0.58, 0.73, 0.53});
+    homebaseY = customInput_initInput((CommonPos_t){0.2, 0.58, 0.73, 0.53});
+    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)homebaseX, (AbsolutePos_t){0.2 * 100, 0.58 * 1400, 0.64 * 1400, 0.53 * 100});
+    containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)homebaseY, (AbsolutePos_t){0.2 * 100, 0.67 * 1400, 0.73 * 1400, 0.53 * 100});
+    setDefaultText(homebaseX, "X");
+    setDefaultText(homebaseY, "Y");
 
-    buttonWidget_t* addHomebaseButton =
-        customButton_initButton((CommonPos_t){0.57, 0.58, 0.73, 0.9}, NULL, 0);
+    buttonWidget_t* addHomebaseButton = customButton_initButton((CommonPos_t){0.57, 0.58, 0.73, 0.9}, &addHomebaseCallback, 0);
     containerAddWidgetAbsolute(mainHeaderContainer, (BaseWidget_t*)addHomebaseButton,
                                (AbsolutePos_t){0.57 * 100, 0.58 * 1400, 0.73 * 1400, 0.9 * 100});
     customButton_setButtonText(addHomebaseButton, generateFriendlyTownText);
-    customButton_setTo3SliceBackground(addHomebaseButton, IDI_LEFT_BTN, IDI_CENTER_BTN,
-                                       IDI_RIGHT_BTN);
+    customButton_setTo3SliceBackground(addHomebaseButton, IDI_LEFT_BTN, IDI_CENTER_BTN, IDI_RIGHT_BTN);
 
-    Drawable_t* seperatorLine4 = drawable_initLine((CommonPos_t){0.2, 0.75, 0.75, 0.8},
-                                                   &currentWindowState.activeTheme.line);
-    containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine4,
-                                 (AbsolutePos_t){0.2 * 100, 0.745 * 1400, 0.745 * 1400, 0.8 * 100});
+    Drawable_t* seperatorLine4 = drawable_initLine((CommonPos_t){0.2, 0.75, 0.75, 0.8}, &currentWindowState.activeTheme.line);
+    containerAddDrawableAbsolute(mainHeaderContainer, seperatorLine4, (AbsolutePos_t){0.2 * 100, 0.745 * 1400, 0.745 * 1400, 0.8 * 100});
 
     mainHeaderContainer->fixedWidgets = true;
 

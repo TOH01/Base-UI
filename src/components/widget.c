@@ -5,7 +5,7 @@
 #include "UiUtils.h"
 #include "common.h"
 
-/*
+/**
  * @brief adds a base widget to a dynamic array
  *
  * @param array : where base widget will be added
@@ -82,9 +82,7 @@ void updatePosToContainerList(DynamicArray_t* array) {
                 int width = widget->pos.right - widget->pos.left;
                 switch (widget->anchor) {
                     case WIDGET_ANCHOR_CENTER:
-                        int containerCenter =
-                            widget->parentPos->left +
-                            ((widget->parentPos->right - widget->parentPos->left) / 2);
+                        int containerCenter = widget->parentPos->left + ((widget->parentPos->right - widget->parentPos->left) / 2);
                         widget->pos.left = containerCenter - (int)(width / 2);
                         widget->pos.right = widget->pos.left + width;
                         break;

@@ -46,8 +46,7 @@ MessageHandler_t WmParamHashTable_GetFirstHandler(HandlerList_t* list) {
 
     if (!list) {
         DEBUG_ERROR("WmParamHashTable_GetFirstHandler: handler table is null");
-    }
-    if (!list->firstHandlerNode) {
+    } else if (!list->firstHandlerNode) {
         DEBUG_ERROR("WmParamHashTable_GetFirstHandler: handler table has no nodes yet");
     } else {
         handler = list->firstHandlerNode->handler;
@@ -154,10 +153,12 @@ void WmParamTable_Free(WmParamTable_t* hashtable) {
                     curr = next;
                 }
                 free(handlerList);
+                handlerList = NULL;
             }
         }
 
         free(hashtable);
+        hashtable = NULL;
     } else {
         DEBUG_ERROR("WmParamTable_Free: handler table is null");
     }
